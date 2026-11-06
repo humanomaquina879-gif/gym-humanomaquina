@@ -1,32 +1,28 @@
-// Middleware de Autenticación Básica HTTP
+const express = require('express');
+const app = express();
+// ... tus otras configuraciones y app.use() ...
+
+// 1. PRIMERO LA RUTA DE ADMIN (Protegida)
 const basicAuth = (req, res, next) => {
     const authHeader = req.headers.authorization;
 
     if (!authHeader) {
-        // Solicita las credenciales al navegador
         res.setHeader('WWW-Authenticate', 'Basic realm="Acceso Restringido Kronox Gym"');
         return res.status(401).send('Acceso no autorizado.');
     }
 
-    // Decodifica las credenciales en formato Base64 (usuario:contraseña)
     const auth = Buffer.from(authHeader.split(' ')[1], 'base64').toString().split(':');
     const user = auth[0];
     const pass = auth[1];
 
-    // Define tus credenciales de acceso
-    const ADMIN_USER = 'admin';
-    const ADMIN_PASS = 'kronox2026';
-
-    if (user === ADMIN_USER && pass === ADMIN_PASS) {
+    if (user === 'admin' && pass === 'kronox2026') {
         return next();
     }
 
-    // Si las credenciales son incorrectas, vuelve a pedir el login
     res.setHeader('WWW-Authenticate', 'Basic realm="Acceso Restringido Kronox Gym"');
     return res.status(401).send('Credenciales incorrectas.');
 };
 
-// 📊 RUTA DE ADMINISTRADOR PROTEGIDA
 app.get('/admin', basicAuth, (req, res) => {
     db.all(`SELECT * FROM inscripciones ORDER BY fecha DESC`, [], (err, rows) => {
         if (err) {
@@ -102,3 +98,5 @@ app.get('/admin', basicAuth, (req, res) => {
         res.send(html);
     });
 });
+
+// 2. DESPUÉS COLOCAS EL RESTO DE TUS RUTAS (como app.get('/:page', ...))
