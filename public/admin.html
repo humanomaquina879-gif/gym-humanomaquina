@@ -2,37 +2,54 @@
         const ADMIN_USER = "admin";
         const ADMIN_PASS = "kronox2026";
         
-        // Variable para llevar la cuenta de los intentos fallidos
-        let failedAttempts = parseInt(localStorage.getItem("kronox_failed_attempts") || "0");
         const MAX_ATTEMPTS = 5;
+        const LOCKOUT_TIME = 15 * 60 * 1000; // 15 minutos en milisegundos
 
         document.addEventListener("DOMContentLoaded", () => {
-            // Verificar si ya inició sesión previamente
+            // Si ya inició sesión antes, se salta el login
             if (localStorage.getItem("kronox_admin_logged") === "true") {
                 document.getElementById("auth-overlay").style.display = "none";
                 return;
             }
 
-            // Verificar si ya alcanzó el límite de intentos
-            if (failedAttempts >= MAX_ATTEMPTS) {
-                blockAccess("Demasiados intentos fallidos. Acceso bloqueado temporalmente.");
-            }
+            // Verificar si hay un bloqueo activo al cargar la página
+            checkLockoutStatus();
         });
+
+        function checkLockoutStatus() {
+            const lockoutUntil = parseInt(localStorage.getItem("kronox_lockout_until") || "0");
+            const now = Date.now();
+
+            if (now < lockoutUntil) {
+                // Calcular cuántos minutos faltan para que termine el bloqueo
+                const remainingMs = lockoutUntil - now;
+                const remainingMins = Math.ceil(remainingMs / 60000);
+                blockAccess(`Demasiados intentos fallidos. Acceso bloqueado. Inténtalo en ${remainingMins} minuto(s).`);
+            } else if (lockoutUntil !== 0 && now >= lockoutUntil) {
+                // Si el tiempo ya expiró, limpiamos los registros de castigo
+                localStorage.removeItem("kronox_lockout_until");
+                localStorage.setItem("kronox_failed_attempts", "0");
+                unblockAccess();
+            }
+        }
 
         function handleLogin(event) {
             event.preventDefault();
 
-            // Doble seguridad por si recargan la página
-            if (failedAttempts >= MAX_ATTEMPTS) return;
+            checkLockoutStatus();
+            const lockoutUntil = parseInt(localStorage.getItem("kronox_lockout_until") || "0");
+            if (Date.now() < lockoutUntil) return;
 
+            let failedAttempts = parseInt(localStorage.getItem("kronox_failed_attempts") || "0");
             const userTyped = document.getElementById("admin-user").value;
             const passTyped = document.getElementById("admin-pass").value;
             const errorDiv = document.getElementById("login-error");
 
             if (userTyped === ADMIN_USER && passTyped === ADMIN_PASS) {
-                // Si entra bien, reiniciamos los intentos y damos acceso
+                // Inicio de sesión exitoso: borramos contadores y bloqueos
                 localStorage.setItem("kronox_admin_logged", "true");
                 localStorage.removeItem("kronox_failed_attempts");
+                localStorage.removeItem("kronox_lockout_until");
                 document.getElementById("auth-overlay").style.display = "none";
             } else {
                 failedAttempts++;
@@ -41,7 +58,10 @@
                 const remaining = MAX_ATTEMPTS - failedAttempts;
 
                 if (failedAttempts >= MAX_ATTEMPTS) {
-                    blockAccess("Límite de intentos alcanzado. Acceso bloqueado.");
+                    // Establecer el tiempo límite de bloqueo (15 minutos a partir de ahora)
+                    const blockUntilTime = Date.now() + LOCKOUT_TIME;
+                    localStorage.setItem("kronox_lockout_until", blockUntilTime);
+                    blockAccess("Límite de 5 intentos alcanzado. Bloqueado por 15 minutos.");
                 } else {
                     errorDiv.classList.remove("hidden");
                     errorDiv.innerText = `Usuario o contraseña incorrectos. Te quedan ${remaining} intentos.`;
@@ -59,6 +79,15 @@
             errorDiv.classList.remove("hidden");
             errorDiv.innerText = message;
             errorDiv.style.color = "#ff4d4d";
+        }
+
+        function unblockAccess() {
+            const form = document.getElementById("login-form");
+            const errorDiv = document.getElementById("login-error");
+            
+            form.style.opacity = "1";
+            form.style.pointerEvents = "auto";
+            errorDiv.classList.add("hidden");
         }
 
         function logoutAdmin() {
