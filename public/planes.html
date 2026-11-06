@@ -50,7 +50,6 @@
             overflow-x: hidden;
         }
 
-        /* Patrón de cuadrícula del fondo (Gridlines) */
         .bg-grid-pattern {
             background-size: 36px 36px;
             background-image: 
@@ -58,7 +57,6 @@
                 linear-gradient(to bottom, rgba(0, 210, 255, 0.04) 1px, transparent 1px);
         }
 
-        /* Luces ambientales en degradado */
         .glow-light {
             position: absolute;
             width: 500px;
@@ -69,7 +67,6 @@
             z-index: 0;
         }
 
-        /* Estilos generales de tarjetas */
         .plan-card {
             background: linear-gradient(160deg, #0a1326 0%, #060c18 100%);
             border: 1px solid #16284a;
@@ -84,7 +81,6 @@
             box-shadow: 0 15px 35px rgba(0, 210, 255, 0.2);
         }
 
-        /* Tarjeta Destacada (Mensualidad / Más Popular) */
         .featured-card {
             background: linear-gradient(160deg, #0e1d3a 0%, #071020 100%);
             border: 2px solid #00d2ff;
@@ -97,13 +93,13 @@
             box-shadow: 0 20px 45px rgba(0, 210, 255, 0.35);
         }
 
-        /* Botón estilo Neón Transparente */
         .btn-neon-outline {
             background: transparent;
             color: #00d2ff;
             border: 2px solid #00d2ff;
             transition: all 0.3s ease;
             box-shadow: 0 0 10px rgba(0, 210, 255, 0.1);
+            cursor: pointer;
         }
 
         .btn-neon-outline:hover {
@@ -112,12 +108,12 @@
             box-shadow: 0 0 22px rgba(0, 210, 255, 0.6);
         }
 
-        /* Botón estilo Neón Relleno */
         .btn-neon-solid {
             background: #00d2ff;
             color: #050a14;
             transition: all 0.3s ease;
             box-shadow: 0 0 18px rgba(0, 210, 255, 0.4);
+            cursor: pointer;
         }
 
         .btn-neon-solid:hover {
@@ -126,7 +122,6 @@
             transform: scale(1.02);
         }
 
-        /* Efecto de Checkmark con brillo */
         .check-icon {
             color: #00d2ff;
             filter: drop-shadow(0 0 4px rgba(0, 210, 255, 0.6));
@@ -142,15 +137,12 @@
     <!-- NAVBAR SUPERIOR -->
     <header class="sticky top-0 z-50 bg-kronox-bg/85 backdrop-blur-lg border-b border-kronox-cardBorder/60">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-24 flex items-center justify-between">
-            
-            <!-- Logo Oficial en Imagen (Tamaño Doble) -->
             <a href="index" class="flex items-center gap-2 group py-2">
                 <img src="https://res.cloudinary.com/bo5jzelh/image/upload/v1783041430/Logo_Kronox_Gym_lfg9tl.jpg" 
                      alt="Kronox Gym Logo" 
                      class="h-16 md:h-20 w-auto rounded-xl border border-kronox-accent/40 object-contain shadow-[0_0_15px_rgba(0,210,255,0.2)] group-hover:border-kronox-accent transition-all duration-300">
             </a>
 
-            <!-- Navegación Desktop -->
             <nav class="hidden md:flex items-center space-x-8 font-semibold text-sm">
                 <a href="index" class="text-gray-300 hover:text-kronox-accent transition-colors">Inicio</a>
                 <a href="informacion" class="text-gray-300 hover:text-kronox-accent transition-colors">Información</a>
@@ -159,20 +151,17 @@
                 <a href="ubicacion" class="text-gray-300 hover:text-kronox-accent transition-colors">Ubicación</a>
             </nav>
 
-            <!-- Botón Contactar / WhatsApp -->
             <div class="hidden md:flex items-center">
                 <a href="https://wa.me/527779393985?text=Hola%20Kronox%20Gym,%20me%20gustar%C3%ADa%20pedir%20informaci%C3%B3n%20sobre%20sus%20planes." target="_blank" class="btn-neon-outline px-5 py-2.5 rounded-lg font-bold text-xs uppercase tracking-wider flex items-center gap-2">
                     <i class="fab fa-whatsapp text-base"></i> Contactar
                 </a>
             </div>
 
-            <!-- Botón Menú Móvil -->
             <button id="mobile-menu-btn" class="md:hidden text-gray-300 hover:text-white text-2xl focus:outline-none">
                 <i class="fas fa-bars"></i>
             </button>
         </div>
 
-        <!-- Menú Desplegable Móvil -->
         <div id="mobile-menu" class="hidden md:hidden bg-kronox-blueDark border-b border-kronox-cardBorder px-6 pt-3 pb-6 space-y-3">
             <a href="index" class="block py-2 text-gray-300 hover:text-kronox-accent font-medium">Inicio</a>
             <a href="informacion" class="block py-2 text-gray-300 hover:text-kronox-accent font-medium">Información</a>
@@ -188,19 +177,13 @@
     <!-- SECCIÓN PRINCIPAL DE CONTENIDO -->
     <main class="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-20 flex-grow">
         
-        <!-- Encabezado de la Página -->
         <div class="text-center max-w-3xl mx-auto mb-16">
-            <!-- Badge Superior -->
             <span class="inline-block bg-kronox-accent/10 border border-kronox-accent/40 text-kronox-accent text-xs font-black uppercase tracking-widest px-4 py-1.5 rounded-full mb-5">
                 Membresías e Inscripciones
             </span>
-            
-            <!-- Título Principal -->
             <h1 class="text-4xl sm:text-6xl font-black tracking-tight text-white uppercase italic leading-none">
                 ELIGE TU <span class="text-transparent bg-clip-text bg-gradient-to-r from-kronox-accent to-blue-500">PLAN DE PODER</span>
             </h1>
-
-            <!-- Subtítulo -->
             <p class="mt-5 text-gray-400 text-base sm:text-lg font-normal max-w-2xl mx-auto">
                 Entrena con el mejor equipo, instalaciones de primer nivel y la disciplina que necesitas para alcanzar tus metas.
             </p>
@@ -212,7 +195,6 @@
             <!-- TARJETA 1: VISITA -->
             <div class="plan-card p-8 flex flex-col justify-between">
                 <div>
-                    <!-- Superior Badge & Icon -->
                     <div class="flex justify-between items-center mb-6">
                         <span class="text-[11px] font-extrabold uppercase tracking-wider text-gray-300 bg-kronox-blueDark border border-kronox-cardBorder px-3 py-1 rounded-md">
                             Día Individual
@@ -220,22 +202,18 @@
                         <i class="fas fa-bolt text-kronox-accent text-lg"></i>
                     </div>
 
-                    <!-- Título -->
                     <h3 class="text-3xl font-black text-white uppercase tracking-tight">VISITA</h3>
                     <p class="text-gray-400 text-sm mt-2 mb-6 min-h-[40px]">
                         Ideal para conocer nuestras instalaciones o entrenar de paso.
                     </p>
 
-                    <!-- Precio -->
                     <div class="flex items-baseline gap-1 my-6">
                         <span class="text-5xl font-black text-white tracking-tight">$100</span>
                         <span class="text-gray-400 font-bold text-sm">/ día</span>
                     </div>
 
-                    <!-- Separador -->
                     <div class="w-full h-px bg-kronox-cardBorder/60 my-6"></div>
 
-                    <!-- Lista de Beneficios -->
                     <ul class="space-y-4 text-sm text-gray-300 font-medium">
                         <li class="flex items-center gap-3">
                             <i class="fas fa-check-circle check-icon text-base"></i>
@@ -252,22 +230,19 @@
                     </ul>
                 </div>
 
-                <!-- Botón -->
-                <a href="https://wa.me/527779393985?text=¡Hola!%20Quiero%20comprar%20un%20pase%20de%20visita%20en%20Kronox%20Gym%20($100)" target="_blank" class="w-full btn-neon-outline py-3.5 rounded-xl font-extrabold uppercase text-xs tracking-wider text-center block mt-8">
+                <!-- Botón Interactivo para abrir Formulario -->
+                <button onclick="abrirFormulario('Visita', 100)" class="w-full btn-neon-outline py-3.5 rounded-xl font-extrabold uppercase text-xs tracking-wider text-center block mt-8">
                     Elegir Plan
-                </a>
+                </button>
             </div>
 
-            <!-- TARJETA 2: MENSUALIDAD (DESTACADO / MÁS POPULAR) -->
+            <!-- TARJETA 2: MENSUALIDAD (DESTACADO) -->
             <div class="featured-card p-8 flex flex-col justify-between transform md:-translate-y-4">
-                
-                <!-- Badge Flotante Superior -->
                 <div class="absolute -top-4 left-1/2 -translate-x-1/2 bg-kronox-accent text-kronox-bg text-[11px] font-black uppercase tracking-widest px-4 py-1.5 rounded-full shadow-lg flex items-center gap-1.5 whitespace-nowrap">
                     <i class="fas fa-fire"></i> Más Popular
                 </div> 
 
                 <div>
-                    <!-- Superior Badge & Icon -->
                     <div class="flex justify-between items-center mb-6 mt-2">
                         <span class="text-[11px] font-extrabold uppercase tracking-wider text-kronox-accent bg-kronox-accent/10 border border-kronox-accent/30 px-3 py-1 rounded-md">
                             Entrenamiento Continuo
@@ -275,22 +250,18 @@
                         <i class="fas fa-crown text-kronox-accent text-lg"></i>
                     </div>
 
-                    <!-- Título -->
                     <h3 class="text-3xl font-black text-white uppercase tracking-tight">MENSUALIDAD</h3>
                     <p class="text-gray-300 text-sm mt-2 mb-6 min-h-[40px]">
                         Tu compromiso mes a mes con los mejores resultados. 30 días por mensualidad. 
                     </p>
 
-                    <!-- Precio gigante -->
                     <div class="flex items-baseline gap-1 my-6">
                         <span class="text-6xl font-black text-kronox-accent tracking-tight">$350</span>
                         <span class="text-gray-400 font-bold text-sm">/ mes</span>
                     </div>
 
-                    <!-- Separador -->
                     <div class="w-full h-px bg-kronox-accent/30 my-6"></div>
 
-                    <!-- Lista de Beneficios -->
                     <ul class="space-y-4 text-sm text-gray-200 font-medium">
                         <li class="flex items-center gap-3">
                             <i class="fas fa-check-circle check-icon text-base"></i>
@@ -311,16 +282,15 @@
                     </ul>
                 </div>
 
-                <!-- Botón Principal Relleno -->
-                <a href="https://wa.me/527779393985?text=¡Hola!%20me%20interesa%20inscribirme%20a%20la%20mensualidad%20de%20Kronox%20Gym%20($350)" target="_blank" class="w-full btn-neon-solid py-4 rounded-xl font-black uppercase text-xs tracking-wider text-center block mt-8">
+                <!-- Botón Interactivo para abrir Formulario -->
+                <button onclick="abrirFormulario('Mensualidad', 350)" class="w-full btn-neon-solid py-4 rounded-xl font-black uppercase text-xs tracking-wider text-center block mt-8">
                     Elegir Plan
-                </a>
+                </button>
             </div>
 
             <!-- TARJETA 3: ANUALIDAD -->
             <div class="plan-card p-8 flex flex-col justify-between">
                 <div>
-                    <!-- Superior Badge & Icon -->
                     <div class="flex justify-between items-center mb-6">
                         <span class="text-[11px] font-extrabold uppercase tracking-wider text-gray-300 bg-kronox-blueDark border border-kronox-cardBorder px-3 py-1 rounded-md">
                             Mayor Ahorro
@@ -328,22 +298,18 @@
                         <i class="fas fa-trophy text-kronox-accent text-lg"></i>
                     </div>
 
-                    <!-- Título -->
                     <h3 class="text-3xl font-black text-white uppercase tracking-tight">ANUALIDAD</h3>
                     <p class="text-gray-400 text-sm mt-2 mb-6 min-h-[40px]">
                         Ahorro máximo para atletas dedicados a largo plazo.
                     </p>
 
-                    <!-- Precio -->
                     <div class="flex items-baseline gap-1 my-6">
                         <span class="text-5xl font-black text-white tracking-tight">$3,000</span>
                         <span class="text-gray-400 font-bold text-sm">/ año</span>
                     </div>
 
-                    <!-- Separador -->
                     <div class="w-full h-px bg-kronox-cardBorder/60 my-6"></div>
 
-                    <!-- Lista de Beneficios -->
                     <ul class="space-y-4 text-sm text-gray-300 font-medium">
                         <li class="flex items-center gap-3">
                             <i class="fas fa-check-circle check-icon text-base"></i>
@@ -368,20 +334,85 @@
                     </ul>
                 </div>
 
-                <!-- Botón -->
-                <a href="https://wa.me/527779393985?text=¡Hola!%20quiero%20informaci%C3%B3n%20sobre%20la%20anualidad%20de%20Kronox%20Gym%20($3000)" target="_blank" class="w-full btn-neon-outline py-3.5 rounded-xl font-extrabold uppercase text-xs tracking-wider text-center block mt-8">
+                <!-- Botón Interactivo para abrir Formulario -->
+                <button onclick="abrirFormulario('Anualidad', 3000)" class="w-full btn-neon-outline py-3.5 rounded-xl font-extrabold uppercase text-xs tracking-wider text-center block mt-8">
                     Elegir Plan
-                </a>
+                </button>
             </div>
 
         </div>
 
     </main>
 
+    <!-- VENTANA MODAL / FORMULARIO DE REGISTRO Y PAGO -->
+    <div id="modal-pago" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-md hidden flex items-center justify-center p-4">
+        <div class="bg-kronox-cardBg border border-kronox-accent/40 rounded-2xl max-w-md w-full p-6 sm:p-8 relative shadow-[0_0_40px_rgba(0,210,255,0.15)]">
+            
+            <!-- Botón Cerrar Modal -->
+            <button onclick="cerrarFormulario()" class="absolute top-4 right-4 text-gray-400 hover:text-white text-xl">
+                <i class="fas fa-times"></i>
+            </button>
+
+            <div class="text-center mb-6">
+                <span class="text-kronox-accent text-xs font-black uppercase tracking-widest bg-kronox-accent/10 px-3 py-1 rounded-full border border-kronox-accent/30">
+                    Registro de Inscripción
+                </span>
+                <h3 id="modal-titulo-plan" class="text-2xl font-black text-white uppercase mt-3">Plan Seleccionado</h3>
+                <p class="text-gray-400 text-sm mt-1">Ingresa tus datos y confirma el pago simulado para registrarte.</p>
+            </div>
+
+            <!-- Formulario -->
+            <form id="form-registro" onsubmit="enviarRegistro(event)" class="space-y-4">
+                <input type="hidden" id="input-plan" name="plan">
+                <input type="hidden" id="input-monto" name="monto">
+
+                <div>
+                    <label class="block text-xs font-bold uppercase tracking-wider text-gray-300 mb-1">Nombre Completo</label>
+                    <input type="text" id="nombre" required placeholder="Ej. Carlos Santana" class="w-full bg-kronox-blueDark border border-kronox-cardBorder rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-kronox-accent transition-colors">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold uppercase tracking-wider text-gray-300 mb-1">Teléfono / WhatsApp</label>
+                    <input type="tel" id="telefono" required placeholder="777 000 0000" class="w-full bg-kronox-blueDark border border-kronox-cardBorder rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-kronox-accent transition-colors">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold uppercase tracking-wider text-gray-300 mb-1">Método de Pago</label>
+                    <select id="metodo-pago" class="w-full bg-kronox-blueDark border border-kronox-cardBorder rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-kronox-accent transition-colors">
+                        <option value="Efectivo en Recepción">Efectivo en Recepción</option>
+                        <option value="Tarjeta (Simulado)">Tarjeta de Débito / Crédito</option>
+                        <option value="Transferencia Bancaria">Transferencia Bancaria</option>
+                    </select>
+                </div>
+
+                <div class="bg-kronox-blueDark/60 border border-kronox-cardBorder rounded-xl p-4 flex items-center justify-between my-4">
+                    <span class="text-sm text-gray-400 font-medium">Total a Pagar:</span>
+                    <span id="modal-precio-texto" class="text-2xl font-black text-kronox-accent">$0</span>
+                </div>
+
+                <button type="submit" class="w-full btn-neon-solid py-3.5 rounded-xl font-black uppercase text-xs tracking-wider text-center">
+                    Confirmar Pago e Inscribirse
+                </button>
+            </form>
+
+            <!-- Mensaje de éxito oculto -->
+            <div id="mensaje-exito" class="hidden text-center py-8 space-y-4">
+                <div class="w-16 h-16 bg-kronox-accent/20 border border-kronox-accent text-kronox-accent rounded-full flex items-center justify-center mx-auto text-3xl">
+                    <i class="fas fa-check"></i>
+                </div>
+                <h4 class="text-2xl font-black text-white uppercase">¡Inscripción Exitosa!</h4>
+                <p class="text-gray-300 text-sm">Tus datos y pago han sido registrados correctamente en el sistema de Kronox Gym.</p>
+                <button onclick="cerrarFormulario()" class="w-full btn-neon-outline py-3 rounded-xl font-bold uppercase text-xs">
+                    Cerrar y Volver
+                </button>
+            </div>
+
+        </div>
+    </div>
+
     <!-- PIE DE PÁGINA (FOOTER) -->
     <footer class="relative z-10 bg-kronox-blueDark border-t border-kronox-cardBorder/80 py-10">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-6">
-            
             <div class="text-center md:text-left">
                 <a href="index" class="inline-block">
                     <img src="https://res.cloudinary.com/bo5jzelh/image/upload/v1783041430/Logo_Kronox_Gym_lfg9tl.jpg" 
@@ -390,37 +421,16 @@
                 </a>
             </div>
 
-            <!-- Redes Sociales con Colores Oficiales FIJOS -->
             <div class="flex items-center space-x-5">
-                <!-- Instagram (Degradado Oficial Fijo) -->
-                <a href="https://www.instagram.com/kronoxgym" target="_blank" 
-                   class="w-10 h-10 rounded-full text-white bg-gradient-to-tr from-yellow-500 via-pink-500 to-purple-600 border border-pink-500/60 shadow-[0_0_12px_rgba(236,72,153,0.4)] flex items-center justify-center hover:scale-110 hover:shadow-[0_0_20px_rgba(236,72,153,0.7)] transition-all duration-300">
-                    <i class="fab fa-instagram text-lg"></i>
-                </a>
-
-                <!-- Facebook (Azul Oficial Fijo) -->
-                <a href="https://www.facebook.com/profile.php?id=61591217086184" target="_blank" 
-                   class="w-10 h-10 rounded-full text-white bg-[#1877F2] border border-[#1877F2] shadow-[0_0_12px_rgba(24,119,242,0.4)] flex items-center justify-center hover:scale-110 hover:shadow-[0_0_20px_rgba(24,119,242,0.7)] transition-all duration-300">
-                    <i class="fab fa-facebook-f text-lg"></i>
-                </a>
-
-                <!-- TikTok (Negro y Neón Fijo) -->
-                <a href="https://www.tiktok.com/@kronoxgym_" target="_blank" 
-                   class="w-10 h-10 rounded-full text-white bg-black border border-cyan-400 shadow-[0_0_12px_rgba(0,242,234,0.4)] flex items-center justify-center hover:scale-110 hover:shadow-[0_0_20px_rgba(0,242,234,0.7)] transition-all duration-300">
-                    <i class="fab fa-tiktok text-lg"></i>
-                </a>
-
-                <!-- WhatsApp (Verde Oficial Fijo) -->
-                <a href="https://wa.me/527779393985?text=Hola%20Kronox%20Gym" target="_blank" 
-                   class="w-10 h-10 rounded-full text-white bg-[#25D366] border border-[#25D366] shadow-[0_0_12px_rgba(37,211,102,0.4)] flex items-center justify-center hover:scale-110 hover:shadow-[0_0_20px_rgba(37,211,102,0.7)] transition-all duration-300">
-                    <i class="fab fa-whatsapp text-lg"></i>
-                </a>
+                <a href="https://www.instagram.com/kronoxgym" target="_blank" class="w-10 h-10 rounded-full text-white bg-gradient-to-tr from-yellow-500 via-pink-500 to-purple-600 border border-pink-500/60 shadow-[0_0_12px_rgba(236,72,153,0.4)] flex items-center justify-center hover:scale-110 transition-all duration-300"><i class="fab fa-instagram text-lg"></i></a>
+                <a href="https://www.facebook.com/profile.php?id=61591217086184" target="_blank" class="w-10 h-10 rounded-full text-white bg-[#1877F2] border border-[#1877F2] shadow-[0_0_12px_rgba(24,119,242,0.4)] flex items-center justify-center hover:scale-110 transition-all duration-300"><i class="fab fa-facebook-f text-lg"></i></a>
+                <a href="https://www.tiktok.com/@kronoxgym_" target="_blank" class="w-10 h-10 rounded-full text-white bg-black border border-cyan-400 shadow-[0_0_12px_rgba(0,242,234,0.4)] flex items-center justify-center hover:scale-110 transition-all duration-300"><i class="fab fa-tiktok text-lg"></i></a>
+                <a href="https://wa.me/527779393985?text=Hola%20Kronox%20Gym" target="_blank" class="w-10 h-10 rounded-full text-white bg-[#25D366] border border-[#25D366] shadow-[0_0_12px_rgba(37,211,102,0.4)] flex items-center justify-center hover:scale-110 transition-all duration-300"><i class="fab fa-whatsapp text-lg"></i></a>
             </div>
-
         </div>
     </footer>
 
-    <!-- Lógica JavaScript Menú Móvil -->
+    <!-- SCRIPT DE INTERACCIÓN Y MODAL -->
     <script>
         const menuBtn = document.getElementById('mobile-menu-btn');
         const mobileMenu = document.getElementById('mobile-menu');
@@ -428,6 +438,58 @@
         menuBtn.addEventListener('click', () => {
             mobileMenu.classList.toggle('hidden');
         });
+
+        // Funciones del Modal de Pago
+        function abrirFormulario(nombrePlan, precio) {
+            document.getElementById('modal-titulo-plan').innerText = 'Plan: ' + nombrePlan;
+            document.getElementById('input-plan').value = nombrePlan;
+            document.getElementById('input-monto').value = precio;
+            document.getElementById('modal-precio-texto').innerText = '$' + precio.toLocaleString();
+            
+            // Resetear estados del modal
+            document.getElementById('form-registro').reset();
+            document.getElementById('form-registro').classList.remove('hidden');
+            document.getElementById('mensaje-exito').classList.add('hidden');
+            
+            // Mostrar modal
+            document.getElementById('modal-pago').classList.remove('hidden');
+        }
+
+        function cerrarFormulario() {
+            document.getElementById('modal-pago').classList.add('hidden');
+        }
+
+        // Envío de datos al servidor local con Node.js / SQLite
+        async function enviarRegistro(event) {
+            event.preventDefault();
+
+            const datos = {
+                nombre: document.getElementById('nombre').value,
+                telefono: document.getElementById('telefono').value,
+                plan: document.getElementById('input-plan').value,
+                monto: document.getElementById('input-monto').value,
+                metodo_pago: document.getElementById('metodo-pago').value
+            };
+
+            try {
+                // Aquí conectaremos con nuestra ruta del servidor backend (ej. /api/inscripciones)
+                const respuesta = await fetch('/api/inscripciones', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(datos)
+                });
+
+                // Simulamos respuesta exitosa por ahora para la interfaz escolar
+                document.getElementById('form-registro').classList.add('hidden');
+                document.getElementById('mensaje-exito').classList.remove('hidden');
+
+            } catch (error) {
+                console.error('Error al registrar:', error);
+                alert('Ocurrió un error al procesar el pago. Verifica que el servidor esté activo.');
+            }
+        }
     </script>
 </body>
 </html>
