@@ -75,10 +75,6 @@
             color: #66fcf1 !important;
         }
 
-        /* Tamaños de letra accesibles proporcionales para PC y Móvil */
-        body.text-lg-mode { font-size: 112.5%; }
-        body.text-xl-mode { font-size: 125%; }
-
         /* Patrón de cuadrícula del fondo (Gridlines) */
         .bg-grid-pattern {
             background-size: 36px 36px;
@@ -395,54 +391,100 @@
 
     <!-- Lógica JavaScript -->
     <script>
-       // Funciones de Accesibilidad con persistencia en localStorage
-       function toggleAccessibilityDropdown() {
-           const dropdown = document.getElementById('accessibility-dropdown');
-           dropdown.classList.toggle('hidden');
-       }
+        // Funciones de Accesibilidad con persistencia en localStorage
+        function toggleAccessibilityDropdown() {
+            const dropdown = document.getElementById('accessibility-dropdown');
+            if (dropdown) dropdown.classList.toggle('hidden');
+        }
 
-       function toggleDaltonism() {
-           document.body.classList.toggle('daltonism-mode');
-           const isDaltonism = document.body.classList.contains('daltonism-mode');
-           localStorage.setItem('kronox_daltonism', isDaltonism ? 'enabled' : 'disabled');
-       }
+        function toggleDaltonism() {
+            document.body.classList.toggle('daltonism-mode');
+            const isDaltonism = document.body.classList.contains('daltonism-mode');
+            localStorage.setItem('kronox_daltonism', isDaltonism ? 'enabled' : 'disabled');
+        }
 
-       // Cambiar tamaño de letra mediante el selector desplegable
-       function changeFontSize(size) {
-           document.body.classList.remove('text-lg-mode', 'text-xl-mode');
-           
-           if (size === 'large') {
-               document.body.classList.add('text-lg-mode');
-           } else if (size === 'xlarge') {
-               document.body.classList.add('text-xl-mode');
-           }
-           
-           localStorage.setItem('kronox_font_size', size);
-       }
+        // Cambiar tamaño de letra alterando directamente la raíz del documento (rem)
+        function changeFontSize(size) {
+            const root = document.documentElement;
+            
+            if (size === 'large') {
+                root.style.fontSize = '112.5%';
+            } else if (size === 'xlarge') {
+                root.style.fontSize = '125%';
+            } else {
+                root.style.fontSize = '100%';
+            }
+            
+            localStorage.setItem('kronox_font_size', size);
+        }
 
-       // Control del Menú Móvil (3 rayitas)
-       const mobileMenuBtn = document.getElementById('mobile-menu-btn');
-       const mobileMenu = document.getElementById('mobile-menu');
+        // Control del Menú Móvil (3 rayitas)
+        const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+        const mobileMenu = document.getElementById('mobile-menu');
 
-       if (mobileMenuBtn && mobileMenu) {
-           mobileMenuBtn.addEventListener('click', () => {
-               mobileMenu.classList.toggle('hidden');
-           });
-       }
+        if (mobileMenuBtn && mobileMenu) {
+            mobileMenuBtn.addEventListener('click', () => {
+                mobileMenu.classList.toggle('hidden');
+            });
+        }
 
-       // Al cargar cualquier página, aplica los ajustes guardados automáticamente
-       document.addEventListener('DOMContentLoaded', () => {
-           if (localStorage.getItem('kronox_daltonism') === 'enabled') {
-               document.body.classList.add('daltonism-mode');
-           }
-           
-           const savedSize = localStorage.getItem('kronox_font_size') || 'normal';
-           const selectElement = document.getElementById('font-size-select');
-           if (selectElement) {
-               selectElement.value = savedSize;
-           }
-           changeFontSize(savedSize);
-       });
+        // Control del Modal Pomodoro (Variables y Funciones básicas)
+        let pomodoroInterval = null;
+        let timeLeft = 1500; // 25 minutos por defecto
+
+        function togglePomodoroModal() {
+            const modal = document.getElementById('pomodoro-modal');
+            if (modal) modal.classList.toggle('hidden');
+        }
+
+        function updateTimerDisplay() {
+            const minutes = Math.floor(timeLeft / 60);
+            const seconds = timeLeft % 60;
+            const timerEl = document.getElementById('pomodoro-timer');
+            if (timerEl) {
+                timerEl.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            }
+        }
+
+        function startPomodoro() {
+            if (pomodoroInterval) return;
+            pomodoroInterval = setInterval(() => {
+                if (timeLeft > 0) {
+                    timeLeft--;
+                    updateTimerDisplay();
+                } else {
+                    clearInterval(pomodoroInterval);
+                    pomodoroInterval = null;
+                    alert('¡Tiempo de enfoque terminado! Tómate un descanso.');
+                }
+            }, 1000);
+        }
+
+        function pausePomodoro() {
+            clearInterval(pomodoroInterval);
+            pomodoroInterval = null;
+        }
+
+        function resetPomodoro() {
+            clearInterval(pomodoroInterval);
+            pomodoroInterval = null;
+            timeLeft = 1500;
+            updateTimerDisplay();
+        }
+
+        // Al cargar cualquier página, aplica los ajustes guardados automáticamente
+        document.addEventListener('DOMContentLoaded', () => {
+            if (localStorage.getItem('kronox_daltonism') === 'enabled') {
+                document.body.classList.add('daltonism-mode');
+            }
+            
+            const savedSize = localStorage.getItem('kronox_font_size') || 'normal';
+            const selectElement = document.getElementById('font-size-select');
+            if (selectElement) {
+                selectElement.value = savedSize;
+            }
+            changeFontSize(savedSize);
+        });
     </script>
 </body>
 </html>
