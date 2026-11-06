@@ -60,7 +60,6 @@
         body.daltonism-mode .kronox-card, 
         body.daltonism-mode header, 
         body.daltonism-mode footer,
-        body.daltonism-mode #pomodoro-modal,
         body.daltonism-mode #accessibility-dropdown {
             background-color: #1f2833 !important;
             border-color: #66fcf1 !important;
@@ -319,41 +318,6 @@
 
     </main>
 
-    <!-- WIDGET FLOTANTE POMODORO (Esquina Inferior Derecha) -->
-    <div class="fixed bottom-6 right-6 z-50">
-        <button id="pomodoro-toggle-btn" onclick="togglePomodoroModal()" title="Abrir temporizador Pomodoro para enfocarte en tu estudio/entrenamiento" class="bg-kronox-accent text-kronox-bg font-black p-4 rounded-full shadow-[0_0_20px_rgba(0,210,255,0.5)] hover:scale-110 transition-transform flex items-center justify-center">
-            <i class="fas fa-stopwatch text-2xl"></i>
-        </button>
-
-        <div id="pomodoro-modal" class="hidden absolute bottom-16 right-0 w-80 bg-kronox-cardBg border-2 border-kronox-accent/50 rounded-2xl p-5 shadow-2xl backdrop-blur-xl">
-            <div class="flex justify-between items-center mb-3">
-                <span class="text-kronox-accent text-xs font-black uppercase tracking-wider"><i class="fas fa-clock mr-1"></i> Técnica Pomodoro</span>
-                <button onclick="togglePomodoroModal()" title="Cerrar reloj Pomodoro (X)" class="text-gray-400 hover:text-white font-bold text-sm">
-                    <i class="fas fa-times"></i>
-                </button>
-            </div>
-            
-            <p class="text-[11px] text-gray-300 mb-4 text-center">Optimiza tus sesiones de estudio y descansos antes o después de tu rutina.</p>
-            
-            <div class="text-center bg-kronox-blueDark border border-kronox-cardBorder rounded-xl p-4 mb-4">
-                <div id="pomodoro-timer" class="text-4xl font-black text-white tracking-widest font-mono">25:00</div>
-                <div id="pomodoro-mode-text" class="text-[10px] text-kronox-accent uppercase font-bold tracking-widest mt-1">Tiempo de Enfoque</div>
-            </div>
-
-            <div class="flex items-center justify-center gap-2">
-                <button id="pomodoro-start-btn" onclick="startPomodoro()" title="Iniciar temporizador" class="flex-1 bg-kronox-accent text-kronox-bg py-2 rounded-lg font-extrabold text-xs uppercase hover:bg-cyan-300 transition-colors">
-                    Iniciar
-                </button>
-                <button onclick="pausePomodoro()" title="Pausar temporizador" class="bg-kronox-cardBorder text-gray-200 py-2 px-3 rounded-lg font-extrabold text-xs hover:bg-gray-700 transition-colors">
-                    Pausa
-                </button>
-                <button onclick="resetPomodoro()" title="Reiniciar temporizador a 25 minutos" class="bg-red-900/40 text-red-300 border border-red-500/40 py-2 px-3 rounded-lg font-extrabold text-xs hover:bg-red-800/60 transition-colors">
-                    <i class="fas fa-undo-alt"></i>
-                </button>
-            </div>
-        </div>
-    </div>
-
     <!-- PIE DE PÁGINA (FOOTER) -->
     <footer class="relative z-10 bg-kronox-blueDark border-t border-kronox-cardBorder/80 py-10">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-6">
@@ -426,50 +390,6 @@
             mobileMenuBtn.addEventListener('click', () => {
                 mobileMenu.classList.toggle('hidden');
             });
-        }
-
-        // Control del Modal Pomodoro (Variables y Funciones básicas)
-        let pomodoroInterval = null;
-        let timeLeft = 1500; // 25 minutos por defecto
-
-        function togglePomodoroModal() {
-            const modal = document.getElementById('pomodoro-modal');
-            if (modal) modal.classList.toggle('hidden');
-        }
-
-        function updateTimerDisplay() {
-            const minutes = Math.floor(timeLeft / 60);
-            const seconds = timeLeft % 60;
-            const timerEl = document.getElementById('pomodoro-timer');
-            if (timerEl) {
-                timerEl.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-            }
-        }
-
-        function startPomodoro() {
-            if (pomodoroInterval) return;
-            pomodoroInterval = setInterval(() => {
-                if (timeLeft > 0) {
-                    timeLeft--;
-                    updateTimerDisplay();
-                } else {
-                    clearInterval(pomodoroInterval);
-                    pomodoroInterval = null;
-                    alert('¡Tiempo de enfoque terminado! Tómate un descanso.');
-                }
-            }, 1000);
-        }
-
-        function pausePomodoro() {
-            clearInterval(pomodoroInterval);
-            pomodoroInterval = null;
-        }
-
-        function resetPomodoro() {
-            clearInterval(pomodoroInterval);
-            pomodoroInterval = null;
-            timeLeft = 1500;
-            updateTimerDisplay();
         }
 
         // Al cargar cualquier página, aplica los ajustes guardados automáticamente
