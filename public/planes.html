@@ -199,4 +199,383 @@
 
             <nav class="hidden md:flex items-center space-x-8 font-semibold text-sm">
                 <a href="index" title="Página principal" class="text-gray-300 hover:text-kronox-accent transition-colors">Inicio</a>
-                <a href="informacion" title="Conoce más sobre el gimnasio" class="text-gray-300 hover:text-kronox
+                <a href="informacion" title="Conoce más sobre el gimnasio" class="text-gray-300 hover:text-kronox-accent transition-colors">Información</a>
+                <a href="planes" title="Ver membresías" class="text-kronox-accent font-bold border-b-2 border-kronox-accent pb-1">Planes</a>
+                <a href="catalogo" title="Explorar productos" class="text-gray-300 hover:text-kronox-accent transition-colors">Catálogo</a>
+                <a href="ubicacion" title="Consultar dirección" class="text-gray-300 hover:text-kronox-accent transition-colors">Ubicación</a>
+            </nav>
+
+            <div class="hidden md:flex items-center">
+                <a href="https://wa.me/527779393985?text=Hola%20Kronox%20Gym,%20me%20gustar%C3%ADa%20pedir%20informaci%C3%B3n%20sobre%20sus%20planes." target="_blank" title="Contactar por WhatsApp" class="btn-neon-outline px-5 py-2.5 rounded-lg font-bold text-xs uppercase tracking-wider flex items-center gap-2">
+                    <i class="fab fa-whatsapp text-base"></i> Contactar
+                </a>
+            </div>
+
+            <button id="mobile-menu-btn" title="Abrir menú" class="md:hidden text-gray-300 hover:text-white text-2xl focus:outline-none">
+                <i class="fas fa-bars"></i>
+            </button>
+        </div>
+
+        <div id="mobile-menu" class="hidden md:hidden bg-kronox-blueDark border-b border-kronox-cardBorder px-6 pt-3 pb-6 space-y-3">
+            <a href="index" title="Página principal" class="block py-2 text-gray-300 hover:text-kronox-accent font-medium">Inicio</a>
+            <a href="informacion" title="Conoce más" class="block py-2 text-gray-300 hover:text-kronox-accent font-medium">Información</a>
+            <a href="planes" title="Ver planes" class="block py-2 text-kronox-accent font-bold">Planes</a>
+            <a href="catalogo" title="Catálogo" class="block py-2 text-gray-300 hover:text-kronox-accent font-medium">Catálogo</a>
+            <a href="ubicacion" title="Ubicación" class="block py-2 text-gray-300 hover:text-kronox-accent font-medium">Ubicación</a>
+            <a href="https://wa.me/527779393985?text=Hola%20Kronox%20Gym" target="_blank" title="WhatsApp" class="inline-block mt-3 w-full text-center btn-neon-outline py-2.5 rounded-lg font-bold text-xs uppercase">
+                <i class="fab fa-whatsapp"></i> Contactar por WhatsApp
+            </a>
+        </div>
+    </header>
+
+    <!-- SECCIÓN PRINCIPAL DE CONTENIDO -->
+    <main class="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-20 flex-grow">
+        
+        <div class="text-center max-w-3xl mx-auto mb-16">
+            <span class="inline-block bg-kronox-accent/10 border border-kronox-accent/40 text-kronox-accent text-xs font-black uppercase tracking-widest px-4 py-1.5 rounded-full mb-5">
+                Membresías e Inscripciones
+            </span>
+            <h1 class="text-4xl sm:text-6xl font-black tracking-tight text-white uppercase italic leading-none">
+                ELIGE TU <span class="text-transparent bg-clip-text bg-gradient-to-r from-kronox-accent to-blue-500">PLAN DE PODER</span>
+            </h1>
+            <p class="mt-5 text-gray-400 text-base sm:text-lg font-normal max-w-2xl mx-auto">
+                Entrena con el mejor equipo, instalaciones de primer nivel y la disciplina que necesitas para alcanzar tus metas.
+            </p>
+        </div>
+
+        <!-- GRID DE TARJETAS DE PLANES -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8 items-stretch max-w-6xl mx-auto">
+            
+            <!-- TARJETA 1: VISITA -->
+            <div class="plan-card p-8 flex flex-col justify-between">
+                <div>
+                    <div class="flex justify-between items-center mb-6">
+                        <span class="text-[11px] font-extrabold uppercase tracking-wider text-gray-300 bg-kronox-blueDark border border-kronox-cardBorder px-3 py-1 rounded-md">
+                            Día Individual
+                        </span>
+                        <i class="fas fa-bolt text-kronox-accent text-lg"></i>
+                    </div>
+
+                    <h3 class="text-3xl font-black text-white uppercase tracking-tight">VISITA</h3>
+                    <p class="text-gray-400 text-sm mt-2 mb-6 min-h-[40px]">
+                        Ideal para conocer nuestras instalaciones o entrenar de paso.
+                    </p>
+
+                    <div class="flex items-baseline gap-1 my-6">
+                        <span class="text-5xl font-black text-white tracking-tight">$100</span>
+                        <span class="text-gray-400 font-bold text-sm">/ día</span>
+                    </div>
+
+                    <div class="w-full h-px bg-kronox-cardBorder/60 my-6"></div>
+
+                    <ul class="space-y-4 text-sm text-gray-300 font-medium">
+                        <li class="flex items-center gap-3">
+                            <i class="fas fa-check-circle check-icon text-base"></i>
+                            <span>Acceso completo por 1 día</span>
+                        </li>
+                        <li class="flex items-center gap-3">
+                            <i class="fas fa-check-circle check-icon text-base"></i>
+                            <span>Uso de área de pesas y cardio</span>
+                        </li>
+                        <li class="flex items-center gap-3">
+                            <i class="fas fa-check-circle check-icon text-base"></i>
+                            <span>Acceso a vestidores, duchas y lockers</span>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Botón Interactivo para abrir Formulario -->
+                <button onclick="abrirFormulario('Visita', 100)" title="Seleccionar plan de visita por un día" class="w-full btn-neon-outline py-3.5 rounded-xl font-extrabold uppercase text-xs tracking-wider text-center block mt-8">
+                    Elegir Plan
+                </button>
+            </div>
+
+            <!-- TARJETA 2: MENSUALIDAD (DESTACADO) -->
+            <div class="featured-card p-8 flex flex-col justify-between transform md:-translate-y-4">
+                <div class="absolute -top-4 left-1/2 -translate-x-1/2 bg-kronox-accent text-kronox-bg text-[11px] font-black uppercase tracking-widest px-4 py-1.5 rounded-full shadow-lg flex items-center gap-1.5 whitespace-nowrap">
+                    <i class="fas fa-fire"></i> Más Popular
+                </div> 
+
+                <div>
+                    <div class="flex justify-between items-center mb-6 mt-2">
+                        <span class="text-[11px] font-extrabold uppercase tracking-wider text-kronox-accent bg-kronox-accent/10 border border-kronox-accent/30 px-3 py-1 rounded-md">
+                            Entrenamiento Continuo
+                        </span>
+                        <i class="fas fa-crown text-kronox-accent text-lg"></i>
+                    </div>
+
+                    <h3 class="text-3xl font-black text-white uppercase tracking-tight">MENSUALIDAD</h3>
+                    <p class="text-gray-300 text-sm mt-2 mb-6 min-h-[40px]">
+                        Tu compromiso mes a mes con los mejores resultados. 30 días por mensualidad. 
+                    </p>
+
+                    <div class="flex items-baseline gap-1 my-6">
+                        <span class="text-6xl font-black text-kronox-accent tracking-tight">$350</span>
+                        <span class="text-gray-400 font-bold text-sm">/ mes</span>
+                    </div>
+
+                    <div class="w-full h-px bg-kronox-accent/30 my-6"></div>
+
+                    <ul class="space-y-4 text-sm text-gray-200 font-medium">
+                        <li class="flex items-center gap-3">
+                            <i class="fas fa-check-circle check-icon text-base"></i>
+                            <span class="font-bold text-white">Acceso total e ilimitado</span>
+                        </li>
+                        <li class="flex items-center gap-3">
+                            <i class="fas fa-check-circle check-icon text-base"></i>
+                            <span>Área de pesas libres y máquinas</span>
+                        </li>
+                        <li class="flex items-center gap-3">
+                            <i class="fas fa-check-circle check-icon text-base"></i>
+                            <span>Zona cardiovascular completa</span>
+                        </li>
+                        <li class="flex items-center gap-3">
+                            <i class="fas fa-check-circle check-icon text-base"></i>
+                            <span>Acceso a vestidores, duchas y lockers</span>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Botón Interactivo para abrir Formulario -->
+                <button onclick="abrirFormulario('Mensualidad', 350)" title="Seleccionar plan de mensualidad" class="w-full btn-neon-solid py-4 rounded-xl font-black uppercase text-xs tracking-wider text-center block mt-8">
+                    Elegir Plan
+                </button>
+            </div>
+
+            <!-- TARJETA 3: ANUALIDAD -->
+            <div class="plan-card p-8 flex flex-col justify-between">
+                <div>
+                    <div class="flex justify-between items-center mb-6">
+                        <span class="text-[11px] font-extrabold uppercase tracking-wider text-gray-300 bg-kronox-blueDark border border-kronox-cardBorder px-3 py-1 rounded-md">
+                            Mayor Ahorro
+                        </span>
+                        <i class="fas fa-trophy text-kronox-accent text-lg"></i>
+                    </div>
+
+                    <h3 class="text-3xl font-black text-white uppercase tracking-tight">ANUALIDAD</h3>
+                    <p class="text-gray-400 text-sm mt-2 mb-6 min-h-[40px]">
+                        Ahorro máximo para atletas dedicados a largo plazo.
+                    </p>
+
+                    <div class="flex items-baseline gap-1 my-6">
+                        <span class="text-5xl font-black text-white tracking-tight">$3,000</span>
+                        <span class="text-gray-400 font-bold text-sm">/ año</span>
+                    </div>
+
+                    <div class="w-full h-px bg-kronox-cardBorder/60 my-6"></div>
+
+                    <ul class="space-y-4 text-sm text-gray-300 font-medium">
+                        <li class="flex items-center gap-3">
+                            <i class="fas fa-check-circle check-icon text-base"></i>
+                            <span>Acceso VIP ilimitado por 12 meses</span>
+                        </li>
+                        <li class="flex items-center gap-3">
+                            <i class="fas fa-check-circle check-icon text-base"></i>
+                            <span class="font-bold text-kronox-accent">Ahorra más de $1,000 al año</span>
+                        </li>
+                        <li class="flex items-center gap-3">
+                            <i class="fas fa-check-circle check-icon text-base"></i>
+                            <span>Evaluación y seguimiento físico</span>
+                        </li>
+                        <li class="flex items-center gap-3">
+                            <i class="fas fa-check-circle check-icon text-base"></i>
+                            <span>Acceso a todas las áreas</span>
+                        </li>
+                        <li class="flex items-center gap-3">
+                            <i class="fas fa-check-circle check-icon text-base"></i>
+                            <span class="font-bold text-kronox-accent">1 invitado diferente por mes</span>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Botón Interactivo para abrir Formulario -->
+                <button onclick="abrirFormulario('Anualidad', 3000)" title="Seleccionar plan de anualidad" class="w-full btn-neon-outline py-3.5 rounded-xl font-extrabold uppercase text-xs tracking-wider text-center block mt-8">
+                    Elegir Plan
+                </button>
+            </div>
+
+        </div>
+
+    </main>
+
+    <!-- VENTANA MODAL / FORMULARIO DE REGISTRO Y PAGO -->
+    <div id="modal-pago" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-md hidden flex items-center justify-center p-4">
+        <div class="bg-kronox-cardBg border border-kronox-accent/40 rounded-2xl max-w-md w-full p-6 sm:p-8 relative shadow-[0_0_40px_rgba(0,210,255,0.15)]">
+            
+            <!-- Botón Cerrar Modal -->
+            <button onclick="cerrarFormulario()" title="Cerrar ventana de registro [X]" class="absolute top-4 right-4 text-gray-400 hover:text-white text-xl">
+                <i class="fas fa-times"></i>
+            </button>
+
+            <div class="text-center mb-6">
+                <span class="text-kronox-accent text-xs font-black uppercase tracking-widest bg-kronox-accent/10 px-3 py-1 rounded-full border border-kronox-accent/30">
+                    Registro de Inscripción
+                </span>
+                <h3 id="modal-titulo-plan" class="text-2xl font-black text-white uppercase mt-3">Plan Seleccionado</h3>
+                <p class="text-gray-400 text-sm mt-1">Ingresa tus datos y confirma el pago simulado para registrarte.</p>
+            </div>
+
+            <!-- Formulario -->
+            <form id="form-registro" onsubmit="enviarRegistro(event)" class="space-y-4">
+                <input type="hidden" id="input-plan" name="plan">
+                <input type="hidden" id="input-monto" name="monto">
+
+                <div>
+                    <label class="block text-xs font-bold uppercase tracking-wider text-gray-300 mb-1">Nombre Completo</label>
+                    <input type="text" id="nombre" required placeholder="Ej. Carlos Santana" class="w-full bg-kronox-blueDark border border-kronox-cardBorder rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-kronox-accent transition-colors">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold uppercase tracking-wider text-gray-300 mb-1">Teléfono / WhatsApp</label>
+                    <input type="tel" id="telefono" required placeholder="777 000 0000" class="w-full bg-kronox-blueDark border border-kronox-cardBorder rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-kronox-accent transition-colors">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold uppercase tracking-wider text-gray-300 mb-1">Método de Pago</label>
+                    <select id="metodo-pago" class="w-full bg-kronox-blueDark border border-kronox-cardBorder rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-kronox-accent transition-colors">
+                        <option value="Efectivo en Recepción">Efectivo en Recepción</option>
+                        <option value="Tarjeta (Simulado)">Tarjeta de Débito / Crédito</option>
+                        <option value="Transferencia Bancaria">Transferencia Bancaria</option>
+                    </select>
+                </div>
+
+                <div class="bg-kronox-blueDark/60 border border-kronox-cardBorder rounded-xl p-4 flex items-center justify-between my-4">
+                    <span class="text-sm text-gray-400 font-medium">Total a Pagar:</span>
+                    <span id="modal-precio-texto" class="text-2xl font-black text-kronox-accent">$0</span>
+                </div>
+
+                <button type="submit" title="Confirmar inscripción" class="w-full btn-neon-solid py-3.5 rounded-xl font-black uppercase text-xs tracking-wider text-center">
+                    Confirmar Pago e Inscribirse
+                </button>
+            </form>
+
+            <!-- Mensaje de éxito oculto -->
+            <div id="mensaje-exito" class="hidden text-center py-8 space-y-4">
+                <div class="w-16 h-16 bg-kronox-accent/20 border border-kronox-accent text-kronox-accent rounded-full flex items-center justify-center mx-auto text-3xl">
+                    <i class="fas fa-check"></i>
+                </div>
+                <h4 class="text-2xl font-black text-white uppercase">¡Inscripción Exitosa!</h4>
+                <p class="text-gray-300 text-sm">Tus datos y pago han sido registrados correctamente en el sistema de Kronox Gym.</p>
+                <button onclick="cerrarFormulario()" title="Cerrar modal" class="w-full btn-neon-outline py-3 rounded-xl font-bold uppercase text-xs">
+                    Cerrar y Volver
+                </button>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- PIE DE PÁGINA (FOOTER) -->
+    <footer class="relative z-10 bg-kronox-blueDark border-t border-kronox-cardBorder/80 py-10">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-6">
+            <div class="text-center md:text-left">
+                <a href="index" title="Ir al inicio" class="inline-block">
+                    <img src="https://res.cloudinary.com/bo5jzelh/image/upload/v1783041430/Logo_Kronox_Gym_lfg9tl.jpg" 
+                         alt="Kronox Gym Logo" 
+                         class="h-16 w-auto rounded-xl border border-kronox-cardBorder object-contain shadow-md">
+                </a>
+            </div>
+
+            <div class="flex items-center space-x-5">
+                <a href="https://www.instagram.com/kronoxgym" target="_blank" title="Instagram" class="w-10 h-10 rounded-full text-white bg-gradient-to-tr from-yellow-500 via-pink-500 to-purple-600 border border-pink-500/60 shadow-[0_0_12px_rgba(236,72,153,0.4)] flex items-center justify-center hover:scale-110 transition-all duration-300"><i class="fab fa-instagram text-lg"></i></a>
+                <a href="https://www.facebook.com/profile.php?id=61591217086184" target="_blank" title="Facebook" class="w-10 h-10 rounded-full text-white bg-[#1877F2] border border-[#1877F2] shadow-[0_0_12px_rgba(24,119,242,0.4)] flex items-center justify-center hover:scale-110 transition-all duration-300"><i class="fab fa-facebook-f text-lg"></i></a>
+                <a href="https://www.tiktok.com/@kronoxgym_" target="_blank" title="TikTok" class="w-10 h-10 rounded-full text-white bg-black border border-cyan-400 shadow-[0_0_12px_rgba(0,242,234,0.4)] flex items-center justify-center hover:scale-110 transition-all duration-300"><i class="fab fa-tiktok text-lg"></i></a>
+                <a href="https://wa.me/527779393985?text=Hola%20Kronox%20Gym" target="_blank" title="WhatsApp" class="w-10 h-10 rounded-full text-white bg-[#25D366] border border-[#25D366] shadow-[0_0_12px_rgba(37,211,102,0.4)] flex items-center justify-center hover:scale-110 transition-all duration-300"><i class="fab fa-whatsapp text-lg"></i></a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- SCRIPT DE INTERACCIÓN, MODAL Y ACCESIBILIDAD CON PERSISTENCIA -->
+    <script>
+        const menuBtn = document.getElementById('mobile-menu-btn');
+        const mobileMenu = document.getElementById('mobile-menu');
+
+        menuBtn.addEventListener('click', () => {
+            mobileMenu.classList.toggle('hidden');
+        });
+
+        // Funciones de Accesibilidad con persistencia en localStorage
+        function toggleAccessibilityDropdown() {
+            const dropdown = document.getElementById('accessibility-dropdown');
+            dropdown.classList.toggle('hidden');
+        }
+
+        function toggleDaltonism() {
+            document.body.classList.toggle('daltonism-mode');
+            const isDaltonism = document.body.classList.contains('daltonism-mode');
+            localStorage.setItem('kronox_daltonism', isDaltonism ? 'enabled' : 'disabled');
+        }
+
+        let fontState = parseInt(localStorage.getItem('kronox_fontState') || '0');
+        function applyFontSize() {
+            document.body.classList.remove('text-lg-mode', 'text-xl-mode');
+            if (fontState === 1) {
+                document.body.classList.add('text-lg-mode');
+            } else if (fontState === 2) {
+                document.body.classList.add('text-xl-mode');
+            }
+        }
+
+        function changeFontSize() {
+            fontState = (fontState + 1) % 3;
+            localStorage.setItem('kronox_fontState', fontState);
+            applyFontSize();
+        }
+
+        // Al cargar la página, aplica automáticamente los ajustes guardados
+        document.addEventListener('DOMContentLoaded', () => {
+            if (localStorage.getItem('kronox_daltonism') === 'enabled') {
+                document.body.classList.add('daltonism-mode');
+            }
+            applyFontSize();
+        });
+
+        // Funciones del Modal de Pago
+        function abrirFormulario(nombrePlan, precio) {
+            document.getElementById('modal-titulo-plan').innerText = 'Plan: ' + nombrePlan;
+            document.getElementById('input-plan').value = nombrePlan;
+            document.getElementById('input-monto').value = precio;
+            document.getElementById('modal-precio-texto').innerText = '$' + precio.toLocaleString();
+            
+            document.getElementById('form-registro').reset();
+            document.getElementById('form-registro').classList.remove('hidden');
+            document.getElementById('mensaje-exito').classList.add('hidden');
+            
+            document.getElementById('modal-pago').classList.remove('hidden');
+        }
+
+        function cerrarFormulario() {
+            document.getElementById('modal-pago').classList.add('hidden');
+        }
+
+        // Envío de datos al servidor local con Node.js / SQLite
+        async function enviarRegistro(event) {
+            event.preventDefault();
+
+            const datos = {
+                nombre: document.getElementById('nombre').value,
+                telefono: document.getElementById('telefono').value,
+                plan: document.getElementById('input-plan').value,
+                monto: document.getElementById('input-monto').value,
+                metodo_pago: document.getElementById('metodo-pago').value
+            };
+
+            try {
+                const respuesta = await fetch('/api/inscripciones', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(datos)
+                });
+
+                document.getElementById('form-registro').classList.add('hidden');
+                document.getElementById('mensaje-exito').classList.remove('hidden');
+
+            } catch (error) {
+                console.error('Error al registrar:', error);
+                alert('Ocurrió un error al procesar el pago. Verifica que el servidor esté activo.');
+            }
+        }
+    </script>
+</body>
+</html>
