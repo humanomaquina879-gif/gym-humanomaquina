@@ -71,6 +71,20 @@ app.post('/api/inscripciones/:id/liberar', (req, res) => {
     });
 });
 
+// 5.1. API PARA ELIMINAR UN REGISTRO
+app.delete('/api/inscripciones/:id', (req, res) => {
+    const id = req.params.id;
+    db.run(`DELETE FROM inscripciones WHERE id = ?`, [id], function(err) {
+        if (err) {
+            return res.status(500).json({ error: "Error al eliminar el registro" });
+        }
+        if (this.changes === 0) {
+            return res.status(404).json({ error: "Inscripción no encontrada" });
+        }
+        res.json({ success: true });
+    });
+});
+
 // 6. RUTA AMIGABLE PARA EL ADMIN (Sirve tu archivo admin.html intacto)
 app.get('/admin', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'admin.html'));
