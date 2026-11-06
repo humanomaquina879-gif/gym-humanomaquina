@@ -14,6 +14,7 @@
     <!-- Google Fonts: Inter -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,300;0,400;0,600;0,700;0,800;0,900;1,800;1,900&display=swap" rel="stylesheet">
 
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -74,10 +75,6 @@
         body.daltonism-mode p {
             color: #66fcf1 !important;
         }
-
-        /* Tamaños de letra accesibles proporcionales para PC y Móvil */
-        body.text-lg-mode { font-size: 112.5%; }
-        body.text-xl-mode { font-size: 125%; }
 
         .bg-grid-pattern {
             background-size: 36px 36px;
@@ -498,14 +495,16 @@
         const menuBtn = document.getElementById('mobile-menu-btn');
         const mobileMenu = document.getElementById('mobile-menu');
 
-        menuBtn.addEventListener('click', () => {
-            mobileMenu.classList.toggle('hidden');
-        });
+        if (menuBtn && mobileMenu) {
+            menuBtn.addEventListener('click', () => {
+                mobileMenu.classList.toggle('hidden');
+            });
+        }
 
         // Funciones de Accesibilidad con persistencia en localStorage
         function toggleAccessibilityDropdown() {
             const dropdown = document.getElementById('accessibility-dropdown');
-            dropdown.classList.toggle('hidden');
+            if (dropdown) dropdown.classList.toggle('hidden');
         }
 
         function toggleDaltonism() {
@@ -514,14 +513,16 @@
             localStorage.setItem('kronox_daltonism', isDaltonism ? 'enabled' : 'disabled');
         }
 
-        // Cambiar tamaño de letra mediante el selector desplegable
+        // Cambiar tamaño de letra alterando directamente la raíz del documento (rem)
         function changeFontSize(size) {
-            document.body.classList.remove('text-lg-mode', 'text-xl-mode');
+            const root = document.documentElement;
             
             if (size === 'large') {
-                document.body.classList.add('text-lg-mode');
+                root.style.fontSize = '112.5%';
             } else if (size === 'xlarge') {
-                document.body.classList.add('text-xl-mode');
+                root.style.fontSize = '125%';
+            } else {
+                root.style.fontSize = '100%';
             }
             
             localStorage.setItem('kronox_font_size', size);
