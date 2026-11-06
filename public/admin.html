@@ -1,178 +1,64 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kronox Gym | Panel de Administración</title>
-
-    <!-- Font Awesome Icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
-    <!-- Google Fonts: Inter -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,300;0,400;0,600;0,700;0,800;0,900;1,800;1,900&display=swap" rel="stylesheet">
-
-    <!-- Tailwind CSS CDN -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        kronox: {
-                            bg: '#050a14',
-                            cardBg: '#091122',
-                            cardBorder: '#16284a',
-                            accent: '#00d2ff',
-                            accentDark: '#0077ff',
-                            blueDark: '#080e1a'
-                        }
-                    },
-                    fontFamily: {
-                        sans: ['Inter', 'sans-serif'],
-                    }
-                }
-            }
-        }
-    </script>
-
-    <style>
-        body {
-            background-color: #050a14;
-            color: #f8fafc;
-            font-family: 'Inter', sans-serif;
-            min-height: 100vh;
-        }
-        .kronox-card {
-            background: linear-gradient(160deg, #0a1326 0%, #060c18 100%);
-            border: 1px solid #16284a;
-            border-radius: 1.25rem;
-        }
-        .btn-neon-solid {
-            background: #00d2ff;
-            color: #050a14;
-            transition: all 0.3s ease;
-            box-shadow: 0 0 18px rgba(0, 210, 255, 0.4);
-        }
-        .btn-neon-solid:hover {
-            background: #2dd8ff;
-            box-shadow: 0 0 28px rgba(0, 210, 255, 0.8);
-        }
-        .btn-neon-outline {
-            background: transparent;
-            color: #00d2ff;
-            border: 2px solid #00d2ff;
-            transition: all 0.3s ease;
-        }
-        .btn-neon-outline:hover {
-            background: #00d2ff;
-            color: #050a14;
-        }
-    </style>
-</head>
-<body class="p-4 md:p-8 flex flex-col justify-between min-h-screen">
-
-    <!-- PANTALLA DE ACCESO RESTRINGIDO (LOGIN) -->
-    <div id="auth-overlay" class="fixed inset-0 z-50 bg-[#050a14] flex items-center justify-center px-4">
-        <div class="kronox-card p-8 max-w-md w-full border border-kronox-accent/40 shadow-2xl text-center">
-            <h2 class="text-2xl font-black text-white uppercase italic mb-2">Acceso <span class="text-kronox-accent">Restringido</span></h2>
-            <p class="text-gray-400 text-xs mb-6">Ingresa tus credenciales de administrador para ver el panel de socios.</p>
-            
-            <form id="login-form" onsubmit="handleLogin(event)" class="space-y-4 text-left">
-                <div>
-                    <label class="block text-xs font-bold text-kronox-accent uppercase mb-1">Usuario</label>
-                    <input type="text" id="admin-user" required class="w-full bg-[#080e1a] border border-kronox-cardBorder rounded-lg px-4 py-2.5 text-white text-sm focus:border-kronox-accent focus:outline-none">
-                </div>
-                <div>
-                    <label class="block text-xs font-bold text-kronox-accent uppercase mb-1">Contraseña</label>
-                    <input type="password" id="admin-pass" required class="w-full bg-[#080e1a] border border-kronox-cardBorder rounded-lg px-4 py-2.5 text-white text-sm focus:border-kronox-accent focus:outline-none">
-                </div>
-                <div id="login-error" class="text-red-400 text-xs text-center hidden font-bold">Usuario o contraseña incorrectos.</div>
-                <button type="submit" class="w-full btn-neon-solid py-3 rounded-lg font-black text-xs uppercase tracking-wider mt-2">
-                    Entrar al Panel
-                </button>
-            </form>
-        </div>
-    </div>
-
-    <!-- CONTENIDO PRINCIPAL DEL PANEL -->
-    <div class="max-w-7xl mx-auto w-full">
-        <!-- Encabezado del Panel -->
-        <div class="flex flex-col sm:flex-row justify-between items-center mb-8 gap-4 border-b border-kronox-cardBorder pb-4">
-            <div>
-                <span class="text-kronox-accent text-xs font-black uppercase tracking-widest block mb-1">Control Interno</span>
-                <h1 class="text-3xl font-black text-white uppercase italic tracking-wide">Panel de Administración</h1>
-            </div>
-            <div class="flex items-center gap-3">
-                <button onclick="logoutAdmin()" class="bg-red-900/40 border border-red-500/40 text-red-300 hover:bg-red-800 px-4 py-2 rounded-lg font-bold text-xs uppercase transition-colors">
-                    <i class="fas fa-sign-out-alt mr-1"></i> Cerrar Sesión
-                </button>
-                <a href="planes" class="btn-neon-outline px-5 py-2.5 rounded-lg font-black text-xs uppercase tracking-wider flex items-center gap-2">
-                    <i class="fas fa-arrow-left"></i> Ir a Planes
-                </a>
-            </div>
-        </div>
-
-        <!-- Tabla de Socios y Pagos -->
-        <div class="kronox-card overflow-x-auto shadow-2xl">
-            <table class="w-full text-left border-collapse">
-                <thead>
-                    <tr class="border-b border-kronox-cardBorder text-kronox-accent text-xs uppercase tracking-wider bg-kronox-blueDark/60">
-                        <th class="p-4">ID</th>
-                        <th class="p-4">Cliente</th>
-                        <th class="p-4">Teléfono</th>
-                        <th class="p-4">Plan</th>
-                        <th class="p-4">Monto</th>
-                        <th class="p-4">Método de Pago</th>
-                        <th class="p-4">Fecha</th>
-                    </tr>
-                </thead>
-                <tbody class="divide-y divide-kronox-cardBorder text-sm text-gray-300">
-                    <tr class="hover:bg-kronox-blueDark/30 transition-colors">
-                        <td class="p-4 font-bold text-kronox-accent">#1</td>
-                        <td class="p-4 font-semibold text-white">Carlos Santana</td>
-                        <td class="p-4">777 2302 932932</td>
-                        <td class="p-4"><span class="bg-kronox-accent/10 border border-kronox-accent/30 text-kronox-accent px-2.5 py-1 rounded-md text-xs font-bold">Visita</span></td>
-                        <td class="p-4 font-black text-emerald-400">$100</td>
-                        <td class="p-4">Transferencia Bancaria</td>
-                        <td class="p-4 text-xs text-gray-400">2026-11-06 07:09:19</td>
-                    </tr>
-                    <!-- Aquí puedes duplicar más filas <tr> cuando agregues más registros -->
-                </tbody>
-            </table>
-        </div>
-    </div>
-
-    <footer class="text-center py-6 text-xs text-gray-500 border-t border-kronox-cardBorder/50 mt-12">
-        Kronox Gym &copy; 2026 - Sistema de Gestión Interna
-    </footer>
-
-    <!-- LÓGICA DE SEGURIDAD (LOGIN) -->
-    <script>
-        // Define aquí tu usuario y contraseña de administrador
+<script>
         const ADMIN_USER = "admin";
-        const ADMIN_PASS = "kronox2026"; // Puedes cambiar la contraseña aquí
+        const ADMIN_PASS = "kronox2026";
+        
+        // Variable para llevar la cuenta de los intentos fallidos
+        let failedAttempts = parseInt(localStorage.getItem("kronox_failed_attempts") || "0");
+        const MAX_ATTEMPTS = 5;
 
-        // Comprobar si ya inició sesión en este navegador
         document.addEventListener("DOMContentLoaded", () => {
+            // Verificar si ya inició sesión previamente
             if (localStorage.getItem("kronox_admin_logged") === "true") {
                 document.getElementById("auth-overlay").style.display = "none";
+                return;
+            }
+
+            // Verificar si ya alcanzó el límite de intentos
+            if (failedAttempts >= MAX_ATTEMPTS) {
+                blockAccess("Demasiados intentos fallidos. Acceso bloqueado temporalmente.");
             }
         });
 
         function handleLogin(event) {
             event.preventDefault();
+
+            // Doble seguridad por si recargan la página
+            if (failedAttempts >= MAX_ATTEMPTS) return;
+
             const userTyped = document.getElementById("admin-user").value;
             const passTyped = document.getElementById("admin-pass").value;
             const errorDiv = document.getElementById("login-error");
 
             if (userTyped === ADMIN_USER && passTyped === ADMIN_PASS) {
+                // Si entra bien, reiniciamos los intentos y damos acceso
                 localStorage.setItem("kronox_admin_logged", "true");
+                localStorage.removeItem("kronox_failed_attempts");
                 document.getElementById("auth-overlay").style.display = "none";
             } else {
-                errorDiv.classList.remove("hidden");
+                failedAttempts++;
+                localStorage.setItem("kronox_failed_attempts", failedAttempts);
+                
+                const remaining = MAX_ATTEMPTS - failedAttempts;
+
+                if (failedAttempts >= MAX_ATTEMPTS) {
+                    blockAccess("Límite de intentos alcanzado. Acceso bloqueado.");
+                } else {
+                    errorDiv.classList.remove("hidden");
+                    errorDiv.innerText = `Usuario o contraseña incorrectos. Te quedan ${remaining} intentos.`;
+                }
             }
+        }
+
+        function blockAccess(message) {
+            const form = document.getElementById("login-form");
+            const errorDiv = document.getElementById("login-error");
+            
+            form.style.opacity = "0.4";
+            form.style.pointerEvents = "none";
+            
+            errorDiv.classList.remove("hidden");
+            errorDiv.innerText = message;
+            errorDiv.style.color = "#ff4d4d";
         }
 
         function logoutAdmin() {
@@ -180,5 +66,3 @@
             location.reload();
         }
     </script>
-</body>
-</html>
