@@ -52,13 +52,14 @@ app.get('/api/inscripciones', (req, res) => {
     });
 });
 
-// 5. API PARA QUE admin.html CAMBIE EL ESTATUS (Liberar / Pendiente)
+// 5. API PARA QUE admin.html CAMBIE EL ESTATUS (Vigente / Pendiente)
 app.post('/api/inscripciones/:id/liberar', (req, res) => {
     const id = req.params.id;
     db.get(`SELECT estado FROM inscripciones WHERE id = ?`, [id], (err, row) => {
         if (err || !row) return res.status(404).json({ error: "Inscripción no encontrada" });
         
-        const nuevoEstado = row.estado === 'Liberado' ? 'Pendiente' : 'Liberado';
+        // Cambiamos 'Liberado' por 'Vigente'
+        const nuevoEstado = row.estado === 'Vigente' ? 'Pendiente' : 'Vigente';
         db.run(`UPDATE inscripciones SET estado = ? WHERE id = ?`, [nuevoEstado, id], (err) => {
             if (err) return res.status(500).json({ error: "Error al actualizar estatus" });
             res.json({ success: true, nuevoEstado });
