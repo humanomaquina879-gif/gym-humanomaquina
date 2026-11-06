@@ -1,0 +1,10 @@
+RewriteEngine On
+
+# Ocultar la extensión .html en la barra de direcciones
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteCond %{REQUEST_FILENAME}\.html -f
+RewriteRule ^(.*)$ $1.html [L,NC]
+
+# Redirigir si alguien entra con .html escrito a mano para limpiarlo a URL limpia
+RewriteCond %{THE_REQUEST} ^[A-Z]{3,9}\s/(.*)\.html\s [NC]
+RewriteRule ^(.*)\.html$ /$1 [R=301,L]
