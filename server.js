@@ -1,58 +1,27 @@
-const express = require('express');
-const sqlite3 = require('sqlite3').verbose();
-const path = require('path');
-
-const app = express();
-const PORT = process.env.PORT || 3000;
-
-// Middleware para leer datos JSON y formularios
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-
-// Servir archivos estáticos desde la carpeta public
-app.use(express.static(path.join(__dirname, 'public')));
-
-// Configurar y conectar la Base de Datos SQLite
-const dbFile = path.join(__dirname, 'gym_database.db');
-const db = new sqlite3.Database(dbFile, (err) => {
-    if (err) {
-        console.error('Error al conectar con la base de datos:', err.message);
-    } else {
-        console.log('Conectado a la base de datos SQLite.');
+// Middleware simple de autenticación de Administrador
+const basicAuth = (req, res, next) => {
+    const authheader = req.headers.authorization;
+    if (!authheader) {
+        res.setHeader('WWW-Authenticate', 'Basic');
+        return res.status(401).send('Acceso no autorizado');
     }
-});
 
-// Crear tabla de inscripciones si no existe
-db.run(`CREATE TABLE IF NOT EXISTS inscripciones (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    nombre TEXT NOT NULL,
-    telefono TEXT NOT NULL,
-    plan TEXT NOT NULL,
-    monto REAL NOT NULL,
-    metodo_pago TEXT NOT NULL,
-    fecha DATETIME DEFAULT CURRENT_TIMESTAMP
-)`);
+    const auth = Buffer.from(authheader.split(' ')[1], 'base64').toString().split(':');
+    const user = auth[0];
+    const pass = auth[1];
 
-// Ruta para recibir los datos del formulario de planes
-app.post('/api/inscripciones', (req, res) => {
-    const { nombre, telefono, plan, monto, metodo_pago } = req.body;
+    // Cambia aquí tu usuario y contraseña de administrador
+    if (user === 'admin' && pass === 'kronox2026') {
+        next();
+    } else {
+        res.setHeader('WWW-Authenticate', 'Basic');
+        res.status(401).send('Credenciales incorrectas');
+    }
+};
 
-    const query = `INSERT INTO inscripciones (nombre, telefono, plan, monto, metodo_pago) VALUES (?, ?, ?, ?, ?)`;
-    
-    db.run(query, [nombre, telefono, plan, monto, metodo_pago], function(err) {
-        if (err) {
-            console.error(err.message);
-            return res.status(500).json({ error: 'Error al registrar en la base de datos' });
-        }
-        res.json({ 
-            mensaje: 'Inscripción guardada con éxito', 
-            id: this.lastID 
-        });
-    });
-});
-
-// 📊 NUEVA RUTA: Panel de Administración para ver los registros
-app.get('/admin', (req, res) => {
+// 📊 RUTA DE ADMINISTRADOR PROTEGIDA
+app.get('/admin', basicAuth, (db => (req, res) => {
+    // Nota: Asegúrate de usar la variable 'db' que ya tienes conectada a SQLite
     db.all(`SELECT * FROM inscripciones ORDER BY fecha DESC`, [], (err, rows) => {
         if (err) {
             return res.status(500).send("Error al consultar la base de datos");
@@ -75,12 +44,12 @@ app.get('/admin', (req, res) => {
                         <span class="text-[#00d2ff] text-xs font-black uppercase tracking-widest bg-[#00d2ff]/10 px-3 py-1 rounded-full border border-[#00d2ff]/30">Control Interno</span>
                         <h1 class="text-3xl font-black uppercase italic text-white mt-2">Panel de Administración</h1>
                     </div>
-                    <a href="/planes" class="bg-transparent border-2 border-[#00d2ff] text-[#00d2ff] px-5 py-2.5 rounded-xl text-xs font-extrabold uppercase tracking-wider hover:bg-[#00d2ff] hover:text-[#050a14] transition-all shadow-[0_0_10px_rgba(0,210,255,0.2)]">
+                    <a href="/planes" class="bg-transparent border-2 border-[#00d2ff] text-[#00d2ff] px-5 py-2.5 rounded-xl text-xs font-extrabold uppercase tracking-wider hover:bg-[#00d2ff] hover:text-[#050a14] transition-all">
                         <i class="fas fa-arrow-left mr-2"></i> Ir a Planes
                     </a>
                 </div>
                 
-                <div class="bg-[#091122] border border-[#16284a] rounded-2xl overflow-hidden shadow-[0_0_30px_rgba(0,0,0,0.5)]">
+                <div class="bg-[#091122] border border-[#16284a] rounded-2xl overflow-hidden shadow-2xl">
                     <div class="overflow-x-auto">
                         <table class="w-full text-left border-collapse">
                             <thead>
@@ -126,20 +95,4 @@ app.get('/admin', (req, res) => {
         `;
         res.send(html);
     });
-});
-
-// Rutas amigables para las páginas HTML (ej. /planes, /catalogo, /index)
-app.get('/:page', (req, res) => {
-    const page = req.params.page;
-    const filePath = path.join(__dirname, 'public', `${page}.html`);
-    res.sendFile(filePath, (err) => {
-        if (err) {
-            res.status(404).sendFile(path.join(__dirname, 'public', 'index.html'));
-        }
-    });
-});
-
-// Iniciar servidor
-app.listen(PORT, () => {
-    console.log(`Servidor corriendo en http://localhost:${PORT}`);
-});
+})(db));
