@@ -37,13 +37,13 @@
     </div>
 
     <!-- PANEL -->
-    <div class="max-w-6xl mx-auto">
+    <div class="max-w-7xl mx-auto">
         <div class="flex justify-between items-center mb-8 border-b border-gray-800 pb-4">
-            <h1 class="text-2xl font-black text-white uppercase italic">Panel de Socios</h1>
+            <h1 class="text-2xl font-black text-white uppercase italic">Panel de Socios e Inscripciones</h1>
             <a href="planes" class="text-cyan-400 text-xs font-bold uppercase border border-cyan-400/40 px-4 py-2 rounded-lg hover:bg-cyan-400 hover:text-gray-950 transition-colors">Volver a Planes</a>
         </div>
 
-        <div class="card overflow-x-auto">
+        <div class="card overflow-x-auto shadow-2xl">
             <table class="w-full text-left border-collapse text-sm">
                 <thead>
                     <tr class="border-b border-gray-800 text-cyan-400 text-xs uppercase bg-gray-900/50">
@@ -53,19 +53,13 @@
                         <th class="p-4">Plan</th>
                         <th class="p-4">Monto</th>
                         <th class="p-4">Pago</th>
+                        <th class="p-4">Estatus</th>
                         <th class="p-4">Fecha</th>
+                        <th class="p-4 text-center">Acción</th>
                     </tr>
                 </thead>
-                <tbody class="divide-y divide-gray-800 text-gray-300">
-                    <tr>
-                        <td class="p-4 font-bold text-cyan-400">#1</td>
-                        <td class="p-4 font-semibold text-white">Carlos Santana</td>
-                        <td class="p-4">777 2302 932932</td>
-                        <td class="p-4"><span class="bg-cyan-500/10 text-cyan-400 px-2 py-1 rounded text-xs font-bold">Visita</span></td>
-                        <td class="p-4 font-black text-emerald-400">$100</td>
-                        <td class="p-4">Transferencia</td>
-                        <td class="p-4 text-xs text-gray-500">2026-11-06 07:09:19</td>
-                    </tr>
+                <tbody id="tabla-inscripciones" class="divide-y divide-gray-800 text-gray-300">
+                    <!-- Los datos se cargan dinámicamente vía JS -->
                 </tbody>
             </table>
         </div>
@@ -79,6 +73,7 @@
         document.addEventListener("DOMContentLoaded", () => {
             if (localStorage.getItem("admin_ok") === "true") {
                 document.getElementById("login-box").style.display = "none";
+                cargarInscripciones();
                 return;
             }
             revisarBloqueo();
@@ -108,6 +103,7 @@
                 localStorage.removeItem("intentos");
                 localStorage.removeItem("lock_until");
                 document.getElementById("login-box").style.display = "none";
+                cargarInscripciones();
             } else {
                 intentos++;
                 localStorage.setItem("intentos", intentos);
@@ -131,6 +127,60 @@
             err.classList.remove("hidden");
             err.innerText = mensaje;
             err.style.color = "#ff4d4d";
+        }
+
+        // Función para cargar los registros persistentes desde la base de datos
+        async function cargarInscripciones() {
+            try {
+                const res = await fetch('/api/inscripciones');
+                const rows = await res.json();
+                const tbody = document.getElementById('tabla-inscripciones');
+                tbody.innerHTML = '';
+
+                if (rows.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="9" class="p-8 text-center text-gray-400">No hay inscripciones registradas todavía.</td></tr>`;
+                    return;
+                }
+
+                rows.forEach(row => {
+                    const esLiberado = row.estado === 'Liberado';
+                    tbody.innerHTML += `
+                        <tr class="hover:bg-white/5 transition-colors">
+                            <td class="p-4 font-bold text-cyan-400">#${row.id}</td>
+                            <td class="p-4 font-semibold text-white">${row.nombre}</td>
+                            <td class="p-4">${row.telefono}</td>
+                            <td class="p-4"><span class="bg-cyan-500/10 text-cyan-400 px-2 py-1 rounded text-xs font-bold">${row.plan}</span></td>
+                            <td class="p-4 font-black text-emerald-400">$${row.monto}</td>
+                            <td class="p-4">${row.metodo_pago}</td>
+                            <td class="p-4">
+                                <span class="px-2.5 py-1 rounded-full text-xs font-bold ${esLiberado ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30' : 'bg-yellow-500/10 text-yellow-400 border border-yellow-500/30'}">
+                                    ${row.estado || 'Pendiente'}
+                                </span>
+                            </td>
+                            <td class="p-4 text-xs text-gray-500">${row.fecha}</td>
+                            <td class="p-4 text-center">
+                                <button onclick="toggleLiberar(${row.id})" class="px-3 py-1.5 rounded-lg text-xs font-bold uppercase transition-all ${esLiberado ? 'bg-yellow-500/10 text-yellow-400 border border-yellow-500/30 hover:bg-yellow-500 hover:text-gray-950' : 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 hover:bg-emerald-500 hover:text-gray-950'}">
+                                    ${esLiberado ? 'Marcar Pendiente' : 'Liberar Plan'}
+                                </button>
+                            </td>
+                        </tr>
+                    `;
+                });
+            } catch (error) {
+                console.error("Error al cargar inscripciones:", error);
+            }
+        }
+
+        // Función para cambiar el estado al hacer clic en el botón
+        async function toggleLiberar(id) {
+            try {
+                const res = await fetch(`/api/inscripciones/${id}/liberar`, { method: 'POST' });
+                if (res.ok) {
+                    cargarInscripciones(); // Recarga la tabla al instante
+                }
+            } catch (error) {
+                console.error("Error al actualizar estatus:", error);
+            }
         }
     </script>
 </body>
