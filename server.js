@@ -1,27 +1,5 @@
-// Middleware simple de autenticación de Administrador
-const basicAuth = (req, res, next) => {
-    const authheader = req.headers.authorization;
-    if (!authheader) {
-        res.setHeader('WWW-Authenticate', 'Basic');
-        return res.status(401).send('Acceso no autorizado');
-    }
-
-    const auth = Buffer.from(authheader.split(' ')[1], 'base64').toString().split(':');
-    const user = auth[0];
-    const pass = auth[1];
-
-    // Cambia aquí tu usuario y contraseña de administrador
-    if (user === 'admin' && pass === 'kronox2026') {
-        next();
-    } else {
-        res.setHeader('WWW-Authenticate', 'Basic');
-        res.status(401).send('Credenciales incorrectas');
-    }
-};
-
 // 📊 RUTA DE ADMINISTRADOR PROTEGIDA
-app.get('/admin', basicAuth, (db => (req, res) => {
-    // Nota: Asegúrate de usar la variable 'db' que ya tienes conectada a SQLite
+app.get('/admin', basicAuth, (req, res) => {
     db.all(`SELECT * FROM inscripciones ORDER BY fecha DESC`, [], (err, rows) => {
         if (err) {
             return res.status(500).send("Error al consultar la base de datos");
@@ -95,4 +73,4 @@ app.get('/admin', basicAuth, (db => (req, res) => {
         `;
         res.send(html);
     });
-})(db));
+});
