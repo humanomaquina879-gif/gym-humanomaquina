@@ -27,12 +27,16 @@ db.run(`CREATE TABLE IF NOT EXISTS inscripciones (
     fecha DATETIME DEFAULT CURRENT_TIMESTAMP
 )`);
 
-// 3. RUTA PARA RECIBIR INSCRIPCIONES (Desde planes.html)
+// 3. RUTA PARA RECIBIR INSCRIPCIONES (Desde planes.html) con hora local de México
 app.post('/api/inscripciones', (req, res) => {
     const { nombre, telefono, plan, monto, metodo_pago } = req.body;
+    
+    // Obtenemos la fecha y hora exacta en la zona horaria de México
+    const fechaMex = new Date().toLocaleString("sv-SE", { timeZone: "America/Mexico_City" });
+
     db.run(
-        `INSERT INTO inscripciones (nombre, telefono, plan, monto, metodo_pago, estado) VALUES (?, ?, ?, ?, ?, 'Pendiente')`,
-        [nombre, telefono, plan, monto, metodo_pago],
+        `INSERT INTO inscripciones (nombre, telefono, plan, monto, metodo_pago, estado, fecha) VALUES (?, ?, ?, ?, ?, 'Pendiente', ?)`,
+        [nombre, telefono, plan, monto, metodo_pago, fechaMex],
         function(err) {
             if (err) {
                 return res.status(500).json({ error: err.message });
