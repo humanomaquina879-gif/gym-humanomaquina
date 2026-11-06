@@ -209,6 +209,9 @@
                                 <button onclick="toggleLiberar(${row.id})" class="px-3 py-1.5 rounded-lg text-xs font-bold uppercase transition-all ${esVigente ? 'bg-yellow-500/10 text-yellow-400 border border-yellow-500/30 hover:bg-yellow-500 hover:text-gray-950' : 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 hover:bg-emerald-500 hover:text-gray-950'}">
                                     ${esVigente ? 'Marcar Pendiente' : 'Marcar Vigente'}
                                 </button>
+                                <button onclick="eliminarInscripcion(${row.id})" title="Eliminar registro" class="px-2.5 py-1.5 rounded-lg text-xs font-bold uppercase bg-red-500/10 text-red-400 border border-red-500/30 hover:bg-red-500 hover:text-gray-950 transition-all ml-1">
+                                    <i class="fa-solid fa-trash"></i>
+                                </button>
                             </td>
                         </tr>
                     `;
@@ -227,6 +230,21 @@
                 }
             } catch (error) {
                 console.error("Error al actualizar estatus:", error);
+            }
+        }
+
+        // Función para eliminar un registro con confirmación
+        async function eliminarInscripcion(id) {
+            if (!confirm(`¿Estás seguro de eliminar el registro #${id}?`)) return;
+            try {
+                const res = await fetch(`/api/inscripciones/${id}`, { method: 'DELETE' });
+                if (res.ok) {
+                    cargarInscripciones(); // Recarga la tabla al instante
+                } else {
+                    alert("No se pudo eliminar el registro.");
+                }
+            } catch (error) {
+                console.error("Error al eliminar:", error);
             }
         }
     </script>
