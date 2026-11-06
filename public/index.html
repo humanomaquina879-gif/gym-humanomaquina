@@ -387,40 +387,50 @@
     <!-- Lógica JavaScript -->
     <script>
        // Funciones de Accesibilidad con persistencia en localStorage
-function toggleAccessibilityDropdown() {
-    const dropdown = document.getElementById('accessibility-dropdown');
-    dropdown.classList.toggle('hidden');
-}
+       function toggleAccessibilityDropdown() {
+           const dropdown = document.getElementById('accessibility-dropdown');
+           dropdown.classList.toggle('hidden');
+       }
 
-function toggleDaltonism() {
-    document.body.classList.toggle('daltonism-mode');
-    const isDaltonism = document.body.classList.contains('daltonism-mode');
-    localStorage.setItem('kronox_daltonism', isDaltonism ? 'enabled' : 'disabled');
-}
+       function toggleDaltonism() {
+           document.body.classList.toggle('daltonism-mode');
+           const isDaltonism = document.body.classList.contains('daltonism-mode');
+           localStorage.setItem('kronox_daltonism', isDaltonism ? 'enabled' : 'disabled');
+       }
 
-let fontState = parseInt(localStorage.getItem('kronox_fontState') || '0');
-function applyFontSize() {
-    document.body.classList.remove('text-lg-mode', 'text-xl-mode');
-    if (fontState === 1) {
-        document.body.classList.add('text-lg-mode');
-    } else if (fontState === 2) {
-        document.body.classList.add('text-xl-mode');
-    }
-}
+       let fontState = parseInt(localStorage.getItem('kronox_fontState') || '0');
+       function applyFontSize() {
+           document.body.classList.remove('text-lg-mode', 'text-xl-mode');
+           if (fontState === 1) {
+               document.body.classList.add('text-lg-mode');
+           } else if (fontState === 2) {
+               document.body.classList.add('text-xl-mode');
+           }
+       }
 
-function changeFontSize() {
-    fontState = (fontState + 1) % 3;
-    localStorage.setItem('kronox_fontState', fontState);
-    applyFontSize();
-}
+       function changeFontSize() {
+           fontState = (fontState + 1) % 3;
+           localStorage.setItem('kronox_fontState', fontState);
+           applyFontSize();
+       }
 
-// Al cargar cualquier página, aplica los ajustes guardados automáticamente
-document.addEventListener('DOMContentLoaded', () => {
-    if (localStorage.getItem('kronox_daltonism') === 'enabled') {
-        document.body.classList.add('daltonism-mode');
-    }
-    applyFontSize();
-});
+       // Control del Menú Móvil (3 rayitas)
+       const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+       const mobileMenu = document.getElementById('mobile-menu');
+
+       if (mobileMenuBtn && mobileMenu) {
+           mobileMenuBtn.addEventListener('click', () => {
+               mobileMenu.classList.toggle('hidden');
+           });
+       }
+
+       // Al cargar cualquier página, aplica los ajustes guardados automáticamente
+       document.addEventListener('DOMContentLoaded', () => {
+           if (localStorage.getItem('kronox_daltonism') === 'enabled') {
+               document.body.classList.add('daltonism-mode');
+           }
+           applyFontSize();
+       });
     </script>
 </body>
 </html>
