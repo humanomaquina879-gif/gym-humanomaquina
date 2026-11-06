@@ -3,9 +3,9 @@ const sqlite3 = require('sqlite3').verbose();
 const app = express();
 
 app.use(express.json());
-app.use(express.static('public')); // O tu carpeta pública donde estén los demás HTML
+app.use(express.static('public'));
 
-// 1. BASE DE DATOS PERSISTENTE (Se guarda en un archivo físico './kronox.db' para que no se borre)
+// 1. BASE DE DATOS PERSISTENTE
 const db = new sqlite3.Database('./kronox.db', (err) => {
     if (err) {
         console.error('Error al abrir la base de datos', err.message);
@@ -34,6 +34,7 @@ app.post('/api/inscripciones', (req, res) => {
         [nombre, telefono, plan, monto, metodo_pago],
         function(err) {
             if (err) {
+                console.error("Error al insertar:", err.message);
                 return res.status(500).json({ error: err.message });
             }
             res.json({ success: true, id: this.lastID });
@@ -166,4 +167,10 @@ app.get('/admin', basicAuth, (req, res) => {
         `;
         res.send(html);
     });
+});
+
+// Asegúrate de que el servidor escuche en el puerto que usa Render (process.env.PORT)
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+    console.log(`Servidor corriendo en el puerto ${PORT}`);
 });
