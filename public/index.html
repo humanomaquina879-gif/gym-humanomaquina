@@ -41,7 +41,7 @@
         }
     </script>
 
-    <!-- Estilos CSS Personalizados y Efectos Visuales -->
+    <!-- Estilos CSS Personalizados y Accesibilidad -->
     <style>
         body {
             background-color: #050a14;
@@ -49,6 +49,36 @@
             font-family: 'Inter', sans-serif;
             min-height: 100vh;
             overflow-x: hidden;
+            transition: font-size 0.3s ease;
+        }
+
+        /* Clases para Accesibilidad / Daltonismo */
+        body.daltonism-mode {
+            background-color: #000000 !important;
+            color: #ffff00 !important;
+        }
+        body.daltonism-mode .kronox-card, 
+        body.daltonism-mode header, 
+        body.daltonism-mode footer {
+            background-color: #111111 !important;
+            border-color: #ffff00 !important;
+            color: #ffff00 !important;
+        }
+        body.daltonism-mode a, 
+        body.daltonism-mode span, 
+        body.daltonism-mode h1, 
+        body.daltonism-mode h2, 
+        body.daltonism-mode h3, 
+        body.daltonism-mode p {
+            color: #ffff00 !important;
+        }
+
+        /* Tamaños de letra accesibles */
+        body.text-lg-mode {
+            font-size: 120%;
+        }
+        body.text-xl-mode {
+            font-size: 140%;
         }
 
         /* Patrón de cuadrícula del fondo (Gridlines) */
@@ -117,12 +147,30 @@
 </head>
 <body class="bg-grid-pattern relative min-h-screen flex flex-col justify-between">
 
+    <!-- PANEL / BARRA DE ACCESIBILIDAD FLOTANTE (Requisito de la libreta) -->
+    <div id="accessibility-bar" class="bg-kronox-cardBg border-b border-kronox-cardBorder px-4 py-2 text-xs flex flex-wrap items-center justify-between gap-2 z-50 shadow-md">
+        <div class="flex items-center gap-2">
+            <span class="text-kronox-accent font-bold uppercase tracking-wider"><i class="fas fa-universal-access mr-1"></i> Accesibilidad:</span>
+            <button onclick="toggleDaltonism()" title="Activar o desactivar modo de alto contraste para daltonismo" class="bg-kronox-cardBorder hover:bg-kronox-accent hover:text-kronox-bg text-gray-200 px-3 py-1 rounded transition-colors font-semibold">
+                <i class="fas fa-adjust mr-1"></i> Contraste Daltonismo
+            </button>
+            <button onclick="changeFontSize()" title="Aumentar tamaño de letra para mejor lectura" class="bg-kronox-cardBorder hover:bg-kronox-accent hover:text-kronox-bg text-gray-200 px-3 py-1 rounded transition-colors font-semibold">
+                <i class="fas fa-text-height mr-1"></i> Tamaño Letra
+            </button>
+        </div>
+        <div>
+            <button onclick="closeAccessibilityPanel()" title="Cerrar panel de accesibilidad (X)" class="bg-red-900/60 border border-red-500 text-red-300 hover:bg-red-700 hover:text-white px-2.5 py-1 rounded transition-colors font-bold">
+                <i class="fas fa-times"></i> Cerrar [X]
+            </button>
+        </div>
+    </div>
+
     <!-- Ambient Glow Effects -->
     <div class="glow-light top-0 left-1/2 -translate-x-1/2"></div>
     <div class="glow-light bottom-20 right-0"></div>
 
     <!-- NAVBAR SUPERIOR -->
-    <header class="sticky top-0 z-50 bg-kronox-bg/85 backdrop-blur-lg border-b border-kronox-cardBorder/60">
+    <header class="sticky top-0 z-40 bg-kronox-bg/85 backdrop-blur-lg border-b border-kronox-cardBorder/60">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-24 flex items-center justify-between">
             
             <!-- Logo en Imagen -->
@@ -177,7 +225,7 @@
                 <img src="https://res.cloudinary.com/bo5jzelh/image/upload/v1783041430/Logo_Kronox_Gym_lfg9tl.jpg" alt="Kronox Gym Logo" class="h-28 sm:h-36 md:h-48 w-auto object-contain mx-auto rounded-xl">
             </div>
 
-            <!-- OBJETIVO DE LA PÁGINA (Requisito de la libreta) -->
+            <!-- OBJETIVO DE LA PÁGINA -->
             <div class="mb-6 max-w-3xl bg-kronox-cardBg/60 border border-kronox-accent/30 rounded-xl p-4 backdrop-blur-md">
                 <span class="text-kronox-accent text-[11px] font-black uppercase tracking-widest block mb-1">🎯 Objetivo de la Plataforma</span>
                 <p class="text-gray-300 text-xs sm:text-sm leading-relaxed">
@@ -273,29 +321,22 @@
                 </a>
             </div>
 
-            <!-- Redes Sociales con Colores Oficiales FIJOS -->
+            <!-- Redes Sociales -->
             <div class="flex items-center space-x-5">
-                <!-- Instagram -->
                 <a href="https://www.instagram.com/kronoxgym" target="_blank" title="Visitar perfil oficial de Instagram"
-                   class="w-10 h-10 rounded-full text-white bg-gradient-to-tr from-yellow-500 via-pink-500 to-purple-600 border border-pink-500/60 shadow-[0_0_12px_rgba(236,72,153,0.4)] flex items-center justify-center hover:scale-110 hover:shadow-[0_0_20px_rgba(236,72,153,0.7)] transition-all duration-300">
+                   class="w-10 h-10 rounded-full text-white bg-gradient-to-tr from-yellow-500 via-pink-500 to-purple-600 border border-pink-500/60 shadow-[0_0_12px_rgba(236,72,153,0.4)] flex items-center justify-center hover:scale-110 transition-all">
                     <i class="fab fa-instagram text-lg"></i>
                 </a>
-
-                <!-- Facebook -->
                 <a href="https://www.facebook.com/profile.php?id=61591217086184" target="_blank" title="Visitar página oficial de Facebook"
-                   class="w-10 h-10 rounded-full text-white bg-[#1877F2] border border-[#1877F2] shadow-[0_0_12px_rgba(24,119,242,0.4)] flex items-center justify-center hover:scale-110 hover:shadow-[0_0_20px_rgba(24,119,242,0.7)] transition-all duration-300">
+                   class="w-10 h-10 rounded-full text-white bg-[#1877F2] border border-[#1877F2] shadow-[0_0_12px_rgba(24,119,242,0.4)] flex items-center justify-center hover:scale-110 transition-all">
                     <i class="fab fa-facebook-f text-lg"></i>
                 </a>
-
-                <!-- TikTok -->
                 <a href="https://www.tiktok.com/@kronoxgym_" target="_blank" title="Visitar cuenta oficial de TikTok"
-                   class="w-10 h-10 rounded-full text-white bg-black border border-cyan-400 shadow-[0_0_12px_rgba(0,242,234,0.4)] flex items-center justify-center hover:scale-110 hover:shadow-[0_0_20px_rgba(0,242,234,0.7)] transition-all duration-300">
+                   class="w-10 h-10 rounded-full text-white bg-black border border-cyan-400 shadow-[0_0_12px_rgba(0,242,234,0.4)] flex items-center justify-center hover:scale-110 transition-all">
                     <i class="fab fa-tiktok text-lg"></i>
                 </a>
-
-                <!-- WhatsApp -->
                 <a href="https://wa.me/527779393985?text=Hola%20Kronox%20Gym" target="_blank" title="Contactar por WhatsApp"
-                   class="w-10 h-10 rounded-full text-white bg-[#25D366] border border-[#25D366] shadow-[0_0_12px_rgba(37,211,102,0.4)] flex items-center justify-center hover:scale-110 hover:shadow-[0_0_20px_rgba(37,211,102,0.7)] transition-all duration-300">
+                   class="w-10 h-10 rounded-full text-white bg-[#25D366] border border-[#25D366] shadow-[0_0_12px_rgba(37,211,102,0.4)] flex items-center justify-center hover:scale-110 transition-all">
                     <i class="fab fa-whatsapp text-lg"></i>
                 </a>
             </div>
@@ -303,7 +344,7 @@
         </div>
     </footer>
 
-    <!-- Lógica JavaScript Menú Móvil -->
+    <!-- Lógica JavaScript para Menú Móvil y Accesibilidad -->
     <script>
         const menuBtn = document.getElementById('mobile-menu-btn');
         const mobileMenu = document.getElementById('mobile-menu');
@@ -311,6 +352,26 @@
         menuBtn.addEventListener('click', () => {
             mobileMenu.classList.toggle('hidden');
         });
+
+        // Funciones de Accesibilidad
+        function toggleDaltonism() {
+            document.body.classList.toggle('daltonism-mode');
+        }
+
+        let fontState = 0;
+        function changeFontSize() {
+            fontState = (fontState + 1) % 3;
+            document.body.classList.remove('text-lg-mode', 'text-xl-mode');
+            if (fontState === 1) {
+                document.body.classList.add('text-lg-mode');
+            } else if (fontState === 2) {
+                document.body.classList.add('text-xl-mode');
+            }
+        }
+
+        function closeAccessibilityPanel() {
+            document.getElementById('accessibility-bar').style.display = 'none';
+        }
     </script>
 </body>
 </html>
