@@ -74,10 +74,6 @@
             color: #66fcf1 !important;
         }
 
-        /* Tamaños de letra accesibles proporcionales para PC y Móvil */
-        body.text-lg-mode { font-size: 112.5%; }
-        body.text-xl-mode { font-size: 125%; }
-
         /* Patrón de cuadrícula del fondo */
         .bg-grid-pattern {
             background-size: 36px 36px;
@@ -338,14 +334,16 @@
         const menuBtn = document.getElementById('mobile-menu-btn');
         const mobileMenu = document.getElementById('mobile-menu');
 
-        menuBtn.addEventListener('click', () => {
-            mobileMenu.classList.toggle('hidden');
-        });
+        if (menuBtn && mobileMenu) {
+            menuBtn.addEventListener('click', () => {
+                mobileMenu.classList.toggle('hidden');
+            });
+        }
 
         // Funciones de Accesibilidad con persistencia en localStorage
         function toggleAccessibilityDropdown() {
             const dropdown = document.getElementById('accessibility-dropdown');
-            dropdown.classList.toggle('hidden');
+            if (dropdown) dropdown.classList.toggle('hidden');
         }
 
         function toggleDaltonism() {
@@ -354,14 +352,16 @@
             localStorage.setItem('kronox_daltonism', isDaltonism ? 'enabled' : 'disabled');
         }
 
-        // Cambiar tamaño de letra mediante el selector desplegable
+        // Cambiar tamaño de letra alterando directamente la raíz del documento (rem)
         function changeFontSize(size) {
-            document.body.classList.remove('text-lg-mode', 'text-xl-mode');
+            const root = document.documentElement;
             
             if (size === 'large') {
-                document.body.classList.add('text-lg-mode');
+                root.style.fontSize = '112.5%';
             } else if (size === 'xlarge') {
-                document.body.classList.add('text-xl-mode');
+                root.style.fontSize = '125%';
+            } else {
+                root.style.fontSize = '100%';
             }
             
             localStorage.setItem('kronox_font_size', size);
