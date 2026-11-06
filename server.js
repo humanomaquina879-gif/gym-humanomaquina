@@ -71,6 +71,26 @@ app.get('/admin', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'admin.html'));
 });
 
+app.get('/planes', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'planes.html'));
+});
+
+app.get('/index', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
+
+app.get('/informacion', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'informacion.html'));
+});
+
+app.get('/catalogo', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'catalogo.html'));
+});
+
+app.get('/ubicacion', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'ubicacion.html'));
+});
+
 // Puerto para Render
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
