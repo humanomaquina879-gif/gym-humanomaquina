@@ -1,97 +1,137 @@
-<script>
-        const ADMIN_USER = "admin";
-        const ADMIN_PASS = "kronox2026";
-        
-        const MAX_ATTEMPTS = 5;
-        const LOCKOUT_TIME = 15 * 60 * 1000; // 15 minutos en milisegundos
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kronox Gym | Admin</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { background-color: #050a14; color: #f8fafc; font-family: sans-serif; min-height: 100vh; }
+        .card { background: #091122; border: 1px solid #16284a; border-radius: 1rem; }
+    </style>
+</head>
+<body class="p-6">
+
+    <!-- LOGIN -->
+    <div id="login-box" class="fixed inset-0 bg-[#050a14] flex items-center justify-center p-4 z-50">
+        <div class="card p-8 max-w-md w-full text-center border border-cyan-500/30 shadow-2xl">
+            <h2 class="text-2xl font-black text-white uppercase italic mb-2">Acceso <span class="text-cyan-400">Administrador</span></h2>
+            <p class="text-gray-400 text-xs mb-6">Ingresa tus credenciales para continuar.</p>
+            
+            <form onsubmit="intentarLogin(event)" class="space-y-4 text-left">
+                <div>
+                    <label class="block text-xs font-bold text-cyan-400 uppercase mb-1">Usuario</label>
+                    <input type="text" id="usu" required class="w-full bg-[#080e1a] border border-cyan-500/30 rounded-lg px-4 py-2 text-white text-sm focus:outline-none">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-cyan-400 uppercase mb-1">Contraseña</label>
+                    <input type="password" id="pas" required class="w-full bg-[#080e1a] border border-cyan-500/30 rounded-lg px-4 py-2 text-white text-sm focus:outline-none">
+                </div>
+                <div id="error-msg" class="text-red-400 text-xs text-center hidden font-bold">Datos incorrectos.</div>
+                <button type="submit" class="w-full bg-cyan-400 text-gray-950 font-black py-3 rounded-lg text-xs uppercase tracking-wider hover:bg-cyan-300 transition-colors">
+                    Entrar
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- PANEL -->
+    <div class="max-w-6xl mx-auto">
+        <div class="flex justify-between items-center mb-8 border-b border-gray-800 pb-4">
+            <h1 class="text-2xl font-black text-white uppercase italic">Panel de Socios</h1>
+            <a href="planes" class="text-cyan-400 text-xs font-bold uppercase border border-cyan-400/40 px-4 py-2 rounded-lg hover:bg-cyan-400 hover:text-gray-950 transition-colors">Volver a Planes</a>
+        </div>
+
+        <div class="card overflow-x-auto">
+            <table class="w-full text-left border-collapse text-sm">
+                <thead>
+                    <tr class="border-b border-gray-800 text-cyan-400 text-xs uppercase bg-gray-900/50">
+                        <th class="p-4">ID</th>
+                        <th class="p-4">Cliente</th>
+                        <th class="p-4">Teléfono</th>
+                        <th class="p-4">Plan</th>
+                        <th class="p-4">Monto</th>
+                        <th class="p-4">Pago</th>
+                        <th class="p-4">Fecha</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-800 text-gray-300">
+                    <tr>
+                        <td class="p-4 font-bold text-cyan-400">#1</td>
+                        <td class="p-4 font-semibold text-white">Carlos Santana</td>
+                        <td class="p-4">777 2302 932932</td>
+                        <td class="p-4"><span class="bg-cyan-500/10 text-cyan-400 px-2 py-1 rounded text-xs font-bold">Visita</span></td>
+                        <td class="p-4 font-black text-emerald-400">$100</td>
+                        <td class="p-4">Transferencia</td>
+                        <td class="p-4 text-xs text-gray-500">2026-11-06 07:09:19</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        const USER = "admin";
+        const PASS = "kronox2026";
+        const LOCK_TIME = 15 * 60 * 1000; // 15 minutos
 
         document.addEventListener("DOMContentLoaded", () => {
-            // Si ya inició sesión antes, se salta el login
-            if (localStorage.getItem("kronox_admin_logged") === "true") {
-                document.getElementById("auth-overlay").style.display = "none";
+            if (localStorage.getItem("admin_ok") === "true") {
+                document.getElementById("login-box").style.display = "none";
                 return;
             }
-
-            // Verificar si hay un bloqueo activo al cargar la página
-            checkLockoutStatus();
+            revisarBloqueo();
         });
 
-        function checkLockoutStatus() {
-            const lockoutUntil = parseInt(localStorage.getItem("kronox_lockout_until") || "0");
-            const now = Date.now();
-
-            if (now < lockoutUntil) {
-                // Calcular cuántos minutos faltan para que termine el bloqueo
-                const remainingMs = lockoutUntil - now;
-                const remainingMins = Math.ceil(remainingMs / 60000);
-                blockAccess(`Demasiados intentos fallidos. Acceso bloqueado. Inténtalo en ${remainingMins} minuto(s).`);
-            } else if (lockoutUntil !== 0 && now >= lockoutUntil) {
-                // Si el tiempo ya expiró, limpiamos los registros de castigo
-                localStorage.removeItem("kronox_lockout_until");
-                localStorage.setItem("kronox_failed_attempts", "0");
-                unblockAccess();
+        function revisarBloqueo() {
+            let bloqueoHasta = parseInt(localStorage.getItem("lock_until") || "0");
+            let ahora = Date.now();
+            if (ahora < bloqueoHasta) {
+                let minutosRestantes = Math.ceil((bloqueoHasta - ahora) / 60000);
+                bloquearPantalla(`Bloqueado por intentos fallidos. Espera ${minutosRestantes} min.`);
             }
         }
 
-        function handleLogin(event) {
-            event.preventDefault();
+        function intentarLogin(e) {
+            e.preventDefault();
+            revisarBloqueo();
+            if (Date.now() < parseInt(localStorage.getItem("lock_until") || "0")) return;
 
-            checkLockoutStatus();
-            const lockoutUntil = parseInt(localStorage.getItem("kronox_lockout_until") || "0");
-            if (Date.now() < lockoutUntil) return;
+            let u = document.getElementById("usu").value;
+            let p = document.getElementById("pas").value;
+            let err = document.getElementById("error-msg");
+            let intentos = parseInt(localStorage.getItem("intentos") || "0");
 
-            let failedAttempts = parseInt(localStorage.getItem("kronox_failed_attempts") || "0");
-            const userTyped = document.getElementById("admin-user").value;
-            const passTyped = document.getElementById("admin-pass").value;
-            const errorDiv = document.getElementById("login-error");
-
-            if (userTyped === ADMIN_USER && passTyped === ADMIN_PASS) {
-                // Inicio de sesión exitoso: borramos contadores y bloqueos
-                localStorage.setItem("kronox_admin_logged", "true");
-                localStorage.removeItem("kronox_failed_attempts");
-                localStorage.removeItem("kronox_lockout_until");
-                document.getElementById("auth-overlay").style.display = "none";
+            if (u === USER && p === PASS) {
+                localStorage.setItem("admin_ok", "true");
+                localStorage.removeItem("intentos");
+                localStorage.removeItem("lock_until");
+                document.getElementById("login-box").style.display = "none";
             } else {
-                failedAttempts++;
-                localStorage.setItem("kronox_failed_attempts", failedAttempts);
-                
-                const remaining = MAX_ATTEMPTS - failedAttempts;
+                intentos++;
+                localStorage.setItem("intentos", intentos);
+                let restantes = 5 - intentos;
 
-                if (failedAttempts >= MAX_ATTEMPTS) {
-                    // Establecer el tiempo límite de bloqueo (15 minutos a partir de ahora)
-                    const blockUntilTime = Date.now() + LOCKOUT_TIME;
-                    localStorage.setItem("kronox_lockout_until", blockUntilTime);
-                    blockAccess("Límite de 5 intentos alcanzado. Bloqueado por 15 minutos.");
+                if (intentos >= 5) {
+                    localStorage.setItem("lock_until", Date.now() + LOCK_TIME);
+                    bloquearPantalla("Límite de 5 intentos alcanzado. Bloqueado 15 minutos.");
                 } else {
-                    errorDiv.classList.remove("hidden");
-                    errorDiv.innerText = `Usuario o contraseña incorrectos. Te quedan ${remaining} intentos.`;
+                    err.classList.remove("hidden");
+                    err.innerText = `Datos incorrectos. Te quedan ${restantes} intentos.`;
                 }
             }
         }
 
-        function blockAccess(message) {
-            const form = document.getElementById("login-form");
-            const errorDiv = document.getElementById("login-error");
-            
+        function bloquearPantalla(mensaje) {
+            let form = document.querySelector("form");
+            let err = document.getElementById("error-msg");
             form.style.opacity = "0.4";
             form.style.pointerEvents = "none";
-            
-            errorDiv.classList.remove("hidden");
-            errorDiv.innerText = message;
-            errorDiv.style.color = "#ff4d4d";
-        }
-
-        function unblockAccess() {
-            const form = document.getElementById("login-form");
-            const errorDiv = document.getElementById("login-error");
-            
-            form.style.opacity = "1";
-            form.style.pointerEvents = "auto";
-            errorDiv.classList.add("hidden");
-        }
-
-        function logoutAdmin() {
-            localStorage.removeItem("kronox_admin_logged");
-            location.reload();
+            err.classList.remove("hidden");
+            err.innerText = mensaje;
+            err.style.color = "#ff4d4d";
         }
     </script>
+</body>
+</html>
