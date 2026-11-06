@@ -129,6 +129,35 @@
             err.style.color = "#ff4d4d";
         }
 
+        // Función matemática para calcular días restantes según el plan
+        function calcularVigencia(fechaRegistro, plan) {
+            let inicio = new Date(fechaRegistro);
+            let diasValidez = 30; // Por defecto Mensualidad
+
+            const planLower = (plan || "").toLowerCase();
+            if (planLower.includes('visita')) {
+                diasValidez = 1;
+            } else if (planLower.includes('anualidad')) {
+                diasValidez = 365;
+            } else if (planLower.includes('mensual')) {
+                diasValidez = 30;
+            }
+
+            let vencimiento = new Date(inicio.getTime() + (diasValidez * 24 * 60 * 60 * 1000));
+            let hoy = new Date();
+            
+            let diferenciaTiempo = vencimiento - hoy;
+            let diasRestantes = Math.ceil(diferenciaTiempo / (1000 * 60 * 60 * 24));
+
+            if (diasRestantes < 0) {
+                return `<span class="text-red-400 text-xs block font-semibold">Expirado</span>`;
+            } else if (diasRestantes === 0) {
+                return `<span class="text-yellow-400 text-xs block font-semibold">Vence hoy</span>`;
+            } else {
+                return `<span class="text-emerald-400 text-xs block font-semibold">Quedan ${diasRestantes} días</span>`;
+            }
+        }
+
         // Función para cargar los registros persistentes desde la base de datos
         async function cargarInscripciones() {
             try {
@@ -143,7 +172,13 @@
                 }
 
                 rows.forEach(row => {
-                    const esLiberado = row.estado === 'Liberado';
+                    const esVigente = row.estado === 'Vigente';
+                    
+                    // Cálculo de vigencia o aviso de pendiente
+                    let infoVigencia = esVigente 
+                        ? calcularVigencia(row.fecha, row.plan) 
+                        : `<span class="text-gray-500 text-xs block">Pendiente de pago</span>`;
+
                     tbody.innerHTML += `
                         <tr class="hover:bg-white/5 transition-colors">
                             <td class="p-4 font-bold text-cyan-400">#${row.id}</td>
@@ -153,14 +188,17 @@
                             <td class="p-4 font-black text-emerald-400">$${row.monto}</td>
                             <td class="p-4">${row.metodo_pago}</td>
                             <td class="p-4">
-                                <span class="px-2.5 py-1 rounded-full text-xs font-bold ${esLiberado ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30' : 'bg-yellow-500/10 text-yellow-400 border border-yellow-500/30'}">
+                                <span class="px-2.5 py-1 rounded-full text-xs font-bold ${esVigente ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30' : 'bg-yellow-500/10 text-yellow-400 border border-yellow-500/30'}">
                                     ${row.estado || 'Pendiente'}
                                 </span>
+                                <div class="mt-1">
+                                    ${infoVigencia}
+                                </div>
                             </td>
                             <td class="p-4 text-xs text-gray-500">${row.fecha}</td>
                             <td class="p-4 text-center">
-                                <button onclick="toggleLiberar(${row.id})" class="px-3 py-1.5 rounded-lg text-xs font-bold uppercase transition-all ${esLiberado ? 'bg-yellow-500/10 text-yellow-400 border border-yellow-500/30 hover:bg-yellow-500 hover:text-gray-950' : 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 hover:bg-emerald-500 hover:text-gray-950'}">
-                                    ${esLiberado ? 'Marcar Pendiente' : 'Liberar Plan'}
+                                <button onclick="toggleLiberar(${row.id})" class="px-3 py-1.5 rounded-lg text-xs font-bold uppercase transition-all ${esVigente ? 'bg-yellow-500/10 text-yellow-400 border border-yellow-500/30 hover:bg-yellow-500 hover:text-gray-950' : 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 hover:bg-emerald-500 hover:text-gray-950'}">
+                                    ${esVigente ? 'Marcar Pendiente' : 'Marcar Vigente'}
                                 </button>
                             </td>
                         </tr>
@@ -171,7 +209,7 @@
             }
         }
 
-        // Función para cambiar el estado al hacer clic en el botón
+        // Función para cambiar el estado al hacer clic en el botón de recepción
         async function toggleLiberar(id) {
             try {
                 const res = await fetch(`/api/inscripciones/${id}/liberar`, { method: 'POST' });
