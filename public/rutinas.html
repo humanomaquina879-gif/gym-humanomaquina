@@ -255,8 +255,9 @@
                 </a>
             </div>
 
-            <button id="mobile-menu-btn" title="Abrir menú" class="md:hidden text-gray-300 hover:text-white text-2xl focus:outline-none">
-                <i class="fas fa-bars"></i>
+            <!-- Botón Menú Móvil -->
+            <button id="mobile-menu-btn" title="Abrir menú" class="md:hidden text-gray-300 hover:text-white text-2xl focus:outline-none p-2">
+                <i class="fas fa-bars" id="mobile-menu-icon"></i>
             </button>
         </div>
 
@@ -419,8 +420,8 @@
 
     <!-- LÓGICA JAVASCRIPT -->
     <script>
-        // --- 1. VERIFICAR SESIÓN O BLOQUEAR ACCESO ---
         document.addEventListener("DOMContentLoaded", () => {
+            // 1. Verificar sesión o bloquear acceso
             const loggedUser = localStorage.getItem('kronox_logged_user');
             if (!loggedUser) {
                 alert("Debes iniciar sesión para acceder al apartado de rutinas.");
@@ -447,6 +448,37 @@
             if (localStorage.getItem('kronox_high_contrast') === 'enabled') {
                 toggleHighContrast();
             }
+
+            // 2. Configuración del Menú Móvil (Hamburguesa)
+            const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+            const mobileMenu = document.getElementById('mobile-menu');
+            const mobileMenuIcon = document.getElementById('mobile-menu-icon');
+
+            if (mobileMenuBtn && mobileMenu) {
+                mobileMenuBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    mobileMenu.classList.toggle('hidden');
+                    if (mobileMenu.classList.contains('hidden')) {
+                        if (mobileMenuIcon) mobileMenuIcon.className = "fas fa-bars";
+                    } else {
+                        if (mobileMenuIcon) mobileMenuIcon.className = "fas fa-times";
+                    }
+                });
+
+                mobileMenu.querySelectorAll("a").forEach(link => {
+                    link.addEventListener("click", () => {
+                        mobileMenu.classList.add('hidden');
+                        if (mobileMenuIcon) mobileMenuIcon.className = "fas fa-bars";
+                    });
+                });
+
+                document.addEventListener('click', (e) => {
+                    if (!mobileMenu.contains(e.target) && !mobileMenuBtn.contains(e.target) && !mobileMenu.classList.contains('hidden')) {
+                        mobileMenu.classList.add('hidden');
+                        if (mobileMenuIcon) mobileMenuIcon.className = "fas fa-bars";
+                    }
+                });
+            }
         });
 
         function logoutUser() {
@@ -454,7 +486,7 @@
             window.location.href = "index";
         }
 
-      // --- 2. GENERADOR DE RUTINAS ALTERNATIVAS MANUALES ---
+        // --- 2. GENERADOR DE RUTINAS ALTERNATIVAS MANUALES ---
         const variantesRutinas = {
             pecho: [
                 [
@@ -572,11 +604,9 @@
             ]
         };
 
-        // Variable global para rotación secuencial
         let indiceVarianteActual = 0;
 
         function generarNuevaRutina() {
-            // Avanzar a la siguiente variante (0, 1, 2, 3) al dar clic
             indiceVarianteActual = (indiceVarianteActual + 1) % 4;
 
             ['pecho', 'triceps', 'pierna', 'espalda', 'biceps'].forEach(grupo => {
@@ -594,33 +624,8 @@
                 }
             });
 
-            // Feedback de voz si el lector está activo
             if (typeof speechActive !== 'undefined' && speechActive) {
                 const utterance = new SpeechSynthesisUtterance("Se ha generado una nueva rutina.");
-                utterance.lang = 'es-MX';
-                window.speechSynthesis.speak(utterance);
-            }
-        }
-
-        function generarNuevaRutina() {
-            ['pecho', 'triceps', 'pierna', 'espalda', 'biceps'].forEach(grupo => {
-                const listaOpciones = variantesRutinas[grupo];
-                const aleatoria = listaOpciones[Math.floor(Math.random() * listaOpciones.length)];
-                const contenedor = document.getElementById(`lista-${grupo}`);
-                
-                if (contenedor) {
-                    contenedor.innerHTML = aleatoria.map(item => `
-                        <li class="flex justify-between border-b border-gray-800 pb-2">
-                            <span>${item.nombre}</span> 
-                            <span class="text-cyan-400 font-bold">${item.reps}</span>
-                        </li>
-                    `).join('');
-                }
-            });
-
-            // Feedback de voz si el lector está activo
-            if (typeof speechActive !== 'undefined' && speechActive) {
-                const utterance = new SpeechSynthesisUtterance("Se han generado nuevas variantes de rutinas.");
                 utterance.lang = 'es-MX';
                 window.speechSynthesis.speak(utterance);
             }
@@ -686,7 +691,7 @@
             localStorage.setItem('kronox_high_contrast', isActive ? 'enabled' : 'disabled');
         }
 
-        // --- 4. LECTOR DE VOZ CON SUBTÍTULOS (Sin Alertas Bloqueantes) ---
+        // --- 4. LECTOR DE VOZ CON SUBTÍTULOS ---
         let speechActive = false;
         function toggleSpeechReader() {
             speechActive = !speechActive;
@@ -750,13 +755,6 @@
 
         document.addEventListener('mouseup', leerTextoSeleccionado);
         document.addEventListener('touchend', () => { setTimeout(leerTextoSeleccionado, 300); });
-
-        // Menú Móvil
-        const mobileMenuBtn = document.getElementById('mobile-menu-btn');
-        const mobileMenu = document.getElementById('mobile-menu');
-        if (mobileMenuBtn && mobileMenu) {
-            mobileMenuBtn.addEventListener('click', () => mobileMenu.classList.toggle('hidden'));
-        }
     </script>
 </body>
 </html>
