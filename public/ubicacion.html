@@ -51,26 +51,23 @@
             transition: font-size 0.3s ease;
         }
 
-        /* Clases para Accesibilidad / Daltonismo */
-        body.daltonism-mode {
-            background-color: #0b0c10 !important;
-            color: #66fcf1 !important;
+        /* Filtros SVG para Daltonismo */
+        body.daltonism-protanopia { filter: url('#protanopia-filter'); }
+        body.daltonism-deuteranopia { filter: url('#deuteranopia-filter'); }
+        body.daltonism-tritanopia { filter: url('#tritanopia-filter'); }
+
+        /* Alto Contraste */
+        body.high-contrast {
+            background-color: #000000 !important;
+            color: #ffff00 !important;
         }
-        body.daltonism-mode .kronox-card, 
-        body.daltonism-mode header, 
-        body.daltonism-mode footer,
-        body.daltonism-mode #accessibility-dropdown {
-            background-color: #1f2833 !important;
-            border-color: #66fcf1 !important;
-            color: #c5c6c7 !important;
-        }
-        body.daltonism-mode a, 
-        body.daltonism-mode span, 
-        body.daltonism-mode h1, 
-        body.daltonism-mode h2, 
-        body.daltonism-mode h3, 
-        body.daltonism-mode p {
-            color: #66fcf1 !important;
+        body.high-contrast .kronox-card, 
+        body.high-contrast header, 
+        body.high-contrast footer,
+        body.high-contrast .accessibility-panel {
+            background-color: #111111 !important;
+            border-color: #ffff00 !important;
+            color: #ffff00 !important;
         }
 
         .bg-grid-pattern {
@@ -116,41 +113,114 @@
             color: #00d2ff;
             box-shadow: 0 0 25px rgba(0, 210, 255, 0.7);
         }
+
+        /* Subtítulos flotantes para lector de voz */
+        #speech-subtitle-box {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(5, 10, 20, 0.95);
+            border: 2px solid #00d2ff;
+            color: #fff;
+            padding: 12px 24px;
+            border-radius: 12px;
+            font-size: 14px;
+            z-index: 9999;
+            box-shadow: 0 0 25px rgba(0, 210, 255, 0.5);
+            max-width: 90%;
+            text-align: center;
+            display: none;
+        }
     </style>
 </head>
 <body class="bg-grid-pattern relative min-h-screen flex flex-col justify-between">
 
-    <!-- BOTÓN FLOTANTE Y MENÚ DESPLEGABLE DE ACCESIBILIDAD (Esquina Superior Izquierda) -->
+    <!-- FILTROS SVG PARA DALTONISMO -->
+    <svg style="display:none;">
+        <filter id="protanopia-filter">
+            <feColorMatrix type="matrix" values="0.567, 0.433, 0, 0, 0  0.558, 0.442, 0, 0, 0  0, 0.242, 0.758, 0, 0  0, 0, 0, 1, 0"/>
+        </filter>
+        <filter id="deuteranopia-filter">
+            <feColorMatrix type="matrix" values="0.625, 0.375, 0, 0, 0  0.7, 0.3, 0, 0, 0  0, 0.3, 0.7, 0, 0  0, 0, 0, 1, 0"/>
+        </filter>
+        <filter id="tritanopia-filter">
+            <feColorMatrix type="matrix" values="0.95, 0.05, 0, 0, 0  0, 0.433, 0.567, 0, 0  0, 0.475, 0.525, 0, 0  0, 0, 0, 1, 0"/>
+        </filter>
+    </svg>
+
+    <!-- CAJA DE SUBTÍTULOS PARA LECTOR DE VOZ -->
+    <div id="speech-subtitle-box">
+        <i class="fas fa-volume-high text-cyan-400 mr-2"></i><span id="subtitle-text">Reproduciendo audio...</span>
+    </div>
+
+    <!-- PANEL FLOTANTE DE ACCESIBILIDAD UNIVERSAL -->
     <div class="fixed top-6 left-6 z-50">
-        <button onclick="toggleAccessibilityDropdown()" title="Opciones de accesibilidad y visualización" class="bg-kronox-cardBg border border-kronox-accent/50 text-kronox-accent hover:bg-kronox-accent hover:text-kronox-bg p-3 rounded-full shadow-[0_0_15px_rgba(0,210,255,0.3)] transition-all flex items-center justify-center">
-            <i class="fas fa-user text-lg"></i>
+        <button onclick="toggleAccessibilityPanel()" title="Accesibilidad Universal" class="bg-[#111827] border border-red-600/60 text-red-500 hover:bg-red-600 hover:text-white p-3.5 rounded-full shadow-[0_0_20px_rgba(239,68,68,0.3)] transition-all flex items-center justify-center">
+            <i class="fas fa-universal-access text-xl"></i>
         </button>
 
-        <!-- Menú Desplegable -->
-        <div id="accessibility-dropdown" class="hidden absolute top-14 left-0 w-72 bg-kronox-cardBg border border-kronox-cardBorder rounded-xl p-4 shadow-2xl backdrop-blur-xl space-y-3">
-            <div class="flex justify-between items-center border-b border-kronox-cardBorder pb-2">
-                <span class="text-xs font-black uppercase text-kronox-accent tracking-wider"><i class="fas fa-eye mr-1"></i> Accesibilidad Visual</span>
-                <button onclick="toggleAccessibilityDropdown()" title="Cerrar menú [X]" class="text-gray-400 hover:text-white text-xs font-bold">
-                    <i class="fas fa-times"></i>
+        <div id="accessibility-panel" class="hidden absolute top-16 left-0 w-80 bg-[#141d2f] border border-red-600/40 rounded-2xl p-5 shadow-2xl backdrop-blur-xl space-y-5 text-gray-200">
+            <div class="flex justify-between items-center border-b border-red-600/50 pb-2">
+                <span class="text-sm font-bold uppercase text-red-500 tracking-wider">Accesibilidad Universal</span>
+                <button onclick="toggleAccessibilityPanel()" class="text-gray-400 hover:text-white font-bold"><i class="fas fa-times"></i></button>
+            </div>
+            
+            <div>
+                <label class="block text-xs font-bold text-gray-300 uppercase mb-2">Tamaño de letra</label>
+                <div class="flex gap-2">
+                    <button onclick="adjustFontSize(-2)" class="flex-1 bg-[#1f293d] hover:bg-red-600 hover:text-white border border-gray-700 py-2 rounded-lg font-bold text-sm transition-colors">A-</button>
+                    <button onclick="resetFontSize()" class="flex-1 bg-red-600 text-white border border-red-500 py-2 rounded-lg font-bold text-sm transition-colors">A</button>
+                    <button onclick="adjustFontSize(2)" class="flex-1 bg-[#1f293d] hover:bg-red-600 hover:text-white border border-gray-700 py-2 rounded-lg font-bold text-sm transition-colors">A+</button>
+                </div>
+            </div>
+
+            <div>
+                <label class="block text-xs font-bold text-gray-300 uppercase mb-2">Visión de Color</label>
+                <div class="grid grid-cols-2 gap-2 text-xs">
+                    <button onclick="setDaltonism('none')" id="btn-dalton-none" class="bg-red-600 text-white font-semibold py-2 px-3 rounded-lg border border-red-500 transition-all text-center">Ninguno</button>
+                    <button onclick="setDaltonism('protanopia')" id="btn-dalton-prot" class="bg-[#1f293d] hover:bg-red-600/50 text-gray-300 font-semibold py-2 px-3 rounded-lg border border-gray-700 transition-all text-center">Protanopía</button>
+                    <button onclick="setDaltonism('deuteranopia')" id="btn-dalton-deut" class="bg-[#1f293d] hover:bg-red-600/50 text-gray-300 font-semibold py-2 px-3 rounded-lg border border-gray-700 transition-all text-center">Deuteranopía</button>
+                    <button onclick="setDaltonism('tritanopia')" id="btn-dalton-trit" class="bg-[#1f293d] hover:bg-red-600/50 text-gray-300 font-semibold py-2 px-3 rounded-lg border border-gray-700 transition-all text-center">Tritanopía</button>
+                </div>
+            </div>
+
+            <div>
+                <label class="block text-xs font-bold text-gray-300 uppercase mb-2">Contraste</label>
+                <button onclick="toggleHighContrast()" id="btn-high-contrast" class="w-full bg-[#1f293d] hover:bg-red-600/50 border border-gray-700 text-gray-200 py-2.5 rounded-lg text-xs font-semibold transition-colors text-center">
+                    Activar Alto Contraste
                 </button>
             </div>
-            
-            <!-- Modo Daltonismo -->
-            <button onclick="toggleDaltonism()" title="Activar colores optimizados para daltonismo" class="w-full text-left bg-kronox-blueDark hover:bg-kronox-accent hover:text-kronox-bg border border-kronox-cardBorder text-gray-200 px-3 py-2 rounded-lg text-xs font-semibold transition-colors flex items-center gap-2">
-                <i class="fas fa-adjust text-kronox-accent"></i> Modo Daltonismo
-            </button>
-            
-            <!-- Selector Específico de Tamaño de Letra -->
-            <div class="bg-kronox-blueDark border border-kronox-cardBorder p-2.5 rounded-lg space-y-1.5">
-                <label for="font-size-select" class="text-[11px] font-bold text-kronox-accent uppercase flex items-center gap-1.5">
-                    <i class="fas fa-text-height"></i> Tamaño de Letra:
-                </label>
-                <select id="font-size-select" onchange="changeFontSize(this.value)" class="w-full bg-[#050a14] border border-kronox-cardBorder text-white text-xs rounded-md px-2 py-1.5 focus:border-kronox-accent focus:outline-none">
-                    <option value="normal">Normal (100%)</option>
-                    <option value="large">Grande (112.5%)</option>
-                    <option value="xlarge">Muy Grande (125%)</option>
-                </select>
+
+            <div>
+                <label class="block text-xs font-bold text-gray-300 uppercase mb-2">Lector de Voz</label>
+                <button onclick="toggleSpeechReader()" id="btn-speech-toggle" class="w-full bg-cyan-600 hover:bg-cyan-500 text-white py-2.5 rounded-lg text-xs font-bold transition-colors flex items-center justify-center gap-2">
+                    <i class="fas fa-volume-high"></i> Activar Lector Interactivo
+                </button>
             </div>
+        </div>
+    </div>
+
+    <!-- MODAL DE INICIO DE SESIÓN -->
+    <div id="login-modal" class="hidden fixed inset-0 bg-black/80 flex items-center justify-center p-4 z-50 backdrop-blur-md">
+        <div class="kronox-card p-8 max-w-md w-full border border-kronox-accent/40 shadow-2xl relative">
+            <button onclick="closeLoginModal()" class="absolute top-4 right-4 text-gray-400 hover:text-white font-bold text-lg"><i class="fas fa-times"></i></button>
+            <h2 class="text-2xl font-black text-white uppercase italic mb-2 text-center">Iniciar <span class="text-kronox-accent">Sesión</span></h2>
+            <p class="text-gray-400 text-xs mb-6 text-center">Ingresa tu cuenta para desbloquear la sección de rutinas y beneficios.</p>
+            
+            <form onsubmit="handleLogin(event)" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-bold text-kronox-accent uppercase mb-1">Correo o Usuario</label>
+                    <input type="text" id="login-user" required placeholder="ej. socio@kronox.com" class="w-full bg-[#050a14] border border-kronox-cardBorder rounded-lg px-4 py-2.5 text-white text-sm focus:border-kronox-accent focus:outline-none">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-kronox-accent uppercase mb-1">Contraseña</label>
+                    <input type="password" id="login-pass" required placeholder="••••••••" class="w-full bg-[#050a14] border border-kronox-cardBorder rounded-lg px-4 py-2.5 text-white text-sm focus:border-kronox-accent focus:outline-none">
+                </div>
+                <button type="submit" class="w-full btn-neon-solid py-3 rounded-lg font-black text-xs uppercase tracking-wider">
+                    Entrar al Sistema
+                </button>
+            </form>
         </div>
     </div>
 
@@ -162,42 +232,59 @@
     <header class="sticky top-0 z-40 bg-kronox-bg/85 backdrop-blur-lg border-b border-kronox-cardBorder/60">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-24 flex items-center justify-between">
             
-            <!-- Logo Oficial en Imagen (Tamaño Doble) -->
-            <a href="index" title="Ir al inicio" class="flex items-center gap-2 group py-2 ml-12 sm:ml-0">
+            <a href="index" title="Ir al inicio" class="flex items-center gap-2 group py-2 ml-14 sm:ml-0">
                 <img src="https://res.cloudinary.com/bo5jzelh/image/upload/v1783041430/Logo_Kronox_Gym_lfg9tl.jpg" 
                      alt="Kronox Gym Logo" 
                      class="h-16 md:h-20 w-auto rounded-xl border border-kronox-accent/40 object-contain shadow-[0_0_15px_rgba(0,210,255,0.2)] group-hover:border-kronox-accent transition-all duration-300">
             </a>
 
             <!-- Navegación Desktop -->
-            <nav class="hidden md:flex items-center space-x-8 font-semibold text-sm">
+            <nav class="hidden md:flex items-center space-x-6 font-semibold text-sm">
                 <a href="index" title="Página principal" class="text-gray-300 hover:text-kronox-accent transition-colors">Inicio</a>
                 <a href="informacion" title="Conoce más sobre el gimnasio" class="text-gray-300 hover:text-kronox-accent transition-colors">Información</a>
                 <a href="planes" title="Ver membresías" class="text-gray-300 hover:text-kronox-accent transition-colors">Planes</a>
                 <a href="catalogo" title="Explorar productos y galería" class="text-gray-300 hover:text-kronox-accent transition-colors">Catálogo</a>
                 <a href="ubicacion" title="Consultar dirección" class="text-kronox-accent font-bold border-b-2 border-kronox-accent pb-1">Ubicación</a>
+                <!-- Pestaña Rutinas Oculta hasta iniciar sesión -->
+                <a href="rutinas" id="nav-rutinas" class="hidden text-emerald-400 font-bold hover:text-emerald-300 transition-colors flex items-center gap-1.5"><i class="fas fa-dumbbell"></i> Rutinas</a>
             </nav>
 
-            <!-- Botón Contactar / WhatsApp -->
-            <div class="hidden md:flex items-center">
-                <a href="https://wa.me/527779393985?text=Hola%20Kronox%20Gym,%20me%20gustar%C3%ADa%20pedir%20informaci%C3%B3n." target="_blank" title="Contactar por WhatsApp" class="btn-neon-solid px-5 py-2.5 rounded-lg font-bold text-xs uppercase tracking-wider flex items-center gap-2">
+            <div class="hidden md:flex items-center space-x-3">
+                <div id="user-session-info" class="hidden items-center gap-2 text-xs font-bold text-cyan-400">
+                    <span id="welcome-user-name"></span>
+                    <button onclick="logoutUser()" title="Cerrar sesión" class="text-red-400 hover:text-red-300 text-sm ml-2"><i class="fas fa-sign-out-alt"></i></button>
+                </div>
+                <button id="btn-open-login" onclick="openLoginModal()" class="btn-neon-solid px-4 py-2 rounded-lg font-bold text-xs uppercase tracking-wider">
+                    <i class="fas fa-user-lock mr-1"></i> Iniciar Sesión
+                </button>
+                <a href="https://wa.me/527779393985?text=Hola%20Kronox%20Gym,%20me%20gustar%C3%ADa%20pedir%20informaci%C3%B3n." target="_blank" title="Contactar por WhatsApp" class="btn-neon-solid px-4 py-2 rounded-lg font-bold text-xs uppercase tracking-wider flex items-center gap-2">
                     <i class="fab fa-whatsapp text-base"></i> Contactar
                 </a>
             </div>
 
-            <!-- Botón Menú Móvil -->
             <button id="mobile-menu-btn" title="Abrir menú" class="md:hidden text-gray-300 hover:text-white text-2xl focus:outline-none">
                 <i class="fas fa-bars"></i>
             </button>
         </div>
 
-        <!-- Menú Desplegable Móvil -->
+        <!-- Menú Móvil -->
         <div id="mobile-menu" class="hidden md:hidden bg-kronox-blueDark border-b border-kronox-cardBorder px-6 pt-3 pb-6 space-y-3">
             <a href="index" title="Página principal" class="block py-2 text-gray-300 hover:text-kronox-accent font-medium">Inicio</a>
             <a href="informacion" title="Conoce más" class="block py-2 text-gray-300 hover:text-kronox-accent font-medium">Información</a>
             <a href="planes" title="Ver planes" class="block py-2 text-gray-300 hover:text-kronox-accent font-medium">Planes</a>
             <a href="catalogo" title="Catálogo" class="block py-2 text-gray-300 hover:text-kronox-accent font-medium">Catálogo</a>
             <a href="ubicacion" title="Ubicación" class="block py-2 text-kronox-accent font-bold">Ubicación</a>
+            <a href="rutinas" id="mobile-nav-rutinas" class="hidden py-2 text-emerald-400 font-bold"><i class="fas fa-dumbbell"></i> Rutinas Exclusivas</a>
+            
+            <div id="mobile-session-container" class="pt-2 border-t border-gray-800">
+                <button id="mobile-btn-login" onclick="openLoginModal()" class="w-full text-center btn-neon-solid py-2.5 rounded-lg font-bold text-xs uppercase">
+                    Iniciar Sesión
+                </button>
+                <div id="mobile-user-info" class="hidden flex justify-between items-center py-2 text-xs text-cyan-400 font-bold">
+                    <span id="mobile-welcome-name"></span>
+                    <button onclick="logoutUser()" class="text-red-400"><i class="fas fa-sign-out-alt"></i> Salir</button>
+                </div>
+            </div>
             <a href="https://wa.me/527779393985?text=Hola%20Kronox%20Gym" target="_blank" title="WhatsApp" class="inline-block mt-3 w-full text-center btn-neon-solid py-2.5 rounded-lg font-bold text-xs uppercase">
                 <i class="fab fa-whatsapp"></i> Contactar por WhatsApp
             </a>
@@ -207,7 +294,6 @@
     <!-- SECCIÓN PRINCIPAL -->
     <main class="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-20 flex-grow">
         
-        <!-- Encabezado -->
         <div class="text-center max-w-3xl mx-auto mb-16">
             <span class="inline-block bg-kronox-accent/10 border border-kronox-accent/40 text-kronox-accent text-xs font-black uppercase tracking-widest px-4 py-1.5 rounded-full mb-5">
                 Encuéntranos
@@ -222,10 +308,8 @@
             </p>
         </div>
 
-        <!-- CONTENEDOR DE HORARIOS Y LOGO DESTACADO -->
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 max-w-5xl mx-auto items-stretch">
             
-            <!-- Tarjeta exclusiva de Horarios e Información -->
             <div class="kronox-card p-8 flex flex-col justify-center lg:col-span-1">
                 <div class="w-14 h-14 rounded-2xl bg-kronox-accent/10 border border-kronox-accent/30 text-kronox-accent flex items-center justify-center text-2xl mb-6">
                     <i class="fas fa-clock"></i>
@@ -257,11 +341,9 @@
                 </div>
             </div>
 
-            <!-- Contenedor con el Logo Oficial y Botón Único de Maps -->
             <div class="kronox-card p-8 lg:col-span-2 flex flex-col items-center justify-center text-center relative overflow-hidden min-h-[320px]">
                 <div class="absolute inset-0 bg-gradient-to-tr from-kronox-accent/5 to-blue-600/10 pointer-events-none"></div>
                 
-                <!-- Logo Oficial Cloudinary -->
                 <div class="mb-6 p-4 rounded-2xl bg-kronox-cardBg/90 border border-kronox-accent/40 shadow-[0_0_30px_rgba(0,210,255,0.25)]">
                     <img src="https://res.cloudinary.com/bo5jzelh/image/upload/v1783041430/Logo_Kronox_Gym_lfg9tl.jpg" 
                          alt="Kronox Gym Logo" 
@@ -276,7 +358,6 @@
                     Entrena con equipo profesional, la mejor actitud y el ambiente ideal para superar tus límites.
                 </p>
 
-                <!-- Único Botón de Acceso a Google Maps -->
                 <a href="https://maps.app.goo.gl/hVR5Ayt5GESfuEjP9" target="_blank" title="Abrir ubicación en Google Maps" class="btn-neon-solid px-6 py-3 rounded-xl font-black text-xs uppercase tracking-wider inline-flex items-center gap-2">
                     <i class="fas fa-directions text-base"></i> Cómo llegar en Google Maps
                 </a>
@@ -286,94 +367,203 @@
 
     </main>
 
-    <!-- PIE DE PÁGINA (FOOTER) -->
+    <!-- PIE DE PÁGINA -->
     <footer class="relative z-10 bg-kronox-blueDark border-t border-kronox-cardBorder/80 py-10">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-6">
-            
             <div class="text-center md:text-left">
                 <a href="index" title="Ir al inicio" class="inline-block">
-                    <img src="https://res.cloudinary.com/bo5jzelh/image/upload/v1783041430/Logo_Kronox_Gym_lfg9tl.jpg" 
-                         alt="Kronox Gym Logo" 
-                         class="h-16 w-auto rounded-xl border border-kronox-cardBorder object-contain shadow-md">
+                    <img src="https://res.cloudinary.com/bo5jzelh/image/upload/v1783041430/Logo_Kronox_Gym_lfg9tl.jpg" alt="Logo" class="h-16 w-auto rounded-xl border border-kronox-cardBorder object-contain shadow-md">
                 </a>
             </div>
-
-            <!-- Redes Sociales con Colores Oficiales FIJOS -->
             <div class="flex items-center space-x-5">
-                <a href="https://www.instagram.com/kronoxgym" target="_blank" title="Instagram"
-                   class="w-10 h-10 rounded-full text-white bg-gradient-to-tr from-yellow-500 via-pink-500 to-purple-600 border border-pink-500/60 shadow-[0_0_12px_rgba(236,72,153,0.4)] flex items-center justify-center hover:scale-110 hover:shadow-[0_0_20px_rgba(236,72,153,0.7)] transition-all duration-300">
-                    <i class="fab fa-instagram text-lg"></i>
-                </a>
-
-                <a href="https://www.facebook.com/profile.php?id=61591217086184" target="_blank" title="Facebook"
-                   class="w-10 h-10 rounded-full text-white bg-[#1877F2] border border-[#1877F2] shadow-[0_0_12px_rgba(24,119,242,0.4)] flex items-center justify-center hover:scale-110 hover:shadow-[0_0_20px_rgba(24,119,242,0.7)] transition-all duration-300">
-                    <i class="fab fa-facebook-f text-lg"></i>
-                </a>
-
-                <a href="https://www.tiktok.com/@kronoxgym_" target="_blank" title="TikTok"
-                   class="w-10 h-10 rounded-full text-white bg-black border border-cyan-400 shadow-[0_0_12px_rgba(0,242,234,0.4)] flex items-center justify-center hover:scale-110 hover:shadow-[0_0_20px_rgba(0,242,234,0.7)] transition-all duration-300">
-                    <i class="fab fa-tiktok text-lg"></i>
-                </a>
-
-                <a href="https://wa.me/527779393985?text=Hola%20Kronox%20Gym" target="_blank" title="WhatsApp"
-                   class="w-10 h-10 rounded-full text-white bg-[#25D366] border border-[#25D366] shadow-[0_0_12px_rgba(37,211,102,0.4)] flex items-center justify-center hover:scale-110 hover:shadow-[0_0_20px_rgba(37,211,102,0.7)] transition-all duration-300">
-                    <i class="fab fa-whatsapp text-lg"></i>
-                </a>
+                <a href="https://www.instagram.com/kronoxgym" target="_blank" class="w-10 h-10 rounded-full text-white bg-gradient-to-tr from-yellow-500 via-pink-500 to-purple-600 flex items-center justify-center hover:scale-110 transition-all"><i class="fab fa-instagram text-lg"></i></a>
+                <a href="https://www.facebook.com/profile.php?id=61591217086184" target="_blank" class="w-10 h-10 rounded-full text-white bg-[#1877F2] flex items-center justify-center hover:scale-110 transition-all"><i class="fab fa-facebook-f text-lg"></i></a>
+                <a href="https://www.tiktok.com/@kronoxgym_" target="_blank" class="w-10 h-10 rounded-full text-white bg-black flex items-center justify-center hover:scale-110 transition-all"><i class="fab fa-tiktok text-lg"></i></a>
+                <a href="https://wa.me/527779393985?text=Hola" target="_blank" class="w-10 h-10 rounded-full text-white bg-[#25D366] flex items-center justify-center hover:scale-110 transition-all"><i class="fab fa-whatsapp text-lg"></i></a>
             </div>
-
         </div>
     </footer>
 
-    <!-- Lógica JavaScript y Accesibilidad -->
+    <!-- LÓGICA JAVASCRIPT -->
     <script>
+        // --- 1. GESTIÓN DE SESIÓN ---
+        function openLoginModal() { document.getElementById('login-modal').classList.remove('hidden'); }
+        function closeLoginModal() { document.getElementById('login-modal').classList.add('hidden'); }
+
+        function handleLogin(e) {
+            e.preventDefault();
+            const user = document.getElementById('login-user').value;
+            localStorage.setItem('kronox_logged_user', user);
+            closeLoginModal();
+            checkUserSession();
+        }
+
+        function logoutUser() {
+            localStorage.removeItem('kronox_logged_user');
+            checkUserSession();
+        }
+
+        function checkUserSession() {
+            const loggedUser = localStorage.getItem('kronox_logged_user');
+            const navRutinas = document.getElementById('nav-rutinas');
+            const mobileNavRutinas = document.getElementById('mobile-nav-rutinas');
+            const btnLogin = document.getElementById('btn-open-login');
+            const userInfo = document.getElementById('user-session-info');
+            const mobileBtnLogin = document.getElementById('mobile-btn-login');
+            const mobileUserInfo = document.getElementById('mobile-user-info');
+
+            if (loggedUser) {
+                if (navRutinas) navRutinas.classList.remove('hidden');
+                if (mobileNavRutinas) mobileNavRutinas.classList.remove('hidden');
+                if (btnLogin) btnLogin.classList.add('hidden');
+                if (userInfo) {
+                    userInfo.classList.remove('hidden');
+                    userInfo.classList.add('flex');
+                    document.getElementById('welcome-user-name').innerText = `Hola, ${loggedUser.split('@')[0]}`;
+                }
+                if (mobileBtnLogin) mobileBtnLogin.classList.add('hidden');
+                if (mobileUserInfo) {
+                    mobileUserInfo.classList.remove('hidden');
+                    document.getElementById('mobile-welcome-name').innerText = `Usuario: ${loggedUser.split('@')[0]}`;
+                }
+            } else {
+                if (navRutinas) navRutinas.classList.add('hidden');
+                if (mobileNavRutinas) mobileNavRutinas.classList.add('hidden');
+                if (btnLogin) btnLogin.classList.remove('hidden');
+                if (userInfo) {
+                    userInfo.classList.add('hidden');
+                    userInfo.classList.remove('flex');
+                }
+                if (mobileBtnLogin) mobileBtnLogin.classList.remove('hidden');
+                if (mobileUserInfo) mobileUserInfo.classList.add('hidden');
+            }
+        }
+
+        // --- 2. ACCESIBILIDAD UNIVERSAL ---
+        function toggleAccessibilityPanel() {
+            const panel = document.getElementById('accessibility-panel');
+            if (panel) panel.classList.toggle('hidden');
+        }
+
+        let currentFontSize = 100;
+        function adjustFontSize(amount) {
+            currentFontSize += amount;
+            if (currentFontSize < 70) currentFontSize = 70;
+            if (currentFontSize > 200) currentFontSize = 200;
+            document.documentElement.style.fontSize = `${currentFontSize}%`;
+            localStorage.setItem('kronox_font_size', currentFontSize);
+        }
+
+        function resetFontSize() {
+            currentFontSize = 100;
+            document.documentElement.style.fontSize = '100%';
+            localStorage.setItem('kronox_font_size', 100);
+        }
+
+        function setDaltonism(type) {
+            document.body.classList.remove('daltonism-protanopia', 'daltonism-deuteranopia', 'daltonism-tritanopia');
+            ['none', 'protan', 'deut', 'trit'].forEach(t => {
+                const btn = document.getElementById(`btn-dalton-${t}`);
+                if (btn) {
+                    btn.classList.remove('bg-red-600', 'text-white', 'border-red-500');
+                    btn.classList.add('bg-[#1f293d]', 'text-gray-300', 'border-gray-700');
+                }
+            });
+
+            if (type !== 'none') {
+                document.body.classList.add(`daltonism-${type}`);
+                const activeBtn = document.getElementById(`btn-dalton-${type.substring(0,4)}`);
+                if (activeBtn) {
+                    activeBtn.classList.add('bg-red-600', 'text-white', 'border-red-500');
+                    activeBtn.classList.remove('bg-[#1f293d]', 'text-gray-300');
+                }
+            } else {
+                const noneBtn = document.getElementById('btn-dalton-none');
+                if (noneBtn) {
+                    noneBtn.classList.add('bg-red-600', 'text-white', 'border-red-500');
+                    noneBtn.classList.remove('bg-[#1f293d]', 'text-gray-300');
+                }
+            }
+            localStorage.setItem('kronox_daltonism', type);
+        }
+
+        function toggleHighContrast() {
+            document.body.classList.toggle('high-contrast');
+            const isActive = document.body.classList.contains('high-contrast');
+            const btn = document.getElementById('btn-high-contrast');
+            if (isActive) {
+                btn.classList.add('bg-red-600', 'text-white', 'border-red-500');
+            } else {
+                btn.classList.remove('bg-red-600', 'text-white', 'border-red-500');
+            }
+            localStorage.setItem('kronox_high_contrast', isActive ? 'enabled' : 'disabled');
+        }
+
+        // --- 3. LECTOR DE VOZ CON SUBTÍTULOS (PC y Celular) ---
+        let speechActive = false;
+        function toggleSpeechReader() {
+            speechActive = !speechActive;
+            const btn = document.getElementById('btn-speech-toggle');
+            if (speechActive) {
+                btn.innerHTML = `<i class="fas fa-volume-xmark"></i> Desactivar Lector`;
+                btn.classList.replace('bg-cyan-600', 'bg-red-600');
+                alert("Lector activado. Selecciona cualquier texto con el mouse (en PC) o mantén presionado con el dedo (en celular) para escucharlo con subtítulos.");
+            } else {
+                btn.innerHTML = `<i class="fas fa-volume-high"></i> Activar Lector Interactivo`;
+                btn.classList.replace('bg-red-600', 'bg-cyan-600');
+                window.speechSynthesis.cancel();
+                document.getElementById('speech-subtitle-box').style.display = 'none';
+            }
+        }
+
+        function leerTextoSeleccionado() {
+            if (!speechActive) return;
+            const seleccion = window.getSelection();
+            const textoSeleccionado = seleccion.toString().trim();
+
+            if (textoSeleccionado.length > 1) {
+                window.speechSynthesis.cancel();
+                const utterance = new SpeechSynthesisUtterance(textoSeleccionado);
+                utterance.lang = 'es-MX';
+                
+                const subtitleBox = document.getElementById('speech-subtitle-box');
+                const subtitleText = document.getElementById('subtitle-text');
+                subtitleText.innerText = textoSeleccionado;
+                subtitleBox.style.display = 'block';
+
+                utterance.onend = () => { subtitleBox.style.display = 'none'; };
+                window.speechSynthesis.speak(utterance);
+            }
+        }
+
+        document.addEventListener('mouseup', leerTextoSeleccionado);
+        document.addEventListener('touchend', () => { setTimeout(leerTextoSeleccionado, 300); });
+
+        // Menú Móvil
         const menuBtn = document.getElementById('mobile-menu-btn');
         const mobileMenu = document.getElementById('mobile-menu');
-
         if (menuBtn && mobileMenu) {
-            menuBtn.addEventListener('click', () => {
-                mobileMenu.classList.toggle('hidden');
-            });
+            menuBtn.addEventListener('click', () => { mobileMenu.classList.toggle('hidden'); });
         }
 
-        // Funciones de Accesibilidad con persistencia en localStorage
-        function toggleAccessibilityDropdown() {
-            const dropdown = document.getElementById('accessibility-dropdown');
-            if (dropdown) dropdown.classList.toggle('hidden');
-        }
-
-        function toggleDaltonism() {
-            document.body.classList.toggle('daltonism-mode');
-            const isDaltonism = document.body.classList.contains('daltonism-mode');
-            localStorage.setItem('kronox_daltonism', isDaltonism ? 'enabled' : 'disabled');
-        }
-
-        // Cambiar tamaño de letra alterando directamente la raíz del documento (rem)
-        function changeFontSize(size) {
-            const root = document.documentElement;
-            
-            if (size === 'large') {
-                root.style.fontSize = '112.5%';
-            } else if (size === 'xlarge') {
-                root.style.fontSize = '125%';
-            } else {
-                root.style.fontSize = '100%';
-            }
-            
-            localStorage.setItem('kronox_font_size', size);
-        }
-
-        // Al cargar la página, aplica automáticamente los ajustes guardados
+        // Cargar ajustes guardados al iniciar
         document.addEventListener('DOMContentLoaded', () => {
-            if (localStorage.getItem('kronox_daltonism') === 'enabled') {
-                document.body.classList.add('daltonism-mode');
+            checkUserSession();
+
+            const savedSize = localStorage.getItem('kronox_font_size');
+            if (savedSize) {
+                currentFontSize = parseInt(savedSize);
+                document.documentElement.style.fontSize = `${currentFontSize}%`;
             }
-            
-            const savedSize = localStorage.getItem('kronox_font_size') || 'normal';
-            const selectElement = document.getElementById('font-size-select');
-            if (selectElement) {
-                selectElement.value = savedSize;
+
+            const savedDaltonism = localStorage.getItem('kronox_daltonism');
+            if (savedDaltonism && savedDaltonism !== 'none') {
+                setDaltonism(savedDaltonism);
             }
-            changeFontSize(savedSize);
+
+            if (localStorage.getItem('kronox_high_contrast') === 'enabled') {
+                toggleHighContrast();
+            }
         });
     </script>
 </body>
