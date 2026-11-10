@@ -127,7 +127,6 @@ function actualizarEstadoLectorUI() {
 function leerTextoSeleccionado(e) {
   if (!speechActive) return;
 
-  // Evitar que lea si tocas botones, menús o paneles
   if (e && e.target && (e.target.closest('button') || e.target.closest('a') || e.target.closest('nav') || e.target.closest('#accessibility-panel'))) {
     return;
   }
@@ -138,7 +137,7 @@ function leerTextoSeleccionado(e) {
     const seleccion = window.getSelection();
     const textoSeleccionado = seleccion ? seleccion.toString().trim() : "";
 
-    if (textoSeleccionado.length > 2) {
+    if (textoSeleSeleccionado && textoSeleccionado.length > 2) {
       window.speechSynthesis.cancel();
       const utterance = new SpeechSynthesisUtterance(textoSeleccionado);
       utterance.lang = 'es-MX';
@@ -172,20 +171,31 @@ document.addEventListener("DOMContentLoaded", () => {
   // Cargar preferencias globales de accesibilidad
   loadAccessibilityPreferences();
 
-  // ===== Menú Hamburguesa Nativo y Fluido =====
-  const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+  // ===== MENÚ HAMBURGUESA BLINDADO Y SINCRONIZADO =====
+  let mobileMenuBtn = document.getElementById('mobile-menu-btn');
   const mobileMenu = document.getElementById('mobile-menu');
-  const mobileMenuIcon = document.getElementById('mobile-menu-icon');
 
   if (mobileMenuBtn && mobileMenu) {
-    mobileMenuBtn.addEventListener('click', (e) => {
+    // Limpieza total de nodos para evitar eventos duplicados al navegar
+    const freshBtn = mobileMenuBtn.cloneNode(true);
+    mobileMenuBtn.parentNode.replaceChild(freshBtn, mobileMenuBtn);
+    mobileMenuBtn = document.getElementById('mobile-menu-btn');
+
+    const mobileMenuIcon = document.getElementById('mobile-menu-icon');
+
+    const toggleMenu = (e) => {
       e.stopPropagation();
       const isHidden = mobileMenu.classList.toggle('hidden');
+      
+      // Sincronización estricta del icono según la clase real del menú
       if (mobileMenuIcon) {
         mobileMenuIcon.className = isHidden ? "fas fa-bars" : "fas fa-times";
       }
-    });
+    };
 
+    mobileMenuBtn.addEventListener('click', toggleMenu);
+
+    // Cerrar al hacer clic en los enlaces internos
     mobileMenu.querySelectorAll("a").forEach(link => {
       link.addEventListener("click", () => {
         mobileMenu.classList.add('hidden');
@@ -193,15 +203,18 @@ document.addEventListener("DOMContentLoaded", () => {
       });
     });
 
+    // Cerrar al hacer clic fuera del menú de forma segura
     document.addEventListener('click', (e) => {
-      if (!mobileMenu.contains(e.target) && !mobileMenuBtn.contains(e.target) && !mobileMenu.classList.contains('hidden')) {
+      const btnRef = document.getElementById('mobile-menu-btn');
+      const iconRef = document.getElementById('mobile-menu-icon');
+      if (mobileMenu && btnRef && !mobileMenu.contains(e.target) && !btnRef.contains(e.target) && !mobileMenu.classList.contains('hidden')) {
         mobileMenu.classList.add('hidden');
-        if (mobileMenuIcon) mobileMenuIcon.className = "fas fa-bars";
+        if (iconRef) iconRef.className = "fas fa-bars";
       }
     });
   }
 
-  // Eventos seguros para el Lector de Voz (Sin touchend global para evitar lag)
+  // Eventos seguros para el Lector de Voz
   document.addEventListener('mouseup', leerTextoSeleccionado);
   document.addEventListener('selectionchange', () => {
     if (speechActive) leerTextoSeleccionado();
