@@ -29,7 +29,7 @@ function initWA() {
   setLink("waNav", "Hola, quiero información de Kronox Gym");
 }
 
-// ================= PROTECCIÓN DEL LECTOR DE VOZ (CAMBIO DE PESTAÑA / NAVEGACIÓN) =================
+// ================= PROTECCIÓN DEL LECTOR DE VOZ (CAMBIO DE PESTAÑA) =================
 let synth = window.speechSynthesis;
 let estaPausadoPorCambioDeVentana = false;
 
@@ -47,50 +47,72 @@ document.addEventListener("visibilitychange", () => {
   }
 });
 
+// ================= ACCESIBILIDAD UNIVERSAL GLOBAL =================
+function toggleAccessibilityPanel() {
+  const panel = document.getElementById('accessibility-panel');
+  if (panel) {
+    panel.classList.toggle('hidden');
+  }
+}
+
+function loadAccessibilityPreferences() {
+  const savedSize = localStorage.getItem('kronox_font_size');
+  if (savedSize) {
+    document.documentElement.style.fontSize = `${savedSize}%`;
+  }
+
+  const savedContrast = localStorage.getItem('kronox_high_contrast');
+  if (savedContrast === 'enabled') {
+    document.body.classList.add('high-contrast');
+  }
+
+  const savedDaltonism = localStorage.getItem('kronox_daltonism');
+  if (savedDaltonism && savedDaltonism !== 'none') {
+    document.body.classList.add(`daltonism-${savedDaltonism}`);
+  }
+}
+
 // ================= INICIALIZACIÓN DEL SITIO =================
 document.addEventListener("DOMContentLoaded", () => {
 
   // Links de WhatsApp
   initWA();
 
-  // ===== Persistencia del Lector de Accesibilidad entre páginas =====
-  const btnLector = document.querySelector("#btnActivarLector, .lector-voz-btn, [id*='Lector']"); // Ajusta el selector si tu botón tiene un ID específico
-  const lectorActivoEstado = localStorage.getItem("kronox_lector_activo") === "true";
+  // Cargar preferencias globales de accesibilidad
+  loadAccessibilityPreferences();
 
-  // Función global o lógica para tu lector interactivo
-  if (lectorActivoEstado) {
-    // Si estaba activo antes de cambiar de página, lo re-activamos de forma automática
-    console.log("Lector restaurado por localStorage");
-    // Aquí puedes disparar la función que enciende los eventos de lectura de tu widget si es necesario
-  }
+  // ===== Menú responsive optimizado para Celulares (IDs reales de tus HTML) =====
+  const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+  const mobileMenu = document.getElementById('mobile-menu');
+  const mobileMenuIcon = document.getElementById('mobile-menu-icon');
 
-  // ===== Menú responsive (Optimizado para Celulares y Táctil) =====
-  const menuBtn = document.querySelector(".menu-toggle");
-  const nav = document.querySelector(".nav nav");
-
-  if (menuBtn && nav) {
-    menuBtn.addEventListener("click", (e) => {
+  if (mobileMenuBtn && mobileMenu) {
+    const toggleMenu = (e) => {
+      e.preventDefault();
       e.stopPropagation();
-      nav.classList.toggle("active");
-
-      if (nav.classList.contains("active")) {
-        menuBtn.innerHTML = "✕";
-      } else {
-        menuBtn.innerHTML = "☰";
+      const isHidden = mobileMenu.classList.toggle('hidden');
+      
+      if (mobileMenuIcon) {
+        mobileMenuIcon.className = isHidden ? "fas fa-bars" : "fas fa-times";
       }
-    });
+    };
 
-    nav.querySelectorAll("a").forEach(link => {
+    mobileMenuBtn.addEventListener('click', toggleMenu);
+    mobileMenuBtn.addEventListener('touchstart', toggleMenu);
+
+    // Cerrar al hacer clic en cualquier enlace del menú móvil
+    mobileMenu.querySelectorAll("a").forEach(link => {
       link.addEventListener("click", () => {
-        nav.classList.remove("active");
-        menuBtn.innerHTML = "☰";
+        mobileMenu.classList.add('hidden');
+        if (mobileMenuIcon) mobileMenuIcon.className = "fas fa-bars";
       });
     });
 
-    document.addEventListener("click", (e) => {
-      if (!nav.contains(e.target) && !menuBtn.contains(e.target) && nav.classList.contains("active")) {
-        nav.classList.remove("active");
-        menuBtn.innerHTML = "☰";
+    // Cerrar al tocar fuera del menú
+    document.addEventListener('click', (e) => {
+      if (!mobileMenu.contains(e.target) && !mobileMenuBtn.contains(e.target) && !mobileMenu.classList.contains('hidden')) {
+        mobileMenu.classList.add('hidden');
+        if (mobileMenuIcon) mobileMenuIcon.className = "fas fa-bars";
       }
     });
   }
