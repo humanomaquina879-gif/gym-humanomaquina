@@ -8,7 +8,7 @@ if (window.location.pathname.endsWith('index.html')) {
 else if (window.location.pathname.endsWith('.html')) {
   const cleanUrl = window.location.pathname.replace(/\.html$/, '') + window.location.search + window.location.hash;
   window.history.replaceState(null, '', cleanUrl);
-}
+} 
 
 // ================= CONFIGURACIÓN DE WHATSAPP =================
 const phone = "527779393985";
@@ -38,13 +38,14 @@ document.addEventListener("DOMContentLoaded", () => {
   // Links de WhatsApp
   initWA();
 
-  // ===== Menú responsive =====
+  // ===== Menú responsive (Optimizado para Celulares y Táctil) =====
   const menuBtn = document.querySelector(".menu-toggle");
   const nav = document.querySelector(".nav nav");
 
   if (menuBtn && nav) {
-
-    menuBtn.addEventListener("click", () => {
+    // Usar click con prevención de propagación para evitar bloqueos
+    menuBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
       nav.classList.toggle("active");
 
       if (nav.classList.contains("active")) {
@@ -54,7 +55,7 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     });
 
-    // Cerrar el menú al tocar un enlace
+    // Cerrar el menú al tocar un enlace dentro de la navegación
     nav.querySelectorAll("a").forEach(link => {
       link.addEventListener("click", () => {
         nav.classList.remove("active");
@@ -62,6 +63,13 @@ document.addEventListener("DOMContentLoaded", () => {
       });
     });
 
+    // Cerrar automáticamente si el usuario toca cualquier otra parte de la pantalla fuera del menú
+    document.addEventListener("click", (e) => {
+      if (!nav.contains(e.target) && !menuBtn.contains(e.target) && nav.classList.contains("active")) {
+        nav.classList.remove("active");
+        menuBtn.innerHTML = "☰";
+      }
+    });
   }
 
 });
