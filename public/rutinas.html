@@ -454,7 +454,7 @@
             window.location.href = "index";
         }
 
-        // --- 2. GENERADOR DE RUTINAS ALTERNATIVAS MANUALES ---
+      // --- 2. GENERADOR DE RUTINAS ALTERNATIVAS MANUALES ---
         const variantesRutinas = {
             pecho: [
                 [
@@ -466,6 +466,16 @@
                     { nombre: "Press Declinado con Barra", reps: "4 series x 8 reps" },
                     { nombre: "Cruce de Poleas Alto", reps: "4 series x 12 reps" },
                     { nombre: "Press Plano con Mancuernas", reps: "3 series x 10 reps" }
+                ],
+                [
+                    { nombre: "Press Inclinado con Barra", reps: "4 series x 8-10 reps" },
+                    { nombre: "Fondos para Pecho", reps: "3 series x 10 reps" },
+                    { nombre: "Peck Deck (Mariposa)", reps: "4 series x 12 reps" }
+                ],
+                [
+                    { nombre: "Press con Mancuernas Neutro", reps: "4 series x 10 reps" },
+                    { nombre: "Aperturas Inclinadas", reps: "3 series x 12 reps" },
+                    { nombre: "Cruce de Poleas Bajo", reps: "4 series x 15 reps" }
                 ]
             ],
             triceps: [
@@ -477,13 +487,23 @@
                 [
                     { nombre: "Press Coctelera (Skull Crusher)", reps: "4 series x 10 reps" },
                     { nombre: "Fondos en Máquina", reps: "3 series x 10 reps" },
-                    { nombre: "Extensión Trasnuca con Mancuerna", reps: "3 series x 12 reps" }
+                    { nombre: "Extensión Trasnuca", reps: "3 series x 12 reps" }
+                ],
+                [
+                    { nombre: "Extensión con Cuerda en Polea", reps: "4 series x 12-15 reps" },
+                    { nombre: "Press de Banca Agarre Cerrado", reps: "4 series x 8 reps" },
+                    { nombre: "Copa a Dos Manos", reps: "3 series x 10 reps" }
+                ],
+                [
+                    { nombre: "Extensión Unilateral en Polea", reps: "3 series x 12 reps" },
+                    { nombre: "Fondos entre Bancos", reps: "4 series x 12 reps" },
+                    { nombre: "Press Francés Inclinado", reps: "3 series x 10 reps" }
                 ]
             ],
             pierna: [
                 [
                     { nombre: "Sentadilla Libre o Multipress", reps: "4 series x 8 reps" },
-                    { nombre: "Prensa de Pierna (Peso Moderado/Adaptado)", reps: "4 series x 10 reps" },
+                    { nombre: "Prensa de Pierna (Peso Adaptado)", reps: "4 series x 10 reps" },
                     { nombre: "Extensión de Cuádriceps", reps: "3 series x 12 reps" },
                     { nombre: "Elevación de Pantorrilla", reps: "5 series x 15 reps" }
                 ],
@@ -492,6 +512,18 @@
                     { nombre: "Curl Femoral Acostado", reps: "4 series x 10 reps" },
                     { nombre: "Sentadilla Hack o en Máquina", reps: "3 series x 10 reps" },
                     { nombre: "Pantorrilla en Prensa", reps: "4 series x 15 reps" }
+                ],
+                [
+                    { nombre: "Prensa Horizontal", reps: "4 series x 12 reps" },
+                    { nombre: "Sentadilla Búlgara", reps: "3 series x 10 reps" },
+                    { nombre: "Peso Muerto Rumano", reps: "4 series x 10 reps" },
+                    { nombre: "Elevación de Talón Sentado", reps: "4 series x 15 reps" }
+                ],
+                [
+                    { nombre: "Sentadilla Goblet", reps: "4 series x 12 reps" },
+                    { nombre: "Prensa 45 Grados", reps: "4 series x 10 reps" },
+                    { nombre: "Curl Femoral Sentado", reps: "3 series x 12 reps" },
+                    { nombre: "Pantorrilla Libre", reps: "4 series x 20 reps" }
                 ]
             ],
             espalda: [
@@ -501,9 +533,19 @@
                     { nombre: "Remo en Polea Baja", reps: "3 series x 12 reps" }
                 ],
                 [
-                    { nombre: "Jalón Agregando Agarre Neutro", reps: "4 series x 10 reps" },
+                    { nombre: "Jalón con Agarre Neutro", reps: "4 series x 10 reps" },
                     { nombre: "Remo en T con Barra", reps: "4 series x 8 reps" },
                     { nombre: "Pullover en Polea Alta", reps: "3 series x 12 reps" }
+                ],
+                [
+                    { nombre: "Remo Unilateral con Mancuerna", reps: "4 series x 10 reps" },
+                    { nombre: "Jalón al Pecho Agarre Ancho", reps: "4 series x 10 reps" },
+                    { nombre: "Hiperextensiones", reps: "3 series x 15 reps" }
+                ],
+                [
+                    { nombre: "Remo en Máquina Giros", reps: "4 series x 10 reps" },
+                    { nombre: "Jalón con Cuerda al Pecho", reps: "3 series x 12 reps" },
+                    { nombre: "Remo Gironda", reps: "4 series x 10 reps" }
                 ]
             ],
             biceps: [
@@ -516,9 +558,49 @@
                     { nombre: "Curl Concentrado", reps: "3 series x 12 reps" },
                     { nombre: "Curl en Banco Inclinado", reps: "4 series x 10 reps" },
                     { nombre: "Curl con Barra Inversa", reps: "3 series x 12 reps" }
+                ],
+                [
+                    { nombre: "Curl Predicador en Banco Scott", reps: "4 series x 10 reps" },
+                    { nombre: "Curl Martillo Cruzado", reps: "3 series x 12 reps" },
+                    { nombre: "Curl en Polea Alta (Bíceps Doble)", reps: "3 series x 12 reps" }
+                ],
+                [
+                    { nombre: "Curl 21 con Barra", reps: "3 series x 21 reps" },
+                    { nombre: "Curl Araña en Banco Inclinado", reps: "4 series x 10 reps" },
+                    { nombre: "Curl Martillo con Barra Z", reps: "3 series x 12 reps" }
                 ]
             ]
         };
+
+        // Variable global para rotación secuencial
+        let indiceVarianteActual = 0;
+
+        function generarNuevaRutina() {
+            // Avanzar a la siguiente variante (0, 1, 2, 3) al dar clic
+            indiceVarianteActual = (indiceVarianteActual + 1) % 4;
+
+            ['pecho', 'triceps', 'pierna', 'espalda', 'biceps'].forEach(grupo => {
+                const listaOpciones = variantesRutinas[grupo];
+                const varianteSeleccionada = listaOpciones[indiceVarianteActual];
+                const contenedor = document.getElementById(`lista-${grupo}`);
+                
+                if (contenedor) {
+                    contenedor.innerHTML = varianteSeleccionada.map(item => `
+                        <li class="flex justify-between items-center border-b border-gray-800 pb-2">
+                            <span class="truncate pr-2">${item.nombre}</span> 
+                            <span class="text-cyan-400 font-bold whitespace-nowrap">${item.reps}</span>
+                        </li>
+                    `).join('');
+                }
+            });
+
+            // Feedback de voz si el lector está activo
+            if (typeof speechActive !== 'undefined' && speechActive) {
+                const utterance = new SpeechSynthesisUtterance("Se ha generado una nueva rutina.");
+                utterance.lang = 'es-MX';
+                window.speechSynthesis.speak(utterance);
+            }
+        }
 
         function generarNuevaRutina() {
             ['pecho', 'triceps', 'pierna', 'espalda', 'biceps'].forEach(grupo => {
