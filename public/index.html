@@ -174,7 +174,7 @@
         <i class="fas fa-volume-high text-cyan-400 mr-2"></i><span id="subtitle-text">Reproduciendo audio...</span>
     </div>
 
-    <!-- PANEL FLOTANTE DE ACCESIBILIDAD UNIVERSAL (Estilo de la imagen de referencia) -->
+    <!-- PANEL FLOTANTE DE ACCESIBILIDAD UNIVERSAL -->
     <div class="fixed top-6 left-6 z-50">
         <button onclick="toggleAccessibilityPanel()" title="Accesibilidad Universal" class="bg-[#111827] border border-red-600/60 text-red-500 hover:bg-red-600 hover:text-white p-3.5 rounded-full shadow-[0_0_20px_rgba(239,68,68,0.3)] transition-all flex items-center justify-center">
             <i class="fas fa-universal-access text-xl"></i>
@@ -293,8 +293,8 @@
             </div>
 
             <!-- Botón Menú Móvil -->
-            <button id="mobile-menu-btn" title="Abrir menú" class="md:hidden text-gray-300 hover:text-white text-2xl focus:outline-none">
-                <i class="fas fa-bars"></i>
+            <button id="mobile-menu-btn" title="Abrir menú" class="md:hidden text-gray-300 hover:text-white text-2xl focus:outline-none p-2">
+                <i class="fas fa-bars" id="mobile-menu-icon"></i>
             </button>
         </div>
 
@@ -376,8 +376,46 @@
         </div>
     </footer>
 
-    <!-- LÓGICA JAVASCRIPT COMPLETA (Sesión, Accesibilidad Universal y Lector de Voz) -->
+    <!-- LÓGICA JAVASCRIPT COMPLETA -->
     <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            checkUserSession();
+
+            // Configuración del Menú Móvil (Hamburguesa) corregida y a prueba de fallos táctiles
+            const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+            const mobileMenu = document.getElementById('mobile-menu');
+            const mobileMenuIcon = document.getElementById('mobile-menu-icon');
+
+            if (mobileMenuBtn && mobileMenu) {
+                mobileMenuBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    mobileMenu.classList.toggle('hidden');
+
+                    if (mobileMenu.classList.contains('hidden')) {
+                        mobileMenuIcon.className = "fas fa-bars";
+                    } else {
+                        mobileMenuIcon.className = "fas fa-times";
+                    }
+                });
+
+                // Cerrar menú al hacer clic en cualquier enlace del menú móvil
+                mobileMenu.querySelectorAll("a").forEach(link => {
+                    link.addEventListener("click", () => {
+                        mobileMenu.classList.add('hidden');
+                        mobileMenuIcon.className = "fas fa-bars";
+                    });
+                });
+
+                // Cerrar menú si se presiona fuera de él
+                document.addEventListener('click', (e) => {
+                    if (!mobileMenu.contains(e.target) && !mobileMenuBtn.contains(e.target) && !mobileMenu.classList.contains('hidden')) {
+                        mobileMenu.classList.add('hidden');
+                        mobileMenuIcon.className = "fas fa-bars";
+                    }
+                });
+            }
+        });
+
         // --- 1. GESTIÓN DE INICIO DE SESIÓN Y PERSISTENCIA ---
         function openLoginModal() {
             document.getElementById('login-modal').classList.remove('hidden');
@@ -390,7 +428,6 @@
         function handleLogin(e) {
             e.preventDefault();
             const user = document.getElementById('login-user').value;
-            // Simulamos inicio de sesión exitoso guardando en localStorage
             localStorage.setItem('kronox_logged_user', user);
             closeLoginModal();
             checkUserSession();
@@ -498,16 +535,13 @@
         }
 
         // --- 3. LECTOR DE VOZ CON SUBTÍTULOS ---
-// 3. LECTOR DE VOZ CON SUBTÍTULOS
         let speechActive = false;
 
         function toggleSpeechReader() {
             speechActive = !speechActive;
             const btn = document.getElementById('btn-speech-toggle');
             const subtitleBox = document.getElementById('speech-subtitle-box');
-            const subtitleText = document.getElementById('subtitle-text');
             
-            // Creamos un elemento flotante visual temporal (Toast) para avisar sin bloquear
             let avisoFlotante = document.getElementById('toast-aviso-accesibilidad');
             if (!avisoFlotante) {
                 avisoFlotante = document.createElement('div');
@@ -522,12 +556,10 @@
                 
                 const mensaje = "Lector interactivo activado. Seleccione cualquier texto para escucharlo con subtítulos.";
                 
-                // 1. Mostrar aviso visual automático sin requerir clics
                 avisoFlotante.innerHTML = `<i class="fas fa-info-circle text-cyan-400 mr-2"></i> ${mensaje}`;
                 avisoFlotante.style.opacity = '1';
                 setTimeout(() => { avisoFlotante.style.opacity = '0'; }, 5000);
 
-                // 2. Decirlo en VIZ ALTA automáticamente para personas con discapacidad visual
                 window.speechSynthesis.cancel();
                 const utteranceInicio = new SpeechSynthesisUtterance(mensaje);
                 utteranceInicio.lang = 'es-MX';
@@ -544,6 +576,29 @@
                 setTimeout(() => { avisoFlotante.style.opacity = '0'; }, 3000);
             }
         }
+
+        function leerTextoSeleccionado() {
+            if (!speechActive) return;
+            const seleccion = window.getSelection();
+            const textoSeleccionado = seleccion.toString().trim();
+
+            if (textoSeleccionado.length > 1) {
+                window.speechSynthesis.cancel();
+                const utterance = new SpeechSynthesisUtterance(textoSeleccionado);
+                utterance.lang = 'es-MX';
+                
+                const subtitleBox = document.getElementById('speech-subtitle-box');
+                const subtitleText = document.getElementById('subtitle-text');
+                subtitleText.innerText = textoSeleccionado;
+                subtitleBox.style.display = 'block';
+
+                utterance.onend = () => { subtitleBox.style.display = 'none'; };
+                window.speechSynthesis.speak(utterance);
+            }
+        }
+
+        document.addEventListener('mouseup', leerTextoSeleccionado);
+        document.addEventListener('touchend', () => { setTimeout(leerTextoSeleccionado, 250); });
     </script>
 </body>
 </html>
