@@ -72,7 +72,7 @@ function loadAccessibilityPreferences() {
   }
 }
 
-// ================= 4. LECTOR DE VOZ OPTIMIZADO =================
+// ================= 4. LECTOR DE VOZ OPTIMIZADO (ANTISATURACIÓN) =================
 let speechActive = false;
 let speechTimeout = null;
 
@@ -136,7 +136,7 @@ function leerTextoSeleccionado(e) {
 
   speechTimeout = setTimeout(() => {
     const seleccion = window.getSelection();
-    const textoSeleccionado = seleccion.toString().trim();
+    const textoSeleccionado = seleccion ? seleccion.toString().trim() : "";
 
     if (textoSeleccionado.length > 2) {
       window.speechSynthesis.cancel();
@@ -153,9 +153,14 @@ function leerTextoSeleccionado(e) {
       utterance.onend = () => { 
         if (subtitleBox) subtitleBox.style.display = 'none'; 
       };
+      
+      utterance.onerror = () => {
+        if (subtitleBox) subtitleBox.style.display = 'none';
+      };
+
       window.speechSynthesis.speak(utterance);
     }
-  }, 300);
+  }, 250);
 }
 
 // ================= INICIALIZACIÓN DEL SITIO =================
@@ -196,8 +201,10 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // Eventos seguros para el Lector de Voz
+  // Eventos seguros para el Lector de Voz (Sin touchend global para evitar lag)
   document.addEventListener('mouseup', leerTextoSeleccionado);
-  document.addEventListener('touchend', leerTextoSeleccionado);
+  document.addEventListener('selectionchange', () => {
+    if (speechActive) leerTextoSeleccionado();
+  });
 
 });
