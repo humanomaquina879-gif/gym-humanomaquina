@@ -4,7 +4,7 @@ const path = require('path');
 const app = express();
 
 app.use(express.json());
-app.use(express.static('public')); // Asegúrate de que admin.html esté dentro de la carpeta 'public'
+app.use(express.static('public')); // Asegúrate de que los archivos estén dentro de la carpeta 'public'
 
 // 1. BASE DE DATOS PERSISTENTE
 const db = new sqlite3.Database('./kronox.db', (err) => {
@@ -62,7 +62,6 @@ app.post('/api/inscripciones/:id/liberar', (req, res) => {
     db.get(`SELECT estado FROM inscripciones WHERE id = ?`, [id], (err, row) => {
         if (err || !row) return res.status(404).json({ error: "Inscripción no encontrada" });
         
-        // Cambiamos 'Liberado' por 'Vigente'
         const nuevoEstado = row.estado === 'Vigente' ? 'Pendiente' : 'Vigente';
         db.run(`UPDATE inscripciones SET estado = ? WHERE id = ?`, [nuevoEstado, id], (err) => {
             if (err) return res.status(500).json({ error: "Error al actualizar estatus" });
@@ -85,7 +84,7 @@ app.delete('/api/inscripciones/:id', (req, res) => {
     });
 });
 
-// 6. RUTA AMIGABLE PARA EL ADMIN (Sirve tu archivo admin.html intacto)
+// 6. RUTAS AMIGABLES PARA LAS PÁGINAS WEB
 app.get('/admin', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'admin.html'));
 });
@@ -108,6 +107,11 @@ app.get('/catalogo', (req, res) => {
 
 app.get('/ubicacion', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'ubicacion.html'));
+});
+
+// NUEVA RUTA PARA RUTINAS EXCLUSIVAS
+app.get('/rutinas', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'rutinas.html'));
 });
 
 // Puerto para Render
