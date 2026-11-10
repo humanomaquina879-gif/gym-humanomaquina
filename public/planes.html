@@ -196,7 +196,7 @@
             <i class="fas fa-universal-access text-xl"></i>
         </button>
 
-        <div id="accessibility-panel" class="hidden absolute top-16 left-0 w-80 bg-[#141d2f] border border-red-600/40 rounded-2xl p-5 shadow-2xl backdrop-blur-xl space-y-5 text-gray-200">
+        <div id="accessibility-panel" class="hidden absolute top-16 left-0 w-80 bg-[#141d2f] border border-red-600/40 rounded-2xl p-5 shadow-2xl backdrop-blur-xl space-y-5 text-gray-200 accessibility-panel">
             <div class="flex justify-between items-center border-b border-red-600/50 pb-2">
                 <span class="text-sm font-bold uppercase text-red-500 tracking-wider">Accesibilidad Universal</span>
                 <button onclick="toggleAccessibilityPanel()" class="text-gray-400 hover:text-white font-bold"><i class="fas fa-times"></i></button>
@@ -576,10 +576,11 @@
         </div>
     </footer>
 
-    <!-- LÓGICA JAVASCRIPT COMPLETA -->
+    <!-- LÓGICA JAVASCRIPT COMPLETA CON PERSISTENCIA -->
     <script>
         document.addEventListener("DOMContentLoaded", () => {
             checkUserSession();
+            loadAccessibilityPreferences(); // Restaura accesibilidad entre pestañas
 
             // Configuración del Menú Móvil (Hamburguesa)
             const mobileMenuBtn = document.getElementById('mobile-menu-btn');
@@ -750,11 +751,16 @@
             localStorage.setItem('kronox_high_contrast', isActive ? 'enabled' : 'disabled');
         }
 
-        // --- 3. LECTOR DE VOZ CON SUBTÍTULOS ---
+        // --- 3. LECTOR DE VOZ CON PERSISTENCIA ---
         let speechActive = false;
 
         function toggleSpeechReader() {
             speechActive = !speechActive;
+            localStorage.setItem('kronox_speech_active', speechActive ? 'enabled' : 'disabled');
+            actualizarEstadoLectorUI();
+        }
+
+        function actualizarEstadoLectorUI() {
             const btn = document.getElementById('btn-speech-toggle');
             const subtitleBox = document.getElementById('speech-subtitle-box');
             
@@ -767,25 +773,21 @@
             }
 
             if (speechActive) {
-                btn.innerHTML = `<i class="fas fa-volume-xmark"></i> Desactivar Lector`;
-                btn.classList.replace('bg-cyan-600', 'bg-red-600');
-                
+                if (btn) {
+                    btn.innerHTML = `<i class="fas fa-volume-xmark"></i> Desactivar Lector`;
+                    btn.classList.replace('bg-cyan-600', 'bg-red-600');
+                }
                 const mensaje = "Lector interactivo activado. Seleccione cualquier texto para escucharlo con subtítulos.";
-                
                 avisoFlotante.innerHTML = `<i class="fas fa-info-circle text-cyan-400 mr-2"></i> ${mensaje}`;
                 avisoFlotante.style.opacity = '1';
-                setTimeout(() => { avisoFlotante.style.opacity = '0'; }, 5000);
-
-                window.speechSynthesis.cancel();
-                const utteranceInicio = new SpeechSynthesisUtterance(mensaje);
-                utteranceInicio.lang = 'es-MX';
-                window.speechSynthesis.speak(utteranceInicio);
-
+                setTimeout(() => { avisoFlotante.style.opacity = '0'; }, 4000);
             } else {
-                btn.innerHTML = `<i class="fas fa-volume-high"></i> Activar Lector Interactivo`;
-                btn.classList.replace('bg-red-600', 'bg-cyan-600');
+                if (btn) {
+                    btn.innerHTML = `<i class="fas fa-volume-high"></i> Activar Lector Interactivo`;
+                    btn.classList.replace('bg-red-600', 'bg-cyan-600');
+                }
                 window.speechSynthesis.cancel();
-                subtitleBox.style.display = 'none';
+                if (subtitleBox) subtitleBox.style.display = 'none';
 
                 avisoFlotante.innerHTML = `<i class="fas fa-info-circle text-red-400 mr-2"></i> Lector desactivado.`;
                 avisoFlotante.style.opacity = '1';
@@ -815,6 +817,31 @@
 
         document.addEventListener('mouseup', leerTextoSeleccionado);
         document.addEventListener('touchend', () => { setTimeout(leerTextoSeleccionado, 250); });
+
+        // --- 4. CARGAR PREFERENCIAS GUARDADAS EN TODAS LAS PESTAÑAS ---
+        function loadAccessibilityPreferences() {
+            const savedFontSize = localStorage.getItem('kronox_font_size');
+            if (savedFontSize) {
+                currentFontSize = parseInt(savedFontSize);
+                document.documentElement.style.fontSize = `${currentFontSize}%`;
+            }
+
+            const savedDaltonism = localStorage.getItem('kronox_daltonism');
+            if (savedDaltonism) {
+                setDaltonism(savedDaltonism);
+            }
+
+            const savedContrast = localStorage.getItem('kronox_high_contrast');
+            if (savedContrast === 'enabled') {
+                toggleHighContrast();
+            }
+
+            const savedSpeech = localStorage.getItem('kronox_speech_active');
+            if (savedSpeech === 'enabled') {
+                speechActive = true;
+                actualizarEstadoLectorUI();
+            }
+        }
     </script>
 </body>
 </html>
