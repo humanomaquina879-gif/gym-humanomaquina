@@ -90,11 +90,12 @@
             z-index: 0;
         }
 
-        /* Tarjetas de Rutinas */
+        /* Tarjetas de Rutinas con acabado profesional */
         .kronox-card {
             background: linear-gradient(160deg, #0a1326 0%, #060c18 100%);
             border: 1px solid #16284a;
             border-radius: 1rem;
+            overflow: hidden;
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             position: relative;
         }
@@ -277,41 +278,292 @@
             <p class="text-gray-400 text-sm mt-2 max-w-xl mx-auto">Guías de entrenamiento optimizadas para hipertrofia y fuerza por grupos musculares.</p>
         </div>
 
-        <!-- GRID DE RUTINAS -->
+        <!-- GRID DE RUTINAS CON IMÁGENES OFICIALES DE CLOUDINARY -->
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             
-            <!-- TARJETA 1: PECHO Y TRÍCEPS -->
-            <div class="kronox-card p-6 md:p-8">
-                <div class="flex items-center gap-3 mb-4">
-                    <div class="w-12 h-12 rounded-xl bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 flex items-center justify-center text-xl">
-                        <i class="fas fa-fire"></i>
+            <!-- TARJETA 1: PECHO -->
+            <div class="kronox-card flex flex-col justify-between">
+                <div>
+                    <div class="relative h-48 w-full overflow-hidden">
+                        <img src="https://res.cloudinary.com/rkfjzq6c/image/upload/f_auto,q_auto/Pecho" alt="Pecho" class="w-full h-full object-cover">
+                        <div class="absolute inset-0 bg-gradient-to-t from-[#060c18] via-transparent to-transparent"></div>
+                        <span class="absolute bottom-3 left-4 bg-cyan-500 text-black text-[10px] font-black uppercase px-3 py-1 rounded-full">Enfoque: Empuje y Volumen</span>
                     </div>
-                    <div>
-                        <h2 class="text-xl font-black text-white uppercase italic">Día de Pecho y Tríceps</h2>
-                        <span class="text-xs text-cyan-400 font-bold uppercase">Enfoque: Empuje y Volumen</span>
+                    <div class="p-6">
+                        <h2 class="text-xl font-black text-white uppercase italic mb-4">Día de Pecho</h2>
+                        <ul class="space-y-3 text-sm text-gray-300">
+                            <li class="flex justify-between border-b border-gray-800 pb-2"><span>Press de Banca Plano</span> <span class="text-cyan-400 font-bold">4 series x 8-10 reps</span></li>
+                            <li class="flex justify-between border-b border-gray-800 pb-2"><span>Press Inclinado con Mancuernas</span> <span class="text-cyan-400 font-bold">4 series x 10 reps</span></li>
+                            <li class="flex justify-between border-b border-gray-800 pb-2"><span>Aperturas en Polea</span> <span class="text-cyan-400 font-bold">3 series x 12 reps</span></li>
+                        </ul>
                     </div>
                 </div>
-                <ul class="space-y-3 text-sm text-gray-300">
-                    <li class="flex justify-between border-b border-gray-800 pb-2"><span>Press de Banca Plano</span> <span class="text-cyan-400 font-bold">4 series x 8-10 reps</span></li>
-                    <li class="flex justify-between border-b border-gray-800 pb-2"><span>Press Inclinado con Mancuernas</span> <span class="text-cyan-400 font-bold">4 series x 10 reps</span></li>
-                    <li class="flex justify-between border-b border-gray-800 pb-2"><span>Aperturas en Polea</span> <span class="text-cyan-400 font-bold">3 series x 12 reps</span></li>
-                    <li class="flex justify-between border-b border-gray-800 pb-2"><span>Extensión de Tríceps en Polea</span> <span class="text-cyan-400 font-bold">4 series x 12 reps</span></li>
-                </ul>
             </div>
 
-            <!-- TARJETA 2: PIERNA (CUÁDRICEPS Y PANTORRILLA) -->
-            <div class="kronox-card p-6 md:p-8">
-                <div class="flex items-center gap-3 mb-4">
-                    <div class="w-12 h-12 rounded-xl bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 flex items-center justify-center text-xl">
-                        <i class="fas fa-dumbbell"></i>
+            <!-- TARJETA 2: TRÍCEPS -->
+            <div class="kronox-card flex flex-col justify-between">
+                <div>
+                    <div class="relative h-48 w-full overflow-hidden">
+                        <img src="https://res.cloudinary.com/rkfjzq6c/image/upload/f_auto,q_auto/Tríceps" alt="Tríceps" class="w-full h-full object-cover">
+                        <div class="absolute inset-0 bg-gradient-to-t from-[#060c18] via-transparent to-transparent"></div>
+                        <span class="absolute bottom-3 left-4 bg-cyan-500 text-black text-[10px] font-black uppercase px-3 py-1 rounded-full">Enfoque: Definición y Bloques</span>
                     </div>
-                    <div>
-                        <h2 class="text-xl font-black text-white uppercase italic">Día de Pierna</h2>
-                        <span class="text-xs text-cyan-400 font-bold uppercase">Enfoque: Fuerza y Tren Inferior</span>
+                    <div class="p-6">
+                        <h2 class="text-xl font-black text-white uppercase italic mb-4">Día de Tríceps</h2>
+                        <ul class="space-y-3 text-sm text-gray-300">
+                            <li class="flex justify-between border-b border-gray-800 pb-2"><span>Extensión de Tríceps en Polea</span> <span class="text-cyan-400 font-bold">4 series x 12 reps</span></li>
+                            <li class="flex justify-between border-b border-gray-800 pb-2"><span>Press Francés con Barra Z</span> <span class="text-cyan-400 font-bold">4 series x 10 reps</span></li>
+                            <li class="flex justify-between border-b border-gray-800 pb-2"><span>Patada de Tríceps con Mancuerna</span> <span class="text-cyan-400 font-bold">3 series x 12 reps</span></li>
+                        </ul>
                     </div>
                 </div>
-                <ul class="space-y-3 text-sm text-gray-300">
-                    <li class="flex justify-between border-b border-gray-800 pb-2"><span>Sentadilla Libre o Multipress</span> <span class="text-cyan-400 font-bold">4 series x 8 reps</span></li>
-                    <li class="flex justify-between border-b border-gray-800 pb-2"><span>Prensa de Pierna (200kg+)</span> <span class="text-cyan-400 font-bold">4 series x 10 reps</span></li>
-                    <li class="flex justify-between border-b border-gray-800 pb-2"><span>Extensión de Cuádriceps</span> <span class="text-cyan-400 font-bold">3 series x 12 reps</span></li>
-                    <li class="flex justify-between border-b border-gray-800
+            </div>
+
+            <!-- TARJETA 3: PIERNA -->
+            <div class="kronox-card flex flex-col justify-between">
+                <div>
+                    <div class="relative h-48 w-full overflow-hidden">
+                        <img src="https://res.cloudinary.com/rkfjzq6c/image/upload/f_auto,q_auto/Pierna" alt="Pierna" class="w-full h-full object-cover">
+                        <div class="absolute inset-0 bg-gradient-to-t from-[#060c18] via-transparent to-transparent"></div>
+                        <span class="absolute bottom-3 left-4 bg-cyan-500 text-black text-[10px] font-black uppercase px-3 py-1 rounded-full">Enfoque: Fuerza y Tren Inferior</span>
+                    </div>
+                    <div class="p-6">
+                        <h2 class="text-xl font-black text-white uppercase italic mb-4">Día de Pierna</h2>
+                        <ul class="space-y-3 text-sm text-gray-300">
+                            <li class="flex justify-between border-b border-gray-800 pb-2"><span>Sentadilla Libre o Multipress</span> <span class="text-cyan-400 font-bold">4 series x 8 reps</span></li>
+                            <li class="flex justify-between border-b border-gray-800 pb-2"><span>Prensa de Pierna (200kg+)</span> <span class="text-cyan-400 font-bold">4 series x 10 reps</span></li>
+                            <li class="flex justify-between border-b border-gray-800 pb-2"><span>Extensión de Cuádriceps</span> <span class="text-cyan-400 font-bold">3 series x 12 reps</span></li>
+                            <li class="flex justify-between border-b border-gray-800 pb-2"><span>Elevación de Pantorrilla</span> <span class="text-cyan-400 font-bold">4 series x 15 reps</span></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TARJETA 4: ESPALDA -->
+            <div class="kronox-card flex flex-col justify-between">
+                <div>
+                    <div class="relative h-48 w-full overflow-hidden">
+                        <img src="https://res.cloudinary.com/rkfjzq6c/image/upload/f_auto,q_auto/Espalda" alt="Espalda" class="w-full h-full object-cover">
+                        <div class="absolute inset-0 bg-gradient-to-t from-[#060c18] via-transparent to-transparent"></div>
+                        <span class="absolute bottom-3 left-4 bg-cyan-500 text-black text-[10px] font-black uppercase px-3 py-1 rounded-full">Enfoque: Tracción y Anchura</span>
+                    </div>
+                    <div class="p-6">
+                        <h2 class="text-xl font-black text-white uppercase italic mb-4">Día de Espalda</h2>
+                        <ul class="space-y-3 text-sm text-gray-300">
+                            <li class="flex justify-between border-b border-gray-800 pb-2"><span>Dominadas o Jalón al Pecho</span> <span class="text-cyan-400 font-bold">4 series x 10 reps</span></li>
+                            <li class="flex justify-between border-b border-gray-800 pb-2"><span>Remo con Barra o Mancuerna</span> <span class="text-cyan-400 font-bold">4 series x 8-10 reps</span></li>
+                            <li class="flex justify-between border-b border-gray-800 pb-2"><span>Remo en Polea Baja</span> <span class="text-cyan-400 font-bold">3 series x 12 reps</span></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TARJETA 5: BÍCEPS -->
+            <div class="kronox-card flex flex-col justify-between md:col-span-2 max-w-xl mx-auto w-full">
+                <div>
+                    <div class="relative h-48 w-full overflow-hidden">
+                        <img src="https://res.cloudinary.com/rkfjzq6c/image/upload/f_auto,q_auto/Bíceps" alt="Bíceps" class="w-full h-full object-cover">
+                        <div class="absolute inset-0 bg-gradient-to-t from-[#060c18] via-transparent to-transparent"></div>
+                        <span class="absolute bottom-3 left-4 bg-cyan-500 text-black text-[10px] font-black uppercase px-3 py-1 rounded-full">Enfoque: Congestión y Pico</span>
+                    </div>
+                    <div class="p-6">
+                        <h2 class="text-xl font-black text-white uppercase italic mb-4">Día de Bíceps</h2>
+                        <ul class="space-y-3 text-sm text-gray-300">
+                            <li class="flex justify-between border-b border-gray-800 pb-2"><span>Curl de Bíceps con Barra Z</span> <span class="text-cyan-400 font-bold">4 series x 10 reps</span></li>
+                            <li class="flex justify-between border-b border-gray-800 pb-2"><span>Curl Alterno con Mancuernas</span> <span class="text-cyan-400 font-bold">4 series x 12 reps</span></li>
+                            <li class="flex justify-between border-b border-gray-800 pb-2"><span>Curl Tipo Martillo en Polea</span> <span class="text-cyan-400 font-bold">3 series x 12 reps</span></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+    </main>
+
+    <!-- PIE DE PÁGINA -->
+    <footer class="relative z-10 bg-kronox-blueDark border-t border-kronox-cardBorder/80 py-10">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-6">
+            <div class="text-center md:text-left">
+                <img src="https://res.cloudinary.com/bo5jzelh/image/upload/v1783041430/Logo_Kronox_Gym_lfg9tl.jpg" alt="Logo" class="h-16 w-auto rounded-xl border border-kronox-cardBorder object-contain shadow-md">
+            </div>
+            <div class="flex items-center space-x-5">
+                <a href="https://www.instagram.com/kronoxgym" target="_blank" class="w-10 h-10 rounded-full text-white bg-gradient-to-tr from-yellow-500 via-pink-500 to-purple-600 flex items-center justify-center hover:scale-110 transition-all"><i class="fab fa-instagram text-lg"></i></a>
+                <a href="https://www.facebook.com/profile.php?id=61591217086184" target="_blank" class="w-10 h-10 rounded-full text-white bg-[#1877F2] flex items-center justify-center hover:scale-110 transition-all"><i class="fab fa-facebook-f text-lg"></i></a>
+                <a href="https://www.tiktok.com/@kronoxgym_" target="_blank" class="w-10 h-10 rounded-full text-white bg-black flex items-center justify-center hover:scale-110 transition-all"><i class="fab fa-tiktok text-lg"></i></a>
+                <a href="https://wa.me/527779393985?text=Hola" target="_blank" class="w-10 h-10 rounded-full text-white bg-[#25D366] flex items-center justify-center hover:scale-110 transition-all"><i class="fab fa-whatsapp text-lg"></i></a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- LÓGICA JAVASCRIPT -->
+    <script>
+        // --- 1. VERIFICAR SESIÓN O BLOQUEAR ACCESO ---
+        document.addEventListener("DOMContentLoaded", () => {
+            const loggedUser = localStorage.getItem('kronox_logged_user');
+            if (!loggedUser) {
+                alert("Debes iniciar sesión para acceder al apartado de rutinas.");
+                window.location.href = "index";
+                return;
+            }
+            const shortName = loggedUser.split('@')[0];
+            const userNameSpan = document.getElementById('welcome-user-name');
+            const mobileUserNameSpan = document.getElementById('mobile-welcome-name');
+            if (userNameSpan) userNameSpan.innerText = shortName;
+            if (mobileUserNameSpan) mobileUserNameSpan.innerText = `Usuario: ${shortName}`;
+
+            const savedSize = localStorage.getItem('kronox_font_size');
+            if (savedSize) {
+                currentFontSize = parseInt(savedSize);
+                document.documentElement.style.fontSize = `${currentFontSize}%`;
+            }
+
+            const savedDaltonism = localStorage.getItem('kronox_daltonism');
+            if (savedDaltonism && savedDaltonism !== 'none') {
+                setDaltonism(savedDaltonism);
+            }
+
+            if (localStorage.getItem('kronox_high_contrast') === 'enabled') {
+                toggleHighContrast();
+            }
+        });
+
+        function logoutUser() {
+            localStorage.removeItem('kronox_logged_user');
+            window.location.href = "index";
+        }
+
+        // --- 2. ACCESIBILIDAD UNIVERSAL ---
+        function toggleAccessibilityPanel() {
+            const panel = document.getElementById('accessibility-panel');
+            if (panel) panel.classList.toggle('hidden');
+        }
+
+        let currentFontSize = 100;
+        function adjustFontSize(amount) {
+            currentFontSize += amount;
+            if (currentFontSize < 70) currentFontSize = 70;
+            if (currentFontSize > 200) currentFontSize = 200;
+            document.documentElement.style.fontSize = `${currentFontSize}%`;
+            localStorage.setItem('kronox_font_size', currentFontSize);
+        }
+
+        function resetFontSize() {
+            currentFontSize = 100;
+            document.documentElement.style.fontSize = '100%';
+            localStorage.setItem('kronox_font_size', 100);
+        }
+
+        function setDaltonism(type) {
+            document.body.classList.remove('daltonism-protanopia', 'daltonism-deuteranopia', 'daltonism-tritanopia');
+            ['none', 'protan', 'deut', 'trit'].forEach(t => {
+                const btn = document.getElementById(`btn-dalton-${t}`);
+                if (btn) {
+                    btn.classList.remove('bg-red-600', 'text-white', 'border-red-500');
+                    btn.classList.add('bg-[#1f293d]', 'text-gray-300', 'border-gray-700');
+                }
+            });
+
+            if (type !== 'none') {
+                document.body.classList.add(`daltonism-${type}`);
+                const activeBtn = document.getElementById(`btn-dalton-${type.substring(0,4)}`);
+                if (activeBtn) {
+                    activeBtn.classList.add('bg-red-600', 'text-white', 'border-red-500');
+                    activeBtn.classList.remove('bg-[#1f293d]', 'text-gray-300');
+                }
+            } else {
+                const noneBtn = document.getElementById('btn-dalton-none');
+                if (noneBtn) {
+                    noneBtn.classList.add('bg-red-600', 'text-white', 'border-red-500');
+                    noneBtn.classList.remove('bg-[#1f293d]', 'text-gray-300');
+                }
+            }
+            localStorage.setItem('kronox_daltonism', type);
+        }
+
+        function toggleHighContrast() {
+            document.body.classList.toggle('high-contrast');
+            const isActive = document.body.classList.contains('high-contrast');
+            const btn = document.getElementById('btn-high-contrast');
+            if (isActive) {
+                btn.classList.add('bg-red-600', 'text-white', 'border-red-500');
+            } else {
+                btn.classList.remove('bg-red-600', 'text-white', 'border-red-500');
+            }
+            localStorage.setItem('kronox_high_contrast', isActive ? 'enabled' : 'disabled');
+        }
+
+        // --- 3. LECTOR DE VOZ CON SUBTÍTULOS (Sin Alertas Bloqueantes) ---
+        let speechActive = false;
+        function toggleSpeechReader() {
+            speechActive = !speechActive;
+            const btn = document.getElementById('btn-speech-toggle');
+            const subtitleBox = document.getElementById('speech-subtitle-box');
+            
+            let avisoFlotante = document.getElementById('toast-aviso-accesibilidad');
+            if (!avisoFlotante) {
+                avisoFlotante = document.createElement('div');
+                avisoFlotante.id = 'toast-aviso-accesibilidad';
+                avisoFlotante.style.cssText = "position:fixed; top:20px; right:20px; background:#091122; border:2px solid #00d2ff; color:#fff; padding:12px 20px; border-radius:12px; font-size:13px; z-index:99999; box-shadow:0 0 20px rgba(0,210,255,0.4); transition: opacity 0.5s ease;";
+                document.body.appendChild(avisoFlotante);
+            }
+
+            if (speechActive) {
+                btn.innerHTML = `<i class="fas fa-volume-xmark"></i> Desactivar Lector`;
+                btn.classList.replace('bg-cyan-600', 'bg-red-600');
+                
+                const mensaje = "Lector interactivo activado. Selecciona cualquier rutina para escucharla con subtítulos.";
+                
+                avisoFlotante.innerHTML = `<i class="fas fa-info-circle text-cyan-400 mr-2"></i> ${mensaje}`;
+                avisoFlotante.style.opacity = '1';
+                setTimeout(() => { avisoFlotante.style.opacity = '0'; }, 5000);
+
+                window.speechSynthesis.cancel();
+                const utteranceInicio = new SpeechSynthesisUtterance(mensaje);
+                utteranceInicio.lang = 'es-MX';
+                window.speechSynthesis.speak(utteranceInicio);
+
+            } else {
+                btn.innerHTML = `<i class="fas fa-volume-high"></i> Activar Lector Interactivo`;
+                btn.classList.replace('bg-red-600', 'bg-cyan-600');
+                window.speechSynthesis.cancel();
+                subtitleBox.style.display = 'none';
+
+                avisoFlotante.innerHTML = `<i class="fas fa-info-circle text-red-400 mr-2"></i> Lector desactivado.`;
+                avisoFlotante.style.opacity = '1';
+                setTimeout(() => { avisoFlotante.style.opacity = '0'; }, 3000);
+            }
+        }
+
+        function leerTextoSeleccionado() {
+            if (!speechActive) return;
+            const seleccion = window.getSelection();
+            const textoSeleccionado = seleccion.toString().trim();
+
+            if (textoSeleccionado.length > 1) {
+                window.speechSynthesis.cancel();
+                const utterance = new SpeechSynthesisUtterance(textoSeleccionado);
+                utterance.lang = 'es-MX';
+                
+                const subtitleBox = document.getElementById('speech-subtitle-box');
+                const subtitleText = document.getElementById('subtitle-text');
+                subtitleText.innerText = textoSeleccionado;
+                subtitleBox.style.display = 'block';
+
+                utterance.onend = () => { subtitleBox.style.display = 'none'; };
+                window.speechSynthesis.speak(utterance);
+            }
+        }
+
+        document.addEventListener('mouseup', leerTextoSeleccionado);
+        document.addEventListener('touchend', () => { setTimeout(leerTextoSeleccionado, 300); });
+
+        // Menú Móvil
+        const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+        const mobileMenu = document.getElementById('mobile-menu');
+        if (mobileMenuBtn && mobileMenu) {
+            mobileMenuBtn.addEventListener('click', () => mobileMenu.classList.toggle('hidden'));
+        }
+    </script>
+</body>
+</html>
