@@ -279,8 +279,9 @@
                 </a>
             </div>
 
-            <button id="mobile-menu-btn" title="Abrir menú" class="md:hidden text-gray-300 hover:text-white text-2xl focus:outline-none">
-                <i class="fas fa-bars"></i>
+            <!-- Botón Menú Móvil -->
+            <button id="mobile-menu-btn" title="Abrir menú" class="md:hidden text-gray-300 hover:text-white text-2xl focus:outline-none p-2">
+                <i class="fas fa-bars" id="mobile-menu-icon"></i>
             </button>
         </div>
 
@@ -400,8 +401,44 @@
         </div>
     </footer>
 
-    <!-- LÓGICA JAVASCRIPT -->
+    <!-- LÓGICA JAVASCRIPT COMPLETA -->
     <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            checkUserSession();
+
+            // Configuración del Menú Móvil (Hamburguesa)
+            const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+            const mobileMenu = document.getElementById('mobile-menu');
+            const mobileMenuIcon = document.getElementById('mobile-menu-icon');
+
+            if (mobileMenuBtn && mobileMenu) {
+                mobileMenuBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    mobileMenu.classList.toggle('hidden');
+
+                    if (mobileMenu.classList.contains('hidden')) {
+                        if (mobileMenuIcon) mobileMenuIcon.className = "fas fa-bars";
+                    } else {
+                        if (mobileMenuIcon) mobileMenuIcon.className = "fas fa-times";
+                    }
+                });
+
+                mobileMenu.querySelectorAll("a").forEach(link => {
+                    link.addEventListener("click", () => {
+                        mobileMenu.classList.add('hidden');
+                        if (mobileMenuIcon) mobileMenuIcon.className = "fas fa-bars";
+                    });
+                });
+
+                document.addEventListener('click', (e) => {
+                    if (!mobileMenu.contains(e.target) && !mobileMenuBtn.contains(e.target) && !mobileMenu.classList.contains('hidden')) {
+                        mobileMenu.classList.add('hidden');
+                        if (mobileMenuIcon) mobileMenuIcon.className = "fas fa-bars";
+                    }
+                });
+            }
+        });
+
         // --- 1. GESTIÓN DE SESIÓN ---
         function openLoginModal() { document.getElementById('login-modal').classList.remove('hidden'); }
         function closeLoginModal() { document.getElementById('login-modal').classList.add('hidden'); }
@@ -416,7 +453,7 @@
 
         function logoutUser() {
             localStorage.removeItem('kronox_logged_user');
-            checkUserSession();
+            window.location.href = "index";
         }
 
         function checkUserSession() {
@@ -515,17 +552,14 @@
             localStorage.setItem('kronox_high_contrast', isActive ? 'enabled' : 'disabled');
         }
 
-        // --- 3. LECTOR DE VOZ CON SUBTÍTULOS (PC y Celular) ---
-// 3. LECTOR DE VOZ CON SUBTÍTULOS
+        // --- 3. LECTOR DE VOZ CON SUBTÍTULOS ---
         let speechActive = false;
 
         function toggleSpeechReader() {
             speechActive = !speechActive;
             const btn = document.getElementById('btn-speech-toggle');
             const subtitleBox = document.getElementById('speech-subtitle-box');
-            const subtitleText = document.getElementById('subtitle-text');
             
-            // Creamos un elemento flotante visual temporal (Toast) para avisar sin bloquear
             let avisoFlotante = document.getElementById('toast-aviso-accesibilidad');
             if (!avisoFlotante) {
                 avisoFlotante = document.createElement('div');
@@ -540,12 +574,10 @@
                 
                 const mensaje = "Lector interactivo activado. Seleccione cualquier texto para escucharlo con subtítulos.";
                 
-                // 1. Mostrar aviso visual automático sin requerir clics
                 avisoFlotante.innerHTML = `<i class="fas fa-info-circle text-cyan-400 mr-2"></i> ${mensaje}`;
                 avisoFlotante.style.opacity = '1';
                 setTimeout(() => { avisoFlotante.style.opacity = '0'; }, 5000);
 
-                // 2. Decirlo en VIZ ALTA automáticamente para personas con discapacidad visual
                 window.speechSynthesis.cancel();
                 const utteranceInicio = new SpeechSynthesisUtterance(mensaje);
                 utteranceInicio.lang = 'es-MX';
@@ -562,6 +594,29 @@
                 setTimeout(() => { avisoFlotante.style.opacity = '0'; }, 3000);
             }
         }
+
+        function leerTextoSeleccionado() {
+            if (!speechActive) return;
+            const seleccion = window.getSelection();
+            const textoSeleccionado = seleccion.toString().trim();
+
+            if (textoSeleccionado.length > 1) {
+                window.speechSynthesis.cancel();
+                const utterance = new SpeechSynthesisUtterance(textoSeleccionado);
+                utterance.lang = 'es-MX';
+                
+                const subtitleBox = document.getElementById('speech-subtitle-box');
+                const subtitleText = document.getElementById('subtitle-text');
+                subtitleText.innerText = textoSeleccionado;
+                subtitleBox.style.display = 'block';
+
+                utterance.onend = () => { subtitleBox.style.display = 'none'; };
+                window.speechSynthesis.speak(utterance);
+            }
+        }
+
+        document.addEventListener('mouseup', leerTextoSeleccionado);
+        document.addEventListener('touchend', () => { setTimeout(leerTextoSeleccionado, 250); });
     </script>
 </body>
 </html>
