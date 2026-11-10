@@ -691,112 +691,48 @@
         }
 
         // --- 3. LECTOR DE VOZ CON SUBTÍTULOS (PC y Celular) ---
-        let speechActive = false;
+let speechActive = false;
+
         function toggleSpeechReader() {
             speechActive = !speechActive;
             const btn = document.getElementById('btn-speech-toggle');
+            const subtitleBox = document.getElementById('speech-subtitle-box');
+            const subtitleText = document.getElementById('subtitle-text');
+            
+            // Creamos un elemento flotante visual temporal (Toast) para avisar sin bloquear
+            let avisoFlotante = document.getElementById('toast-aviso-accesibilidad');
+            if (!avisoFlotante) {
+                avisoFlotante = document.createElement('div');
+                avisoFlotante.id = 'toast-aviso-accesibilidad';
+                avisoFlotante.style.cssText = "position:fixed; top:20px; right:20px; background:#091122; border:2px solid #00d2ff; color:#fff; padding:12px 20px; border-radius:12px; font-size:13px; z-index:99999; box-shadow:0 0 20px rgba(0,210,255,0.4); transition: opacity 0.5s ease;";
+                document.body.appendChild(avisoFlotante);
+            }
+
             if (speechActive) {
                 btn.innerHTML = `<i class="fas fa-volume-xmark"></i> Desactivar Lector`;
                 btn.classList.replace('bg-cyan-600', 'bg-red-600');
-                alert("Lector activado. Selecciona cualquier texto con el mouse (en PC) o mantén presionado con el dedo (en celular) para escucharlo con subtítulos.");
+                
+                const mensaje = "Lector interactivo activado. Seleccione cualquier texto para escucharlo con subtítulos.";
+                
+                // 1. Mostrar aviso visual automático sin requerir clics
+                avisoFlotante.innerHTML = `<i class="fas fa-info-circle text-cyan-400 mr-2"></i> ${mensaje}`;
+                avisoFlotante.style.opacity = '1';
+                setTimeout(() => { avisoFlotante.style.opacity = '0'; }, 5000);
+
+                // 2. Decirlo en VIZ ALTA automáticamente para personas con discapacidad visual
+                window.speechSynthesis.cancel();
+                const utteranceInicio = new SpeechSynthesisUtterance(mensaje);
+                utteranceInicio.lang = 'es-MX';
+                window.speechSynthesis.speak(utteranceInicio);
+
             } else {
                 btn.innerHTML = `<i class="fas fa-volume-high"></i> Activar Lector Interactivo`;
                 btn.classList.replace('bg-red-600', 'bg-cyan-600');
                 window.speechSynthesis.cancel();
-                document.getElementById('speech-subtitle-box').style.display = 'none';
+                subtitleBox.style.display = 'none';
+
+                avisoFlotante.innerHTML = `<i class="fas fa-info-circle text-red-400 mr-2"></i> Lector desactivado.`;
+                avisoFlotante.style.opacity = '1';
+                setTimeout(() => { avisoFlotante.style.opacity = '0'; }, 3000);
             }
         }
-
-        function leerTextoSeleccionado() {
-            if (!speechActive) return;
-            const seleccion = window.getSelection();
-            const textoSeleccionado = seleccion.toString().trim();
-
-            if (textoSeleccionado.length > 1) {
-                window.speechSynthesis.cancel();
-                const utterance = new SpeechSynthesisUtterance(textoSeleccionado);
-                utterance.lang = 'es-MX';
-                
-                const subtitleBox = document.getElementById('speech-subtitle-box');
-                const subtitleText = document.getElementById('subtitle-text');
-                subtitleText.innerText = textoSeleccionado;
-                subtitleBox.style.display = 'block';
-
-                utterance.onend = () => { subtitleBox.style.display = 'none'; };
-                window.speechSynthesis.speak(utterance);
-            }
-        }
-
-        document.addEventListener('mouseup', leerTextoSeleccionado);
-        document.addEventListener('touchend', () => { setTimeout(leerTextoSeleccionado, 300); });
-
-        // --- 4. MODAL Y REGISTRO ---
-        const menuBtn = document.getElementById('mobile-menu-btn');
-        const mobileMenu = document.getElementById('mobile-menu');
-        if (menuBtn && mobileMenu) {
-            menuBtn.addEventListener('click', () => { mobileMenu.classList.toggle('hidden'); });
-        }
-
-        function abrirFormulario(nombrePlan, precio) {
-            document.getElementById('modal-titulo-plan').innerText = 'Plan: ' + nombrePlan;
-            document.getElementById('input-plan').value = nombrePlan;
-            document.getElementById('input-monto').value = precio;
-            document.getElementById('modal-precio-texto').innerText = '$' + precio.toLocaleString();
-            
-            document.getElementById('form-registro').reset();
-            document.getElementById('form-registro').classList.remove('hidden');
-            document.getElementById('mensaje-exito').classList.add('hidden');
-            
-            document.getElementById('modal-pago').classList.remove('hidden');
-        }
-
-        function cerrarFormulario() {
-            document.getElementById('modal-pago').classList.add('hidden');
-        }
-
-        async function enviarRegistro(event) {
-            event.preventDefault();
-            const datos = {
-                nombre: document.getElementById('nombre').value,
-                telefono: document.getElementById('telefono').value,
-                plan: document.getElementById('input-plan').value,
-                monto: document.getElementById('input-monto').value,
-                metodo_pago: document.getElementById('metodo-pago').value
-            };
-
-            try {
-                await fetch('/api/inscripciones', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(datos)
-                });
-                document.getElementById('form-registro').classList.add('hidden');
-                document.getElementById('mensaje-exito').classList.remove('hidden');
-            } catch (error) {
-                console.error('Error al registrar:', error);
-                alert('Ocurrió un error al procesar el pago. Verifica que el servidor esté activo.');
-            }
-        }
-
-        // Cargar ajustes guardados al iniciar
-        document.addEventListener('DOMContentLoaded', () => {
-            checkUserSession();
-
-            const savedSize = localStorage.getItem('kronox_font_size');
-            if (savedSize) {
-                currentFontSize = parseInt(savedSize);
-                document.documentElement.style.fontSize = `${currentFontSize}%`;
-            }
-
-            const savedDaltonism = localStorage.getItem('kronox_daltonism');
-            if (savedDaltonism && savedDaltonism !== 'none') {
-                setDaltonism(savedDaltonism);
-            }
-
-            if (localStorage.getItem('kronox_high_contrast') === 'enabled') {
-                toggleHighContrast();
-            }
-        });
-    </script>
-</body>
-</html>
