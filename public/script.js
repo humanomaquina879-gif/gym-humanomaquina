@@ -81,20 +81,32 @@ document.addEventListener("DOMContentLoaded", () => {
   // Cargar preferencias globales de accesibilidad
   loadAccessibilityPreferences();
 
-  // ===== Menú responsive optimizado para Celulares (IDs reales de tus HTML) =====
-  const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+  // ===== Menú responsive optimizado para Celulares (Antitrabones) =====
+  let mobileMenuBtn = document.getElementById('mobile-menu-btn');
   const mobileMenu = document.getElementById('mobile-menu');
-  const mobileMenuIcon = document.getElementById('mobile-menu-icon');
 
   if (mobileMenuBtn && mobileMenu) {
+    // Truco: Clonamos el botón para limpiar cualquier evento previo acumulado en móvil
+    const newBtn = mobileMenuBtn.cloneNode(true);
+    mobileMenuBtn.parentNode.replaceChild(newBtn, mobileMenuBtn);
+    mobileMenuBtn = document.getElementById('mobile-menu-btn'); // Actualizamos la referencia
+
+    let isMenuToggling = false;
+
     const toggleMenu = (e) => {
       e.preventDefault();
       e.stopPropagation();
+      if (isMenuToggling) return; // Evita clics fantasma o dobles toques seguidos
+      isMenuToggling = true;
+
       const isHidden = mobileMenu.classList.toggle('hidden');
+      const mobileMenuIcon = document.getElementById('mobile-menu-icon');
       
       if (mobileMenuIcon) {
         mobileMenuIcon.className = isHidden ? "fas fa-bars" : "fas fa-times";
       }
+
+      setTimeout(() => { isMenuToggling = false; }, 250); // Libera el bloqueo táctil rápido
     };
 
     mobileMenuBtn.addEventListener('click', toggleMenu);
@@ -104,13 +116,16 @@ document.addEventListener("DOMContentLoaded", () => {
     mobileMenu.querySelectorAll("a").forEach(link => {
       link.addEventListener("click", () => {
         mobileMenu.classList.add('hidden');
+        const mobileMenuIcon = document.getElementById('mobile-menu-icon');
         if (mobileMenuIcon) mobileMenuIcon.className = "fas fa-bars";
       });
     });
 
     // Cerrar al tocar fuera del menú
     document.addEventListener('click', (e) => {
-      if (!mobileMenu.contains(e.target) && !mobileMenuBtn.contains(e.target) && !mobileMenu.classList.contains('hidden')) {
+      const btnRef = document.getElementById('mobile-menu-btn');
+      const mobileMenuIcon = document.getElementById('mobile-menu-icon');
+      if (mobileMenu && btnRef && !mobileMenu.contains(e.target) && !btnRef.contains(e.target) && !mobileMenu.classList.contains('hidden')) {
         mobileMenu.classList.add('hidden');
         if (mobileMenuIcon) mobileMenuIcon.className = "fas fa-bars";
       }
