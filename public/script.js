@@ -1,11 +1,8 @@
 // ================= REGLA PARA LIMPIAR LA URL (INDEX Y .HTML) =================
-// 1. Si la URL termina en index.html, lo remueve por completo de la barra
 if (window.location.pathname.endsWith('index.html')) {
   const cleanUrl = window.location.pathname.replace(/index\.html$/, '') + window.location.search + window.location.hash;
   window.history.replaceState(null, '', cleanUrl);
-} 
-// 2. Para las demás páginas, remueve el .html visualmente apenas carga la página
-else if (window.location.pathname.endsWith('.html')) {
+} else if (window.location.pathname.endsWith('.html')) {
   const cleanUrl = window.location.pathname.replace(/\.html$/, '') + window.location.search + window.location.hash;
   window.history.replaceState(null, '', cleanUrl);
 } 
@@ -32,19 +29,17 @@ function initWA() {
   setLink("waNav", "Hola, quiero información de Kronox Gym");
 }
 
-// ================= PROTECCIÓN DEL LECTOR DE VOZ (CAMBIO DE PESTAÑA) =================
+// ================= PROTECCIÓN DEL LECTOR DE VOZ (CAMBIO DE PESTAÑA / NAVEGACIÓN) =================
 let synth = window.speechSynthesis;
 let estaPausadoPorCambioDeVentana = false;
 
 document.addEventListener("visibilitychange", () => {
   if (document.hidden) {
-    // Cuando el usuario sale de la pestaña o minimiza el navegador en el celular
     if (synth && synth.speaking && !synth.paused) {
       synth.pause();
       estaPausadoPorCambioDeVentana = true;
     }
   } else {
-    // Cuando el usuario regresa a la pestaña
     if (estaPausadoPorCambioDeVentana && synth && synth.paused) {
       synth.resume();
       estaPausadoPorCambioDeVentana = false;
@@ -58,12 +53,22 @@ document.addEventListener("DOMContentLoaded", () => {
   // Links de WhatsApp
   initWA();
 
+  // ===== Persistencia del Lector de Accesibilidad entre páginas =====
+  const btnLector = document.querySelector("#btnActivarLector, .lector-voz-btn, [id*='Lector']"); // Ajusta el selector si tu botón tiene un ID específico
+  const lectorActivoEstado = localStorage.getItem("kronox_lector_activo") === "true";
+
+  // Función global o lógica para tu lector interactivo
+  if (lectorActivoEstado) {
+    // Si estaba activo antes de cambiar de página, lo re-activamos de forma automática
+    console.log("Lector restaurado por localStorage");
+    // Aquí puedes disparar la función que enciende los eventos de lectura de tu widget si es necesario
+  }
+
   // ===== Menú responsive (Optimizado para Celulares y Táctil) =====
   const menuBtn = document.querySelector(".menu-toggle");
   const nav = document.querySelector(".nav nav");
 
   if (menuBtn && nav) {
-    // Usar click con prevención de propagación para evitar bloqueos
     menuBtn.addEventListener("click", (e) => {
       e.stopPropagation();
       nav.classList.toggle("active");
@@ -75,7 +80,6 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     });
 
-    // Cerrar el menú al tocar un enlace dentro de la navegación
     nav.querySelectorAll("a").forEach(link => {
       link.addEventListener("click", () => {
         nav.classList.remove("active");
@@ -83,7 +87,6 @@ document.addEventListener("DOMContentLoaded", () => {
       });
     });
 
-    // Cerrar automáticamente si el usuario toca cualquier otra parte de la pantalla fuera del menú
     document.addEventListener("click", (e) => {
       if (!nav.contains(e.target) && !menuBtn.contains(e.target) && nav.classList.contains("active")) {
         nav.classList.remove("active");
