@@ -106,7 +106,7 @@
             transform: translateY(-4px);
         }
 
-        /* Botón estilo Neón */
+        /* Botones Neón */
         .btn-neon-outline {
             background: transparent;
             color: #00d2ff;
@@ -119,6 +119,20 @@
             background: #00d2ff;
             color: #050a14;
             box-shadow: 0 0 22px rgba(0, 210, 255, 0.6);
+        }
+
+        .btn-neon-solid {
+            background: #00d2ff;
+            color: #050a14;
+            border: 2px solid #00d2ff;
+            transition: all 0.3s ease;
+            box-shadow: 0 0 15px rgba(0, 210, 255, 0.4);
+        }
+
+        .btn-neon-solid:hover {
+            background: #2dd8ff;
+            box-shadow: 0 0 25px rgba(0, 210, 255, 0.8);
+            transform: scale(1.02);
         }
 
         /* Subtítulos flotantes para lector de voz */
@@ -268,7 +282,7 @@
     <!-- SECCIÓN PRINCIPAL: RUTINAS RECOMENDADAS -->
     <main class="relative z-10 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10 flex-grow">
         
-        <div class="text-center mb-10">
+        <div class="text-center mb-8">
             <span class="inline-block bg-emerald-500/10 border border-emerald-500/40 text-emerald-400 text-[11px] font-black uppercase tracking-widest px-3 py-1 rounded-full mb-2">
                 Área Exclusiva de Miembros
             </span>
@@ -276,6 +290,13 @@
                 RUTINAS <span class="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-cyan-400">RECOMENDADAS</span>
             </h1>
             <p class="text-gray-400 text-sm mt-2 max-w-xl mx-auto">Guías de entrenamiento optimizadas para hipertrofia y fuerza por grupos musculares.</p>
+            
+            <!-- Botón General para Generar Nueva Variación Manual -->
+            <div class="mt-6">
+                <button onclick="generarNuevaRutina()" class="btn-neon-solid px-6 py-3 rounded-xl font-black text-xs uppercase tracking-wider inline-flex items-center gap-2">
+                    <i class="fas fa-random"></i> Generar Rutina Alternativa
+                </button>
+            </div>
         </div>
 
         <!-- GRID DE RUTINAS CON IMÁGENES OFICIALES DE CLOUDINARY -->
@@ -291,7 +312,7 @@
                     </div>
                     <div class="p-6">
                         <h2 class="text-xl font-black text-white uppercase italic mb-4">Día de Pecho</h2>
-                        <ul class="space-y-3 text-sm text-gray-300">
+                        <ul id="lista-pecho" class="space-y-3 text-sm text-gray-300">
                             <li class="flex justify-between border-b border-gray-800 pb-2"><span>Press de Banca Plano</span> <span class="text-cyan-400 font-bold">4 series x 8-10 reps</span></li>
                             <li class="flex justify-between border-b border-gray-800 pb-2"><span>Press Inclinado con Mancuernas</span> <span class="text-cyan-400 font-bold">4 series x 10 reps</span></li>
                             <li class="flex justify-between border-b border-gray-800 pb-2"><span>Aperturas en Polea</span> <span class="text-cyan-400 font-bold">3 series x 12 reps</span></li>
@@ -304,13 +325,13 @@
             <div class="kronox-card flex flex-col justify-between">
                 <div>
                     <div class="relative h-48 w-full overflow-hidden">
-                        <img src="https://res.cloudinary.com/rkfjzq6c/image/upload/f_auto,q_auto/Tríceps" alt="Tríceps" class="w-full h-full object-cover">
+                        <img src="https://res.cloudinary.com/rkfjzq6c/image/upload/f_auto,q_auto/Tr%C3%ADceps" alt="Tríceps" class="w-full h-full object-cover">
                         <div class="absolute inset-0 bg-gradient-to-t from-[#060c18] via-transparent to-transparent"></div>
                         <span class="absolute bottom-3 left-4 bg-cyan-500 text-black text-[10px] font-black uppercase px-3 py-1 rounded-full">Enfoque: Definición y Bloques</span>
                     </div>
                     <div class="p-6">
                         <h2 class="text-xl font-black text-white uppercase italic mb-4">Día de Tríceps</h2>
-                        <ul class="space-y-3 text-sm text-gray-300">
+                        <ul id="lista-triceps" class="space-y-3 text-sm text-gray-300">
                             <li class="flex justify-between border-b border-gray-800 pb-2"><span>Extensión de Tríceps en Polea</span> <span class="text-cyan-400 font-bold">4 series x 12 reps</span></li>
                             <li class="flex justify-between border-b border-gray-800 pb-2"><span>Press Francés con Barra Z</span> <span class="text-cyan-400 font-bold">4 series x 10 reps</span></li>
                             <li class="flex justify-between border-b border-gray-800 pb-2"><span>Patada de Tríceps con Mancuerna</span> <span class="text-cyan-400 font-bold">3 series x 12 reps</span></li>
@@ -329,7 +350,7 @@
                     </div>
                     <div class="p-6">
                         <h2 class="text-xl font-black text-white uppercase italic mb-4">Día de Pierna</h2>
-                        <ul class="space-y-3 text-sm text-gray-300">
+                        <ul id="lista-pierna" class="space-y-3 text-sm text-gray-300">
                             <li class="flex justify-between border-b border-gray-800 pb-2"><span>Sentadilla Libre o Multipress</span> <span class="text-cyan-400 font-bold">4 series x 8 reps</span></li>
                             <li class="flex justify-between border-b border-gray-800 pb-2"><span>Prensa de Pierna (200kg+)</span> <span class="text-cyan-400 font-bold">4 series x 10 reps</span></li>
                             <li class="flex justify-between border-b border-gray-800 pb-2"><span>Extensión de Cuádriceps</span> <span class="text-cyan-400 font-bold">3 series x 12 reps</span></li>
@@ -349,7 +370,7 @@
                     </div>
                     <div class="p-6">
                         <h2 class="text-xl font-black text-white uppercase italic mb-4">Día de Espalda</h2>
-                        <ul class="space-y-3 text-sm text-gray-300">
+                        <ul id="lista-espalda" class="space-y-3 text-sm text-gray-300">
                             <li class="flex justify-between border-b border-gray-800 pb-2"><span>Dominadas o Jalón al Pecho</span> <span class="text-cyan-400 font-bold">4 series x 10 reps</span></li>
                             <li class="flex justify-between border-b border-gray-800 pb-2"><span>Remo con Barra o Mancuerna</span> <span class="text-cyan-400 font-bold">4 series x 8-10 reps</span></li>
                             <li class="flex justify-between border-b border-gray-800 pb-2"><span>Remo en Polea Baja</span> <span class="text-cyan-400 font-bold">3 series x 12 reps</span></li>
@@ -362,13 +383,13 @@
             <div class="kronox-card flex flex-col justify-between md:col-span-2 max-w-xl mx-auto w-full">
                 <div>
                     <div class="relative h-48 w-full overflow-hidden">
-                        <img src="https://res.cloudinary.com/rkfjzq6c/image/upload/f_auto,q_auto/Bíceps" alt="Bíceps" class="w-full h-full object-cover">
+                        <img src="https://res.cloudinary.com/rkfjzq6c/image/upload/f_auto,q_auto/B%C3%ADceps" alt="Bíceps" class="w-full h-full object-cover">
                         <div class="absolute inset-0 bg-gradient-to-t from-[#060c18] via-transparent to-transparent"></div>
                         <span class="absolute bottom-3 left-4 bg-cyan-500 text-black text-[10px] font-black uppercase px-3 py-1 rounded-full">Enfoque: Congestión y Pico</span>
                     </div>
                     <div class="p-6">
                         <h2 class="text-xl font-black text-white uppercase italic mb-4">Día de Bíceps</h2>
-                        <ul class="space-y-3 text-sm text-gray-300">
+                        <ul id="lista-biceps" class="space-y-3 text-sm text-gray-300">
                             <li class="flex justify-between border-b border-gray-800 pb-2"><span>Curl de Bíceps con Barra Z</span> <span class="text-cyan-400 font-bold">4 series x 10 reps</span></li>
                             <li class="flex justify-between border-b border-gray-800 pb-2"><span>Curl Alterno con Mancuernas</span> <span class="text-cyan-400 font-bold">4 series x 12 reps</span></li>
                             <li class="flex justify-between border-b border-gray-800 pb-2"><span>Curl Tipo Martillo en Polea</span> <span class="text-cyan-400 font-bold">3 series x 12 reps</span></li>
@@ -433,7 +454,97 @@
             window.location.href = "index";
         }
 
-        // --- 2. ACCESIBILIDAD UNIVERSAL ---
+        // --- 2. GENERADOR DE RUTINAS ALTERNATIVAS MANUALES ---
+        const variantesRutinas = {
+            pecho: [
+                [
+                    { nombre: "Press de Banca Plano", reps: "4 series x 8-10 reps" },
+                    { nombre: "Press Inclinado con Mancuernas", reps: "4 series x 10 reps" },
+                    { nombre: "Aperturas en Polea", reps: "3 series x 12 reps" }
+                ],
+                [
+                    { nombre: "Press Declinado con Barra", reps: "4 series x 8 reps" },
+                    { nombre: "Cruce de Poleas Alto", reps: "4 series x 12 reps" },
+                    { nombre: "Press Plano con Mancuernas", reps: "3 series x 10 reps" }
+                ]
+            ],
+            triceps: [
+                [
+                    { nombre: "Extensión de Tríceps en Polea", reps: "4 series x 12 reps" },
+                    { nombre: "Press Francés con Barra Z", reps: "4 series x 10 reps" },
+                    { nombre: "Patada de Tríceps con Mancuerna", reps: "3 series x 12 reps" }
+                ],
+                [
+                    { nombre: "Press Coctelera (Skull Crusher)", reps: "4 series x 10 reps" },
+                    { nombre: "Fondos en Máquina", reps: "3 series x 10 reps" },
+                    { nombre: "Extensión Trasnuca con Mancuerna", reps: "3 series x 12 reps" }
+                ]
+            ],
+            pierna: [
+                [
+                    { nombre: "Sentadilla Libre o Multipress", reps: "4 series x 8 reps" },
+                    { nombre: "Prensa de Pierna (200kg+)", reps: "4 series x 10 reps" },
+                    { nombre: "Extensión de Cuádriceps", reps: "3 series x 12 reps" },
+                    { nombre: "Elevación de Pantorrilla", reps: "5 series x 15 reps" }
+                ],
+                [
+                    { nombre: "Zancadas con Mancuernas", reps: "3 series x 12 pasos" },
+                    { nombre: "Curl Femoral Acostado", reps: "4 series x 10 reps" },
+                    { nombre: "Sentadilla Hack", reps: "3 series x 10 reps" },
+                    { nombre: "Pantorrilla en Prensa", reps: "4 series x 15 reps" }
+                ]
+            ],
+            espalda: [
+                [
+                    { nombre: "Dominadas o Jalón al Pecho", reps: "4 series x 10 reps" },
+                    { nombre: "Remo con Barra o Mancuerna", reps: "4 series x 8-10 reps" },
+                    { nombre: "Remo en Polea Baja", reps: "3 series x 12 reps" }
+                ],
+                [
+                    { nombre: "Jalón Agregando Agarre Neutro", reps: "4 series x 10 reps" },
+                    { nombre: "Remo en T con Barra", reps: "4 series x 8 reps" },
+                    { nombre: "Pullover en Polea Alta", reps: "3 series x 12 reps" }
+                ]
+            ],
+            biceps: [
+                [
+                    { nombre: "Curl de Bíceps con Barra Z", reps: "4 series x 10 reps" },
+                    { nombre: "Curl Alterno con Mancuernas", reps: "4 series x 12 reps" },
+                    { nombre: "Curl Tipo Martillo en Polea", reps: "3 series x 12 reps" }
+                ],
+                [
+                    { nombre: "Curl Concentrado", reps: "3 series x 12 reps" },
+                    { nombre: "Curl en Banco Inclinado", reps: "4 series x 10 reps" },
+                    { nombre: "Curl con Barra Inversa", reps: "3 series x 12 reps" }
+                ]
+            ]
+        };
+
+        function generarNuevaRutina() {
+            ['pecho', 'triceps', 'pierna', 'espalda', 'biceps'].forEach(grupo => {
+                const listaOpciones = variantesRutinas[grupo];
+                const aleatoria = listaOpciones[Math.floor(Math.random() * listaOpciones.length)];
+                const contenedor = document.getElementById(`lista-${grupo}`);
+                
+                if (contenedor) {
+                    contenedor.innerHTML = aleatoria.map(item => `
+                        <li class="flex justify-between border-b border-gray-800 pb-2">
+                            <span>${item.nombre}</span> 
+                            <span class="text-cyan-400 font-bold">${item.reps}</span>
+                        </li>
+                    `).join('');
+                }
+            });
+
+            // Feedback de voz si el lector está activo
+            if (typeof speechActive !== 'undefined' && speechActive) {
+                const utterance = new SpeechSynthesisUtterance("Se han generado nuevas variantes de rutinas.");
+                utterance.lang = 'es-MX';
+                window.speechSynthesis.speak(utterance);
+            }
+        }
+
+        // --- 3. ACCESIBILIDAD UNIVERSAL ---
         function toggleAccessibilityPanel() {
             const panel = document.getElementById('accessibility-panel');
             if (panel) panel.classList.toggle('hidden');
@@ -493,7 +604,7 @@
             localStorage.setItem('kronox_high_contrast', isActive ? 'enabled' : 'disabled');
         }
 
-        // --- 3. LECTOR DE VOZ CON SUBTÍTULOS (Sin Alertas Bloqueantes) ---
+        // --- 4. LECTOR DE VOZ CON SUBTÍTULOS (Sin Alertas Bloqueantes) ---
         let speechActive = false;
         function toggleSpeechReader() {
             speechActive = !speechActive;
