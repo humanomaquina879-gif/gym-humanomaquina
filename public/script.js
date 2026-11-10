@@ -47,7 +47,7 @@ document.addEventListener("visibilitychange", () => {
   }
 });
 
-// ================= ACCESIBILIDAD UNIVERSAL GLOBAL =================
+// ================= ACCESIBILIDAD UNIVERSAL GLOBAL (OPTIMIZADA) =================
 function toggleAccessibilityPanel() {
   const panel = document.getElementById('accessibility-panel');
   if (panel) {
@@ -72,7 +72,37 @@ function loadAccessibilityPreferences() {
   }
 }
 
-// ================= 4. LECTOR DE VOZ OPTIMIZADO (ANTISATURACIÓN) =================
+// Funciones de accesibilidad ligera para evitar bloqueos en móvil
+function adjustFontSize(amount) {
+  let currentSize = parseInt(localStorage.getItem('kronox_font_size') || '100');
+  currentSize = Math.max(85, Math.min(130, currentSize + amount));
+  localStorage.setItem('kronox_font_size', currentSize);
+  document.documentElement.style.fontSize = `${currentSize}%`;
+}
+
+function resetFontSize() {
+  localStorage.setItem('kronox_font_size', '100');
+  document.documentElement.style.fontSize = '100%';
+}
+
+function toggleHighContrast() {
+  const isEnabled = document.body.classList.toggle('high-contrast');
+  localStorage.setItem('kronox_high_contrast', isEnabled ? 'enabled' : 'disabled');
+}
+
+function setDaltonism(type) {
+  // Limpiar filtros anteriores de forma rápida
+  ['protanopia', 'deuteranopia', 'tritanopia'].forEach(t => {
+    document.body.classList.remove(`daltonism-${t}`);
+  });
+  
+  if (type !== 'none') {
+    document.body.classList.add(`daltonism-${type}`);
+  }
+  localStorage.setItem('kronox_daltonism', type);
+}
+
+// ================= LECTOR DE VOZ ULTRA-LIGERO (ANTISATURACIÓN) =================
 let speechActive = false;
 let speechTimeout = null;
 
@@ -99,11 +129,11 @@ function actualizarEstadoLectorUI() {
       btn.innerHTML = `<i class="fas fa-volume-xmark"></i> Desactivar Lector`;
       btn.classList.replace('bg-cyan-600', 'bg-red-600');
     }
-    const mensaje = "Lector interactivo activado. Selecciona cualquier texto para escucharlo.";
+    const mensaje = "Lector interactivo activado.";
     
     avisoFlotante.innerHTML = `<i class="fas fa-info-circle text-cyan-400 mr-2"></i> ${mensaje}`;
     avisoFlotante.style.opacity = '1';
-    setTimeout(() => { avisoFlotante.style.opacity = '0'; }, 4000);
+    setTimeout(() => { avisoFlotante.style.opacity = '0'; }, 3000);
 
     window.speechSynthesis.cancel();
     const utteranceInicio = new SpeechSynthesisUtterance(mensaje);
@@ -120,13 +150,14 @@ function actualizarEstadoLectorUI() {
 
     avisoFlotante.innerHTML = `<i class="fas fa-info-circle text-red-400 mr-2"></i> Lector desactivado.`;
     avisoFlotante.style.opacity = '1';
-    setTimeout(() => { avisoFlotante.style.opacity = '0'; }, 3000);
+    setTimeout(() => { avisoFlotante.style.opacity = '0'; }, 2000);
   }
 }
 
 function leerTextoSeleccionado(e) {
   if (!speechActive) return;
 
+  // Si toca botones, menús o paneles, ignorar de inmediato para proteger los clics
   if (e && e.target && (e.target.closest('button') || e.target.closest('a') || e.target.closest('nav') || e.target.closest('#accessibility-panel'))) {
     return;
   }
@@ -137,7 +168,7 @@ function leerTextoSeleccionado(e) {
     const seleccion = window.getSelection();
     const textoSeleccionado = seleccion ? seleccion.toString().trim() : "";
 
-    if (textoSeleSeleccionado && textoSeleccionado.length > 2) {
+    if (textoSeleccionado && textoSeleccionado.length > 2) {
       window.speechSynthesis.cancel();
       const utterance = new SpeechSynthesisUtterance(textoSeleccionado);
       utterance.lang = 'es-MX';
@@ -149,17 +180,12 @@ function leerTextoSeleccionado(e) {
         subtitleBox.style.display = 'block';
       }
 
-      utterance.onend = () => { 
-        if (subtitleBox) subtitleBox.style.display = 'none'; 
-      };
-      
-      utterance.onerror = () => {
-        if (subtitleBox) subtitleBox.style.display = 'none';
-      };
+      utterance.onend = () => { if (subtitleBox) subtitleBox.style.display = 'none'; };
+      utterance.onerror = () => { if (subtitleBox) subtitleBox.style.display = 'none'; };
 
       window.speechSynthesis.speak(utterance);
     }
-  }, 250);
+  }, 350); // Un pequeño respiro de 350ms para que el teléfono procese con soltura
 }
 
 // ================= INICIALIZACIÓN DEL SITIO =================
@@ -171,12 +197,17 @@ document.addEventListener("DOMContentLoaded", () => {
   // Cargar preferencias globales de accesibilidad
   loadAccessibilityPreferences();
 
+  // Sincronizar estado inicial del lector si estaba activo en localStorage
+  if (localStorage.getItem('kronox_speech_active') === 'enabled') {
+    speechActive = true;
+    actualizarEstadoLectorUI();
+  }
+
   // ===== MENÚ HAMBURGUESA BLINDADO Y SINCRONIZADO =====
   let mobileMenuBtn = document.getElementById('mobile-menu-btn');
   const mobileMenu = document.getElementById('mobile-menu');
 
   if (mobileMenuBtn && mobileMenu) {
-    // Limpieza total de nodos para evitar eventos duplicados al navegar
     const freshBtn = mobileMenuBtn.cloneNode(true);
     mobileMenuBtn.parentNode.replaceChild(freshBtn, mobileMenuBtn);
     mobileMenuBtn = document.getElementById('mobile-menu-btn');
@@ -186,8 +217,6 @@ document.addEventListener("DOMContentLoaded", () => {
     const toggleMenu = (e) => {
       e.stopPropagation();
       const isHidden = mobileMenu.classList.toggle('hidden');
-      
-      // Sincronización estricta del icono según la clase real del menú
       if (mobileMenuIcon) {
         mobileMenuIcon.className = isHidden ? "fas fa-bars" : "fas fa-times";
       }
@@ -195,7 +224,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
     mobileMenuBtn.addEventListener('click', toggleMenu);
 
-    // Cerrar al hacer clic en los enlaces internos
     mobileMenu.querySelectorAll("a").forEach(link => {
       link.addEventListener("click", () => {
         mobileMenu.classList.add('hidden');
@@ -203,7 +231,6 @@ document.addEventListener("DOMContentLoaded", () => {
       });
     });
 
-    // Cerrar al hacer clic fuera del menú de forma segura
     document.addEventListener('click', (e) => {
       const btnRef = document.getElementById('mobile-menu-btn');
       const iconRef = document.getElementById('mobile-menu-icon');
@@ -214,7 +241,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // Eventos seguros para el Lector de Voz
+  // Eventos de selección aislados para proteger los clics de la interfaz
   document.addEventListener('mouseup', leerTextoSeleccionado);
   document.addEventListener('selectionchange', () => {
     if (speechActive) leerTextoSeleccionado();
