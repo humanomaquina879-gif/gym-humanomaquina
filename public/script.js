@@ -32,6 +32,26 @@ function initWA() {
   setLink("waNav", "Hola, quiero información de Kronox Gym");
 }
 
+// ================= PROTECCIÓN DEL LECTOR DE VOZ (CAMBIO DE PESTAÑA) =================
+let synth = window.speechSynthesis;
+let estaPausadoPorCambioDeVentana = false;
+
+document.addEventListener("visibilitychange", () => {
+  if (document.hidden) {
+    // Cuando el usuario sale de la pestaña o minimiza el navegador en el celular
+    if (synth && synth.speaking && !synth.paused) {
+      synth.pause();
+      estaPausadoPorCambioDeVentana = true;
+    }
+  } else {
+    // Cuando el usuario regresa a la pestaña
+    if (estaPausadoPorCambioDeVentana && synth && synth.paused) {
+      synth.resume();
+      estaPausadoPorCambioDeVentana = false;
+    }
+  }
+});
+
 // ================= INICIALIZACIÓN DEL SITIO =================
 document.addEventListener("DOMContentLoaded", () => {
 
