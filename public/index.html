@@ -245,7 +245,7 @@
                 <a href="planes" class="text-gray-300 hover:text-kronox-accent transition-colors">Planes</a>
                 <a href="catalogo" class="text-gray-300 hover:text-kronox-accent transition-colors">Catálogo</a>
                 <a href="ubicacion" class="text-gray-300 hover:text-kronox-accent transition-colors">Ubicación</a>
-                <a href="rutinas" id="nav-rutinas" class="hidden text-emerald-400 font-bold hover:text-emerald-300 transition-colors flex items-center gap-1.5"><i class="fas fa-dumbbell"></i> Rutinas</a>
+                <a href="rutinas" id="nav-rutinas" class="hidden text-emerald-400 font-bold hover:text-emerald-300 transition-colors flex items-center gap-1.5"><i class="fas fa-dumbbell"></i> Mi Rutina</a>
             </nav>
 
             <div class="hidden md:flex items-center space-x-3">
@@ -298,7 +298,7 @@
             <a href="planes" class="block py-2 text-gray-300 hover:text-kronox-accent font-medium">Planes</a>
             <a href="catalogo" class="block py-2 text-gray-300 hover:text-kronox-accent font-medium">Catálogo</a>
             <a href="ubicacion" class="block py-2 text-gray-300 hover:text-kronox-accent font-medium">Ubicación</a>
-            <a href="rutinas" id="mobile-nav-rutinas" class="hidden py-2 text-emerald-400 font-bold"><i class="fas fa-dumbbell"></i> Rutinas Exclusivas</a>
+            <a href="rutinas" id="mobile-nav-rutinas" class="hidden py-2 text-emerald-400 font-bold"><i class="fas fa-dumbbell"></i> Mi Rutina</a>
             
             <div id="mobile-session-container" class="pt-2 border-t border-gray-800">
                 <button id="mobile-btn-login" type="button" onclick="openLoginModal()" class="w-full text-center btn-neon-solid py-2.5 rounded-lg font-bold text-xs uppercase">
@@ -410,7 +410,6 @@
                     }
                 };
 
-                // Añadir tanto click como touchstart para garantizar respuesta inmediata en cualquier móvil
                 mobileMenuBtn.addEventListener('click', toggleMobileMenu);
                 mobileMenuBtn.addEventListener('touchstart', toggleMobileMenu, { passive: false });
 
@@ -429,7 +428,6 @@
                 });
             }
 
-            // Configurar el botón del menú de usuario móvil de forma robusta
             const mobileUserToggleBtn = document.getElementById('mobile-user-toggle-btn');
             if (mobileUserToggleBtn) {
                 const toggleMobileUser = (e) => {
@@ -444,7 +442,6 @@
                 mobileUserToggleBtn.addEventListener('touchstart', toggleMobileUser, { passive: false });
             }
 
-            // Cerrar menús desplegables de usuario al hacer clic fuera
             document.addEventListener('click', (e) => {
                 const desktopDropdown = document.getElementById('user-dropdown-menu');
                 if (desktopDropdown && !desktopDropdown.classList.contains('hidden')) {
