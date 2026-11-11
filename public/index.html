@@ -285,8 +285,8 @@
                 </a>
             </div>
 
-            <!-- Botón Menú Móvil ultraseguro (sin onclick de HTML para evitar bloqueos globales) -->
-            <button id="mobile-menu-btn" type="button" title="Abrir menú" class="md:hidden text-gray-300 hover:text-white text-2xl focus:outline-none p-3 cursor-pointer z-50">
+            <!-- Botón Menú Móvil con HTML onclick directo (A prueba de fallos global) -->
+            <button id="mobile-menu-btn" type="button" onclick="toggleMobileMenu()" title="Abrir menú" class="md:hidden text-gray-300 hover:text-white text-2xl focus:outline-none p-3 cursor-pointer z-50">
                 <i class="fas fa-bars pointer-events-none" id="mobile-menu-icon"></i>
             </button>
         </div>
@@ -347,7 +347,7 @@
                     FORJA TU <span class="text-transparent bg-clip-text bg-gradient-to-r from-kronox-accent to-blue-500">GRANDEZA</span>
                 </h1>
                 <p class="text-gray-400 text-base sm:text-lg font-normal max-w-xl mx-auto lg:mx-0">
-                    Equipamiento de última generación, rutinas specialized y un ambiente diseñado para llevar tus límites al siguiente nivel.
+                    Equipamiento de última generación, rutinas especializadas y un ambiente diseñado para llevar tus límites al siguiente nivel.
                 </p>
                 <div class="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start pt-4">
                     <a href="planes" class="btn-neon-solid px-8 py-4 rounded-xl font-black text-xs uppercase tracking-wider text-center">
@@ -388,23 +388,11 @@
         </div>
     </footer>
 
-    <!-- JAVASCRIPT BLINDADO: INTERCEPTOR DE POINTERDOWN PARA PC Y CELULAR SIN CONFLICTOS DE VOZ -->
+    <!-- JAVASCRIPT DEFINITIVO Y AISLADO -->
     <script>
         document.addEventListener("DOMContentLoaded", () => {
             checkUserSession();
             loadAccessibilityPreferences();
-
-            // Interceptor absoluto con pointerdown: responde de inmediato en PC y Celular, 
-            // anulando por completo que el lector de voz se coma o bloquee el clic del menú.
-            const mobileMenuBtn = document.getElementById('mobile-menu-btn');
-            if (mobileMenuBtn) {
-                const abrirMenuInmediato = (e) => {
-                    e.stopImmediatePropagation();
-                    e.stopPropagation();
-                    toggleMobileMenu();
-                };
-                mobileMenuBtn.addEventListener('pointerdown', abrirMenuInmediato);
-            }
 
             // Cerrar menús al hacer clic fuera
             document.addEventListener('click', (e) => {
@@ -424,6 +412,7 @@
             });
         });
 
+        // Función del menú móvil totalmente independiente y blindada contra bloqueos
         function toggleMobileMenu() {
             const mobileMenu = document.getElementById('mobile-menu');
             const mobileMenuIcon = document.getElementById('mobile-menu-icon');
@@ -608,12 +597,15 @@
             }
         }
 
+        // LECTOR DE VOZ TOTALMENTE AISLADO (Excluyendo por completo cualquier bloqueo al menú)
         function leerTextoSeleccionado(e) {
             if (!speechActive) return;
 
+            // Blindaje estricto: Si el toque o clic ocurre dentro del botón o del menú móvil, 
+            // la función se sale inmediatamente sin alterar, tocar ni congelar nada.
             if (e && e.target) {
                 const el = e.target;
-                if (el.closest('#mobile-menu-btn') || el.closest('#mobile-menu') || el.closest('#accessibility-panel') || el.closest('[title="Accesibilidad Universal"]')) {
+                if (el.closest('#mobile-menu-btn') || el.closest('#mobile-menu') || el.closest('header') || el.closest('#accessibility-panel') || el.closest('[title="Accesibilidad Universal"]')) {
                     return;
                 }
             }
@@ -640,12 +632,8 @@
             }
         }
 
+        // Únicamente escuchamos el mouseup en la PC y evitamos listeners de touchend agresivos en móviles
         document.addEventListener('mouseup', leerTextoSeleccionado);
-        document.addEventListener('touchend', (e) => {
-            if (speechActive) {
-                setTimeout(() => leerTextoSeleccionado(e), 200);
-            }
-        }, { passive: true });
 
         function loadAccessibilityPreferences() {
             const savedFontSize = localStorage.getItem('kronox_font_size');
