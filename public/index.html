@@ -602,8 +602,8 @@
 
             if (e && e.target) {
                 const el = e.target;
-                // EXCLUSIÓN PRECISA: Solo ignoramos los clics directos sobre los botones interactivos clave (menú móvil y panel de accesibilidad)
-                if (el.closest('#mobile-menu-btn') || el.closest('#accessibility-panel') || el.closest('[title="Accesibilidad Universal"]')) {
+                // EXCLUSIÓN TOTAL DEL MENÚ MÓVIL Y BOTONES: Si se toca cualquier parte del menú desplegable, enlaces o botones de navegación, el lector no interfiere para permitir el cambio de pestaña
+                if (el.closest('#mobile-menu') || el.closest('#mobile-menu-btn') || el.closest('#accessibility-panel') || el.closest('[title="Accesibilidad Universal"]') || el.closest('nav')) {
                     return;
                 }
             }
