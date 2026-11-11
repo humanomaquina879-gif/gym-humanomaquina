@@ -285,9 +285,9 @@
                 </a>
             </div>
 
-            <!-- Botón Menú Móvil -->
-            <button id="mobile-menu-btn" type="button" onclick="toggleMobileMenu()" title="Abrir menú" class="md:hidden text-gray-300 hover:text-white text-2xl focus:outline-none p-2 cursor-pointer z-50">
-                <i class="fas fa-bars" id="mobile-menu-icon"></i>
+            <!-- Botón Menú Móvil con blindaje de eventos -->
+            <button id="mobile-menu-btn" type="button" title="Abrir menú" class="md:hidden text-gray-300 hover:text-white text-2xl focus:outline-none p-2 cursor-pointer z-50">
+                <i class="fas fa-bars pointer-events-none" id="mobile-menu-icon"></i>
             </button>
         </div>
 
@@ -388,11 +388,25 @@
         </div>
     </footer>
 
-    <!-- JAVASCRIPT BLINDADO DEFINITIVO -->
+    <!-- JAVASCRIPT BLINDADO DEFINITIVO CONTRA INTERFERENCIAS TÁCTILES -->
     <script>
         document.addEventListener("DOMContentLoaded", () => {
             checkUserSession();
             loadAccessibilityPreferences();
+
+            // Blindaje total del botón hamburguesa usando pointerup y stopPropagation para vencer al lector de voz
+            const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+            if (mobileMenuBtn) {
+                const triggerMenu = (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    e.stopImmediatePropagation();
+                    toggleMobileMenu();
+                };
+                
+                mobileMenuBtn.addEventListener('click', triggerMenu);
+                mobileMenuBtn.addEventListener('pointerup', triggerMenu);
+            }
 
             // Cerrar menús al hacer clic fuera
             document.addEventListener('click', (e) => {
@@ -419,9 +433,9 @@
             if (mobileMenu) {
                 mobileMenu.classList.toggle('hidden');
                 if (mobileMenu.classList.contains('hidden')) {
-                    if (mobileMenuIcon) mobileMenuIcon.className = "fas fa-bars";
+                    if (mobileMenuIcon) mobileMenuIcon.className = "fas fa-bars pointer-events-none";
                 } else {
-                    if (mobileMenuIcon) mobileMenuIcon.className = "fas fa-times";
+                    if (mobileMenuIcon) mobileMenuIcon.className = "fas fa-times pointer-events-none";
                 }
             }
         }
@@ -601,8 +615,7 @@
 
             if (e && e.target) {
                 const el = e.target;
-                // EXCLUSIÓN ABSOLUTA Y CORRECTA: Si el usuario toca el botón hamburguesa, el menú desplegable móvil o el panel de accesibilidad, el lector los ignora completamente permitiendo la navegación fluida
-                if (el.closest('#mobile-menu-btn') || el.closest('#mobile-menu') || el.closest('#accessibility-panel') || el.closest('[title="Accesibilidad Universal"]')) {
+                if (el.closest('#mobile-menu') || el.closest('#mobile-menu-btn') || el.closest('#accessibility-panel') || el.closest('[title="Accesibilidad Universal"]')) {
                     return;
                 }
             }
