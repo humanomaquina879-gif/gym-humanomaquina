@@ -49,12 +49,17 @@ document.addEventListener("visibilitychange", () => {
 
 // ================= ACCESIBILIDAD UNIVERSAL GLOBAL =================
 function toggleAccessibilityPanel() {
-  safeCancelSpeech();
+  if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+  
   const panel = document.getElementById('accessibility-panel');
   if (panel) {
+    // Forzar remoción del hidden de forma directa y limpia
     const isHidden = panel.classList.toggle('hidden');
     if (!isHidden) {
+      panel.style.display = 'block';
       panel.style.zIndex = '999999';
+    } else {
+      panel.style.display = 'none';
     }
   }
 }
@@ -103,19 +108,9 @@ function setDaltonism(type) {
   localStorage.setItem('kronox_daltonism', type);
 }
 
-// ================= LECTOR DE VOZ BLINDADO PARA MÓVIL =================
+// ================= LECTOR DE VOZ BLINDADO =================
 let speechActive = false;
 let speechTimeout = null;
-
-function safeCancelSpeech() {
-  try {
-    if ('speechSynthesis' in window) {
-      window.speechSynthesis.cancel();
-    }
-  } catch (err) {
-    // Ignorar errores del motor nativo
-  }
-}
 
 function toggleSpeechReader() {
   speechActive = !speechActive;
@@ -131,7 +126,7 @@ function actualizarEstadoLectorUI() {
       btn.innerHTML = `<i class="fas fa-volume-xmark"></i> Desactivar Lector`;
       btn.classList.replace('bg-cyan-600', 'bg-red-600');
     }
-    safeCancelSpeech();
+    if ('speechSynthesis' in window) window.speechSynthesis.cancel();
     const utteranceInicio = new SpeechSynthesisUtterance("Lector activado.");
     utteranceInicio.lang = 'es-MX';
     window.speechSynthesis.speak(utteranceInicio);
@@ -140,7 +135,7 @@ function actualizarEstadoLectorUI() {
       btn.innerHTML = `<i class="fas fa-volume-high"></i> Activar Lector Interactivo`;
       btn.classList.replace('bg-red-600', 'bg-cyan-600');
     }
-    safeCancelSpeech();
+    if ('speechSynthesis' in window) window.speechSynthesis.cancel();
     if (subtitleBox) subtitleBox.style.display = 'none';
   }
 }
@@ -148,9 +143,8 @@ function actualizarEstadoLectorUI() {
 function leerTextoSeleccionado(e) {
   if (!speechActive) return;
 
-  // Si el usuario toca cualquier elemento de la interfaz, matamos la voz y salimos al instante
   if (e && e.target && (e.target.closest('button') || e.target.closest('a') || e.target.closest('nav') || e.target.closest('#accessibility-panel') || e.target.closest('#mobile-menu'))) {
-    safeCancelSpeech();
+    if ('speechSynthesis' in window) window.speechSynthesis.cancel();
     return;
   }
 
@@ -161,7 +155,7 @@ function leerTextoSeleccionado(e) {
     const textoSeleccionado = seleccion ? seleccion.toString().trim() : "";
 
     if (textoSeleccionado && textoSeleccionado.length > 2) {
-      safeCancelSpeech();
+      if ('speechSynthesis' in window) window.speechSynthesis.cancel();
       
       const utterance = new SpeechSynthesisUtterance(textoSeleccionado);
       utterance.lang = 'es-MX';
@@ -178,7 +172,7 @@ function leerTextoSeleccionado(e) {
 
       window.speechSynthesis.speak(utterance);
     }
-  }, 500); // 500ms de respiro para que el procesador del celular procese con soltura
+  }, 400);
 }
 
 // ================= INICIALIZACIÓN DEL SITIO =================
@@ -190,7 +184,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // Cargar preferencias globales de accesibilidad
   loadAccessibilityPreferences();
 
-  // ===== MENÚ HAMBURGUESA BLINDADO CONTRA CONGELAMIENTO =====
+  // ===== MENÚ HAMBURGUESA BLINDADO CON REINICIO DE ESTILO =====
   const mobileMenuBtn = document.getElementById('mobile-menu-btn');
   const mobileMenu = document.getElementById('mobile-menu');
   const mobileMenuIcon = document.getElementById('mobile-menu-icon');
@@ -198,9 +192,15 @@ document.addEventListener("DOMContentLoaded", () => {
   if (mobileMenuBtn && mobileMenu) {
     mobileMenuBtn.onclick = (e) => {
       e.stopPropagation();
-      safeCancelSpeech(); // Forzar liberación de audio al tocar el menú
+      if ('speechSynthesis' in window) window.speechSynthesis.cancel();
 
       const isHidden = mobileMenu.classList.toggle('hidden');
+      if (!isHidden) {
+        mobileMenu.style.display = 'block';
+      } else {
+        mobileMenu.style.display = 'none';
+      }
+
       if (mobileMenuIcon) {
         mobileMenuIcon.className = isHidden ? "fas fa-bars" : "fas fa-times";
       }
@@ -208,8 +208,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
     mobileMenu.querySelectorAll("a").forEach(link => {
       link.onclick = () => {
-        safeCancelSpeech();
+        if ('speechSynthesis' in window) window.speechSynthesis.cancel();
         mobileMenu.classList.add('hidden');
+        mobileMenu.style.display = 'none';
         if (mobileMenuIcon) mobileMenuIcon.className = "fas fa-bars";
       };
     });
@@ -220,29 +221,30 @@ document.addEventListener("DOMContentLoaded", () => {
   if (accessibilityBtn) {
     accessibilityBtn.onclick = (e) => {
       e.stopPropagation();
-      safeCancelSpeech(); // Forzar liberación de audio al tocar el panel
       toggleAccessibilityPanel();
     };
   }
 
-  // Cerrar menú o panel al tocar fuera de forma segura
+  // Cerrar menú o panel al tocar fuera
   document.addEventListener('click', (e) => {
     const panel = document.getElementById('accessibility-panel');
     const btnPanel = document.querySelector("button[onclick*='toggleAccessibilityPanel']") || document.getElementById('btn-accessibility-toggle');
 
     if (mobileMenu && mobileMenuBtn && !mobileMenu.contains(e.target) && !mobileMenuBtn.contains(e.target) && !mobileMenu.classList.contains('hidden')) {
-      safeCancelSpeech();
+      if ('speechSynthesis' in window) window.speechSynthesis.cancel();
       mobileMenu.classList.add('hidden');
+      mobileMenu.style.display = 'none';
       if (mobileMenuIcon) mobileMenuIcon.className = "fas fa-bars";
     }
 
     if (panel && btnPanel && !panel.contains(e.target) && !btnPanel.contains(e.target) && !panel.classList.contains('hidden')) {
-      safeCancelSpeech();
+      if ('speechSynthesis' in window) window.speechSynthesis.cancel();
       panel.classList.add('hidden');
+      panel.style.display = 'none';
     }
   });
 
-  // Eventos de lectura optimizados exclusivamente para móvil
+  // Eventos de lectura seguros
   document.addEventListener('mouseup', leerTextoSeleccionado);
   document.addEventListener('touchend', leerTextoSeleccionado);
 
