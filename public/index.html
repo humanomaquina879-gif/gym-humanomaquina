@@ -249,10 +249,34 @@
             </nav>
 
             <div class="hidden md:flex items-center space-x-3">
-                <div id="user-session-info" class="hidden items-center gap-2 text-xs font-bold text-cyan-400">
-                    <span id="welcome-user-name"></span>
-                    <button onclick="logoutUser()" title="Cerrar sesión" class="text-red-400 hover:text-red-300 text-sm ml-2"><i class="fas fa-sign-out-alt"></i></button>
+                <!-- AVATAR DE USUARIO INTERACTIVO (DESKTOP) -->
+                <div id="user-session-info" class="hidden relative">
+                    <button onclick="toggleUserDropdown(event)" class="flex items-center gap-2 bg-[#091122] border border-kronox-accent/50 hover:border-kronox-accent px-3 py-1.5 rounded-full shadow-[0_0_15px_rgba(0,210,255,0.2)] transition-all">
+                        <div class="w-8 h-8 rounded-full bg-cyan-500/10 border border-cyan-400 text-cyan-400 flex items-center justify-center font-bold text-xs">
+                            <i class="fas fa-user text-sm"></i>
+                        </div>
+                        <span id="welcome-user-name" class="text-xs font-bold text-cyan-400 pr-1"></span>
+                        <i class="fas fa-chevron-down text-[10px] text-cyan-400"></i>
+                    </button>
+
+                    <!-- MENÚ DESPLEGABLE DEL PERFIL -->
+                    <div id="user-dropdown-menu" class="hidden absolute right-0 mt-2 w-64 bg-[#091122] border border-kronox-accent/40 rounded-2xl p-4 shadow-2xl backdrop-blur-xl z-50 text-gray-200 space-y-3">
+                        <div class="border-b border-gray-800 pb-3">
+                            <p class="text-[10px] uppercase font-bold text-gray-400 tracking-wider">¡Hola de nuevo, Atleta!</p>
+                            <p id="dropdown-user-email" class="text-sm font-black text-cyan-400 truncate"></p>
+                            <p class="text-[11px] text-emerald-400 mt-1 flex items-center gap-1"><i class="fas fa-heart text-[10px]"></i> ¡Qué gusto tenerte entrenando con nosotros hoy! 💪</p>
+                        </div>
+                        <div class="space-y-1.5">
+                            <a href="rutinas" class="flex items-center gap-2 text-xs font-bold text-gray-300 hover:text-cyan-400 p-2 rounded-lg hover:bg-white/5 transition-colors">
+                                <i class="fas fa-dumbbell text-emerald-400"></i> Mis Rutinas Exclusivas
+                            </a>
+                        </div>
+                        <button onclick="logoutUser()" class="w-full mt-2 bg-red-500/10 hover:bg-red-500 hover:text-white border border-red-500/30 text-red-400 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-2">
+                            <i class="fas fa-sign-out-alt"></i> Cerrar Sesión
+                        </button>
+                    </div>
                 </div>
+
                 <button id="btn-open-login" onclick="openLoginModal()" class="btn-neon-solid px-4 py-2 rounded-lg font-bold text-xs uppercase tracking-wider">
                     <i class="fas fa-user-lock mr-1"></i> Iniciar Sesión
                 </button>
@@ -280,9 +304,20 @@
                 <button id="mobile-btn-login" onclick="openLoginModal()" class="w-full text-center btn-neon-solid py-2.5 rounded-lg font-bold text-xs uppercase">
                     Iniciar Sesión
                 </button>
-                <div id="mobile-user-info" class="hidden flex justify-between items-center py-2 text-xs text-cyan-400 font-bold">
-                    <span id="mobile-welcome-name"></span>
-                    <button onclick="logoutUser()" class="text-red-400"><i class="fas fa-sign-out-alt"></i> Salir</button>
+                <!-- PERFIL MÓVIL LLAMATIVO -->
+                <div id="mobile-user-info" class="hidden bg-[#091122] border border-cyan-500/30 p-4 rounded-xl space-y-3">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-full bg-cyan-500/10 border border-cyan-400 text-cyan-400 flex items-center justify-center font-bold">
+                            <i class="fas fa-user"></i>
+                        </div>
+                        <div>
+                            <span id="mobile-welcome-name" class="text-xs font-bold text-cyan-400 block truncate max-w-[180px]"></span>
+                            <span class="text-[10px] text-emerald-400 flex items-center gap-1"><i class="fas fa-heart text-[9px]"></i> ¡Qué gusto tenerte aquí! 💪</span>
+                        </div>
+                    </div>
+                    <button onclick="logoutUser()" class="w-full bg-red-500/10 hover:bg-red-500 text-red-400 hover:text-white border border-red-500/30 py-2 rounded-lg text-xs font-bold uppercase transition-all flex items-center justify-center gap-2">
+                        <i class="fas fa-sign-out-alt"></i> Salir del Sistema
+                    </button>
                 </div>
             </div>
             <a href="https://wa.me/527779393985?text=Hola%20Kronox%20Gym" target="_blank" class="inline-block mt-3 w-full text-center btn-neon-solid py-2.5 rounded-lg font-bold text-xs uppercase">
@@ -343,7 +378,7 @@
         </div>
     </footer>
 
-    <!-- JAVASCRIPT BLINDADO -->
+    <!-- JAVASCRIPT BLINDADO + CONTROL DE MENÚ DE PERFIL -->
     <script>
         document.addEventListener("DOMContentLoaded", () => {
             checkUserSession();
@@ -378,7 +413,25 @@
                     }
                 });
             }
+
+            // Cerrar menú desplegable de usuario al hacer clic fuera
+            document.addEventListener('click', (e) => {
+                const dropdown = document.getElementById('user-dropdown-menu');
+                if (dropdown && !dropdown.classList.contains('hidden')) {
+                    if (!e.target.closest('#user-session-info')) {
+                        dropdown.classList.add('hidden');
+                    }
+                }
+            });
         });
+
+        function toggleUserDropdown(e) {
+            e.stopPropagation();
+            const dropdown = document.getElementById('user-dropdown-menu');
+            if (dropdown) {
+                dropdown.classList.toggle('hidden');
+            }
+        }
 
         function openLoginModal() { document.getElementById('login-modal').classList.remove('hidden'); }
         function closeLoginModal() { document.getElementById('login-modal').classList.add('hidden'); }
@@ -413,12 +466,13 @@
                 if (userInfo) {
                     userInfo.classList.remove('hidden');
                     userInfo.classList.add('flex');
-                    document.getElementById('welcome-user-name').innerText = `Hola, ${loggedUser.split('@')[0]}`;
+                    document.getElementById('welcome-user-name').innerText = loggedUser.split('@')[0];
+                    document.getElementById('dropdown-user-email').innerText = loggedUser;
                 }
                 if (mobileBtnLogin) mobileBtnLogin.classList.add('hidden');
                 if (mobileUserInfo) {
                     mobileUserInfo.classList.remove('hidden');
-                    document.getElementById('mobile-welcome-name').innerText = `Usuario: ${loggedUser.split('@')[0]}`;
+                    document.getElementById('mobile-welcome-name').innerText = loggedUser;
                 }
             } else {
                 if (navRutinas) navRutinas.classList.add('hidden');
