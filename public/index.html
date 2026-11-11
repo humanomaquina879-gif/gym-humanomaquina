@@ -286,7 +286,7 @@
             </div>
 
             <!-- Botón Menú Móvil -->
-            <button id="mobile-menu-btn" title="Abrir menú" class="md:hidden text-gray-300 hover:text-white text-2xl focus:outline-none p-2">
+            <button id="mobile-menu-btn" type="button" title="Abrir menú" class="md:hidden text-gray-300 hover:text-white text-2xl focus:outline-none p-2 cursor-pointer">
                 <i class="fas fa-bars" id="mobile-menu-icon"></i>
             </button>
         </div>
@@ -301,12 +301,12 @@
             <a href="rutinas" id="mobile-nav-rutinas" class="hidden py-2 text-emerald-400 font-bold"><i class="fas fa-dumbbell"></i> Rutinas Exclusivas</a>
             
             <div id="mobile-session-container" class="pt-2 border-t border-gray-800">
-                <button id="mobile-btn-login" onclick="openLoginModal()" class="w-full text-center btn-neon-solid py-2.5 rounded-lg font-bold text-xs uppercase">
+                <button id="mobile-btn-login" type="button" onclick="openLoginModal()" class="w-full text-center btn-neon-solid py-2.5 rounded-lg font-bold text-xs uppercase">
                     Iniciar Sesión
                 </button>
                 <!-- PERFIL MÓVIL LLAMATIVO CON TOGGLE DE CLIC CORREGIDO -->
                 <div id="mobile-user-container" class="hidden relative">
-                    <button type="button" onclick="toggleMobileUserDropdown(event)" class="w-full flex items-center justify-between bg-[#091122] border border-cyan-500/40 p-3 rounded-xl shadow-md transition-all">
+                    <button type="button" id="mobile-user-toggle-btn" class="w-full flex items-center justify-between bg-[#091122] border border-cyan-500/40 p-3 rounded-xl shadow-md transition-all cursor-pointer">
                         <div class="flex items-center gap-3 pointer-events-none">
                             <div class="w-9 h-9 rounded-full bg-cyan-500/10 border border-cyan-400 text-cyan-400 flex items-center justify-center font-bold text-xs">
                                 <i class="fas fa-user"></i>
@@ -324,7 +324,7 @@
                         <a href="rutinas" class="flex items-center gap-2 text-xs font-bold text-gray-300 hover:text-cyan-400 p-2 rounded-lg hover:bg-white/5 transition-colors">
                             <i class="fas fa-dumbbell text-emerald-400"></i> Mi Rutina
                         </a>
-                        <button onclick="logoutUser()" class="w-full bg-red-500/10 hover:bg-red-500 text-red-400 hover:text-white border border-red-500/30 py-2 rounded-lg text-xs font-bold uppercase transition-all flex items-center justify-center gap-2">
+                        <button type="button" onclick="logoutUser()" class="w-full bg-red-500/10 hover:bg-red-500 text-red-400 hover:text-white border border-red-500/30 py-2 rounded-lg text-xs font-bold uppercase transition-all flex items-center justify-center gap-2">
                             <i class="fas fa-sign-out-alt"></i> Cerrar Sesión
                         </button>
                     </div>
@@ -388,7 +388,7 @@
         </div>
     </footer>
 
-    <!-- JAVASCRIPT BLINDADO + CONTROL DE MENÚ MÓVIL CORREGIDO -->
+    <!-- JAVASCRIPT BLINDADO + EVENTOS TÁCTILES ROBUSTOS PARA MÓVIL -->
     <script>
         document.addEventListener("DOMContentLoaded", () => {
             checkUserSession();
@@ -399,7 +399,8 @@
             const mobileMenuIcon = document.getElementById('mobile-menu-icon');
 
             if (mobileMenuBtn && mobileMenu) {
-                mobileMenuBtn.addEventListener('click', (e) => {
+                const toggleMobileMenu = (e) => {
+                    e.preventDefault();
                     e.stopPropagation();
                     mobileMenu.classList.toggle('hidden');
                     if (mobileMenu.classList.contains('hidden')) {
@@ -407,7 +408,11 @@
                     } else {
                         if (mobileMenuIcon) mobileMenuIcon.className = "fas fa-times";
                     }
-                });
+                };
+
+                // Añadir tanto click como touchstart para garantizar respuesta inmediata en cualquier móvil
+                mobileMenuBtn.addEventListener('click', toggleMobileMenu);
+                mobileMenuBtn.addEventListener('touchstart', toggleMobileMenu, { passive: false });
 
                 mobileMenu.querySelectorAll("a").forEach(link => {
                     link.addEventListener("click", () => {
@@ -422,6 +427,21 @@
                         if (mobileMenuIcon) mobileMenuIcon.className = "fas fa-bars";
                     }
                 });
+            }
+
+            // Configurar el botón del menú de usuario móvil de forma robusta
+            const mobileUserToggleBtn = document.getElementById('mobile-user-toggle-btn');
+            if (mobileUserToggleBtn) {
+                const toggleMobileUser = (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    const mobileDropdown = document.getElementById('mobile-user-dropdown');
+                    if (mobileDropdown) {
+                        mobileDropdown.classList.toggle('hidden');
+                    }
+                };
+                mobileUserToggleBtn.addEventListener('click', toggleMobileUser);
+                mobileUserToggleBtn.addEventListener('touchstart', toggleMobileUser, { passive: false });
             }
 
             // Cerrar menús desplegables de usuario al hacer clic fuera
@@ -447,14 +467,6 @@
             const dropdown = document.getElementById('user-dropdown-menu');
             if (dropdown) {
                 dropdown.classList.toggle('hidden');
-            }
-        }
-
-        function toggleMobileUserDropdown(e) {
-            e.stopPropagation();
-            const mobileDropdown = document.getElementById('mobile-user-dropdown');
-            if (mobileDropdown) {
-                mobileDropdown.classList.toggle('hidden');
             }
         }
 
