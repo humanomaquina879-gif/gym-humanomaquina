@@ -47,6 +47,9 @@ document.addEventListener("visibilitychange", () => {
   }
 });
 
+// Detector estricto de dispositivos móviles
+const esMovil = /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+
 // ================= ACCESIBILIDAD UNIVERSAL GLOBAL =================
 function toggleAccessibilityPanel() {
   const panel = document.getElementById('accessibility-panel');
@@ -99,16 +102,20 @@ function setDaltonism(type) {
   localStorage.setItem('kronox_daltonism', type);
 }
 
-// ================= LECTOR DE VOZ SILENCIOSO Y SEGURO =================
+// ================= LECTOR DE VOZ EXCLUSIVO PARA ESCRITORIO =================
 let speechActive = false;
 let speechTimeout = null;
 
 function toggleSpeechReader() {
+  if (esMovil) {
+    alert("El lector interactivo de voz está disponible únicamente en equipos de escritorio debido a incompatibilidades del navegador móvil con los menús flotantes.");
+    return;
+  }
+
   speechActive = !speechActive;
   const btn = document.getElementById('btn-speech-toggle');
   const subtitleBox = document.getElementById('speech-subtitle-box');
 
-  // Cancelamos cualquier síntesis previa para mantener el hilo libre
   if ('speechSynthesis' in window) {
     window.speechSynthesis.cancel();
   }
@@ -118,7 +125,6 @@ function toggleSpeechReader() {
       btn.innerHTML = `<i class="fas fa-volume-xmark"></i> Desactivar Lector`;
       btn.classList.replace('bg-cyan-600', 'bg-red-600');
     }
-    // NOTA: Eliminamos la locución inicial forzada para proteger la respuesta táctil del celular.
   } else {
     if (btn) {
       btn.innerHTML = `<i class="fas fa-volume-high"></i> Activar Lector Interactivo`;
@@ -129,7 +135,7 @@ function toggleSpeechReader() {
 }
 
 function leerTextoSeleccionado() {
-  if (!speechActive) return;
+  if (esMovil || !speechActive) return;
 
   if (speechTimeout) clearTimeout(speechTimeout);
 
@@ -166,7 +172,6 @@ document.addEventListener("DOMContentLoaded", () => {
   // Cargar preferencias globales de accesibilidad
   loadAccessibilityPreferences();
 
-  // Forzar que el lector inicie apagado por seguridad móvil
   speechActive = false;
   localStorage.removeItem('kronox_speech_active');
 
@@ -207,8 +212,9 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  // Evento de lectura limpio
-  document.addEventListener('mouseup', leerTextoSeleccionado);
-  document.addEventListener('touchend', leerTextoSeleccionado);
+  // Evento de lectura limpio (Solo escritorio)
+  if (!esMovil) {
+    document.addEventListener('mouseup', leerTextoSeleccionado);
+  }
 
 });
