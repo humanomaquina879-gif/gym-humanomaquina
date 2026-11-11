@@ -378,7 +378,7 @@
         </div>
     </footer>
 
-    <!-- LÓGICA JAVASCRIPT COMPLETA Y PERSISTENTE -->
+    <!-- LÓGICA JAVASCRIPT BLINDADA Y LIBRE DE CONFLICTOS -->
     <script>
         document.addEventListener("DOMContentLoaded", () => {
             checkUserSession();
@@ -530,7 +530,7 @@
             localStorage.setItem('kronox_high_contrast', isActive ? 'enabled' : 'disabled');
         }
 
-        // --- 3. LECTOR DE VOZ CON PERSISTENCIA ---
+        // --- 3. LECTOR DE VOZ (AISLADO Y SEGURO) ---
         let speechActive = false;
 
         function toggleSpeechReader() {
@@ -556,7 +556,7 @@
                     btn.innerHTML = `<i class="fas fa-volume-xmark"></i> Desactivar Lector`;
                     btn.classList.replace('bg-cyan-600', 'bg-red-600');
                 }
-                const mensaje = "Lector interactivo activado. Seleccione cualquier texto para escucharlo con subtítulos.";
+                const mensaje = "Lector interactivo activado. Seleccione cualquier texto para escucharlo.";
                 avisoFlotante.innerHTML = `<i class="fas fa-info-circle text-cyan-400 mr-2"></i> ${mensaje}`;
                 avisoFlotante.style.opacity = '1';
                 setTimeout(() => { avisoFlotante.style.opacity = '0'; }, 4000);
@@ -565,7 +565,7 @@
                     btn.innerHTML = `<i class="fas fa-volume-high"></i> Activar Lector Interactivo`;
                     btn.classList.replace('bg-red-600', 'bg-cyan-600');
                 }
-                window.speechSynthesis.cancel();
+                if ('speechSynthesis' in window) window.speechSynthesis.cancel();
                 if (subtitleBox) subtitleBox.style.display = 'none';
 
                 avisoFlotante.innerHTML = `<i class="fas fa-info-circle text-red-400 mr-2"></i> Lector desactivado.`;
@@ -574,30 +574,45 @@
             }
         }
 
-        function leerTextoSeleccionado() {
+        function leerTextoSeleccionado(e) {
             if (!speechActive) return;
+
+            // Evitar bloqueos táctiles ignorando toques en la barra, menú o panel
+            if (e && e.target && (e.target.closest('#mobile-menu') || e.target.closest('#accessibility-panel') || e.target.closest('header'))) {
+                return;
+            }
+
             const seleccion = window.getSelection();
-            const textoSeleccionado = seleccion.toString().trim();
+            const textoSeleccionado = seleccion ? seleccion.toString().trim() : "";
 
             if (textoSeleccionado.length > 1) {
-                window.speechSynthesis.cancel();
-                const utterance = new SpeechSynthesisUtterance(textoSeleccionado);
-                utterance.lang = 'es-MX';
-                
-                const subtitleBox = document.getElementById('speech-subtitle-box');
-                const subtitleText = document.getElementById('subtitle-text');
-                subtitleText.innerText = textoSeleccionado;
-                subtitleBox.style.display = 'block';
+                if ('speechSynthesis' in window) {
+                    window.speechSynthesis.cancel();
+                    const utterance = new SpeechSynthesisUtterance(textoSeleccionado);
+                    utterance.lang = 'es-MX';
+                    
+                    const subtitleBox = document.getElementById('speech-subtitle-box');
+                    const subtitleText = document.getElementById('subtitle-text');
+                    if (subtitleText && subtitleBox) {
+                        subtitleText.innerText = textoSeleccionado;
+                        subtitleBox.style.display = 'block';
+                    }
 
-                utterance.onend = () => { subtitleBox.style.display = 'none'; };
-                window.speechSynthesis.speak(utterance);
+                    utterance.onend = () => { if (subtitleBox) subtitleBox.style.display = 'none'; };
+                    window.speechSynthesis.speak(utterance);
+                }
             }
         }
 
+        // Eventos seguros que no interfieren con la navegación
         document.addEventListener('mouseup', leerTextoSeleccionado);
-        document.addEventListener('touchend', () => { setTimeout(leerTextoSeleccionado, 250); });
+        document.addEventListener('touchend', (e) => {
+            if (speechActive) {
+                setTimeout(() => leerTextoSeleccionado(e), 150);
+            }
+        });
 
-        // --- 4. CARGAR PREFERENCIAS GUARDADAS EN TODAS LAS PESTAÑAS ---
+        // --- 4. CARGAR PREFERENCIAS GUARDADAS ---
         function loadAccessibilityPreferences() {
             const savedFontSize = localStorage.getItem('kronox_font_size');
             if (savedFontSize) {
