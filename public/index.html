@@ -304,10 +304,10 @@
                 <button id="mobile-btn-login" onclick="openLoginModal()" class="w-full text-center btn-neon-solid py-2.5 rounded-lg font-bold text-xs uppercase">
                     Iniciar Sesión
                 </button>
-                <!-- PERFIL MÓVIL LLAMATIVO CON TOGGLE DE CLIC -->
+                <!-- PERFIL MÓVIL LLAMATIVO CON TOGGLE DE CLIC CORREGIDO -->
                 <div id="mobile-user-container" class="hidden relative">
-                    <button onclick="toggleMobileUserDropdown(event)" class="w-full flex items-center justify-between bg-[#091122] border border-cyan-500/40 p-3 rounded-xl shadow-md transition-all">
-                        <div class="flex items-center gap-3">
+                    <button type="button" onclick="toggleMobileUserDropdown(event)" class="w-full flex items-center justify-between bg-[#091122] border border-cyan-500/40 p-3 rounded-xl shadow-md transition-all">
+                        <div class="flex items-center gap-3 pointer-events-none">
                             <div class="w-9 h-9 rounded-full bg-cyan-500/10 border border-cyan-400 text-cyan-400 flex items-center justify-center font-bold text-xs">
                                 <i class="fas fa-user"></i>
                             </div>
@@ -316,7 +316,7 @@
                                 <span class="text-[10px] text-emerald-400">¡Qué gusto tenerte aquí! 💪</span>
                             </div>
                         </div>
-                        <i class="fas fa-chevron-down text-xs text-cyan-400 pr-1"></i>
+                        <i class="fas fa-chevron-down text-xs text-cyan-400 pr-1 pointer-events-none"></i>
                     </button>
 
                     <!-- DESPLEGABLE MÓVIL -->
@@ -388,7 +388,7 @@
         </div>
     </footer>
 
-    <!-- JAVASCRIPT BLINDADO + CONTROL DE MENÚ DE PERFIL CON TOGGLE -->
+    <!-- JAVASCRIPT BLINDADO + CONTROL DE MENÚ MÓVIL CORREGIDO -->
     <script>
         document.addEventListener("DOMContentLoaded", () => {
             checkUserSession();
@@ -426,10 +426,17 @@
 
             // Cerrar menús desplegables de usuario al hacer clic fuera
             document.addEventListener('click', (e) => {
-                const dropdown = document.getElementById('user-dropdown-menu');
-                if (dropdown && !dropdown.classList.contains('hidden')) {
+                const desktopDropdown = document.getElementById('user-dropdown-menu');
+                if (desktopDropdown && !desktopDropdown.classList.contains('hidden')) {
                     if (!e.target.closest('#user-session-info')) {
-                        dropdown.classList.add('hidden');
+                        desktopDropdown.classList.add('hidden');
+                    }
+                }
+
+                const mobileDropdown = document.getElementById('mobile-user-dropdown');
+                if (mobileDropdown && !mobileDropdown.classList.contains('hidden')) {
+                    if (!e.target.closest('#mobile-user-container')) {
+                        mobileDropdown.classList.add('hidden');
                     }
                 }
             });
@@ -460,7 +467,6 @@
             localStorage.setItem('kronox_logged_user', user);
             closeLoginModal();
             checkUserSession();
-            // Ya no redirige a rutinas; se queda en la misma página mostrando el perfil activo
         }
 
         function logoutUser() {
