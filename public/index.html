@@ -285,8 +285,8 @@
                 </a>
             </div>
 
-            <!-- Botón Menú Móvil con blindaje de eventos -->
-            <button id="mobile-menu-btn" type="button" title="Abrir menú" class="md:hidden text-gray-300 hover:text-white text-2xl focus:outline-none p-2 cursor-pointer z-50">
+            <!-- Botón Menú Móvil con evento click estándar limpio -->
+            <button id="mobile-menu-btn" type="button" onclick="toggleMobileMenu()" title="Abrir menú" class="md:hidden text-gray-300 hover:text-white text-2xl focus:outline-none p-2 cursor-pointer z-50">
                 <i class="fas fa-bars pointer-events-none" id="mobile-menu-icon"></i>
             </button>
         </div>
@@ -388,25 +388,11 @@
         </div>
     </footer>
 
-    <!-- JAVASCRIPT BLINDADO DEFINITIVO CONTRA INTERFERENCIAS TÁCTILES -->
+    <!-- JAVASCRIPT SIN CONFLICTOS DE DOBLE DISPARO -->
     <script>
         document.addEventListener("DOMContentLoaded", () => {
             checkUserSession();
             loadAccessibilityPreferences();
-
-            // Blindaje total del botón hamburguesa usando pointerup y stopPropagation para vencer al lector de voz
-            const mobileMenuBtn = document.getElementById('mobile-menu-btn');
-            if (mobileMenuBtn) {
-                const triggerMenu = (e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    e.stopImmediatePropagation();
-                    toggleMobileMenu();
-                };
-                
-                mobileMenuBtn.addEventListener('click', triggerMenu);
-                mobileMenuBtn.addEventListener('pointerup', triggerMenu);
-            }
 
             // Cerrar menús al hacer clic fuera
             document.addEventListener('click', (e) => {
