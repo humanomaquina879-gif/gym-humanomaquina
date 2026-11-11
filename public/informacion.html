@@ -47,9 +47,11 @@
             transition: font-size 0.3s ease;
         }
 
-        body.daltonism-protanopia { filter: url('#protanopia-filter'); }
-        body.daltonism-deuteranopia { filter: url('#deuteranopia-filter'); }
-        body.daltonism-tritanopia { filter: url('#tritanopia-filter'); }
+        /* Filtros de daltonismo: se aplican a #page-wrapper y NO al body,
+           porque un filter en el body rompe los elementos position:fixed */
+        #page-wrapper.daltonism-protanopia { filter: url('#protanopia-filter'); }
+        #page-wrapper.daltonism-deuteranopia { filter: url('#deuteranopia-filter'); }
+        #page-wrapper.daltonism-tritanopia { filter: url('#tritanopia-filter'); }
 
         body.high-contrast {
             background-color: #000000 !important;
@@ -124,10 +126,30 @@
             max-width: 90%;
             text-align: center;
             display: none;
+            pointer-events: none;
+        }
+
+        /* Botón "Escuchar" (solo aparece en celular al seleccionar texto) */
+        #btn-escuchar {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 9999;
+            display: none;
+            align-items: center;
+            gap: 8px;
+            background: #00d2ff;
+            color: #050a14;
+            border: none;
+            padding: 12px 18px;
+            border-radius: 9999px;
+            font-weight: 800;
+            font-size: 13px;
+            box-shadow: 0 0 20px rgba(0, 210, 255, 0.6);
         }
     </style>
 </head>
-<body class="bg-grid-pattern relative min-h-screen flex flex-col justify-between">
+<body>
 
     <svg style="display:none;">
         <filter id="protanopia-filter">
@@ -141,9 +163,16 @@
         </filter>
     </svg>
 
+    <!-- ===== ELEMENTOS FIJOS (fuera del wrapper para que el filtro no los afecte) ===== -->
+
     <div id="speech-subtitle-box">
         <i class="fas fa-volume-high text-cyan-400 mr-2"></i><span id="subtitle-text">Reproduciendo audio...</span>
     </div>
+
+    <!-- BOTÓN ESCUCHAR (celular) -->
+    <button id="btn-escuchar" type="button" onclick="hablarTextoPendiente()">
+        <i class="fas fa-volume-high"></i> Escuchar
+    </button>
 
     <div class="fixed top-6 left-6 z-50">
         <button onclick="toggleAccessibilityPanel()" title="Accesibilidad Universal" class="bg-[#111827] border border-red-600/60 text-red-500 hover:bg-red-600 hover:text-white p-3.5 rounded-full shadow-[0_0_20px_rgba(239,68,68,0.3)] transition-all flex items-center justify-center">
@@ -169,9 +198,9 @@
                 <label class="block text-xs font-bold text-gray-300 uppercase mb-2">Visión de Color</label>
                 <div class="grid grid-cols-2 gap-2 text-xs">
                     <button onclick="setDaltonism('none')" id="btn-dalton-none" class="bg-red-600 text-white font-semibold py-2 px-3 rounded-lg border border-red-500 transition-all text-center">Ninguno</button>
-                    <button onclick="setDaltonism('protanopia')" id="btn-dalton-prot" class="bg-[#1f293d] hover:bg-red-600/50 text-gray-300 font-semibold py-2 px-3 rounded-lg border border-gray-700 transition-all text-center">Protanopía</button>
-                    <button onclick="setDaltonism('deuteranopia')" id="btn-dalton-deut" class="bg-[#1f293d] hover:bg-red-600/50 text-gray-300 font-semibold py-2 px-3 rounded-lg border border-gray-700 transition-all text-center">Deuteranopía</button>
-                    <button onclick="setDaltonism('tritanopia')" id="btn-dalton-trit" class="bg-[#1f293d] hover:bg-red-600/50 text-gray-300 font-semibold py-2 px-3 rounded-lg border border-gray-700 transition-all text-center">Tritanopía</button>
+                    <button onclick="setDaltonism('protanopia')" id="btn-dalton-protanopia" class="bg-[#1f293d] hover:bg-red-600/50 text-gray-300 font-semibold py-2 px-3 rounded-lg border border-gray-700 transition-all text-center">Protanopía</button>
+                    <button onclick="setDaltonism('deuteranopia')" id="btn-dalton-deuteranopia" class="bg-[#1f293d] hover:bg-red-600/50 text-gray-300 font-semibold py-2 px-3 rounded-lg border border-gray-700 transition-all text-center">Deuteranopía</button>
+                    <button onclick="setDaltonism('tritanopia')" id="btn-dalton-tritanopia" class="bg-[#1f293d] hover:bg-red-600/50 text-gray-300 font-semibold py-2 px-3 rounded-lg border border-gray-700 transition-all text-center">Tritanopía</button>
                 </div>
             </div>
 
@@ -213,118 +242,130 @@
         </div>
     </div>
 
-    <div class="glow-light top-0 left-1/2 -translate-x-1/2"></div>
+    <!-- ===== CONTENIDO DE LA PÁGINA (aquí se aplica el filtro de daltonismo) ===== -->
+    <div id="page-wrapper" class="bg-grid-pattern relative min-h-screen flex flex-col justify-between">
 
-    <header class="sticky top-0 z-40 bg-kronox-bg/85 backdrop-blur-lg border-b border-kronox-cardBorder/60">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-24 flex items-center justify-between">
-            <a href="index" class="flex items-center gap-2 group py-2 ml-14 sm:ml-0">
-                <img src="https://res.cloudinary.com/bo5jzelh/image/upload/v1783041430/Logo_Kronox_Gym_lfg9tl.jpg" alt="Logo" class="h-16 md:h-20 w-auto rounded-xl border border-kronox-accent/40 object-contain shadow-[0_0_15px_rgba(0,210,255,0.2)]">
-            </a>
+        <div class="glow-light top-0 left-1/2 -translate-x-1/2"></div>
 
-            <nav class="hidden md:flex items-center space-x-6 font-semibold text-sm">
-                <a href="index" class="text-gray-300 hover:text-kronox-accent transition-colors">Inicio</a>
-                <a href="informacion" class="text-kronox-accent font-bold border-b-2 border-kronox-accent pb-1">Información</a>
-                <a href="planes" class="text-gray-300 hover:text-kronox-accent transition-colors">Planes</a>
-                <a href="catalogo" class="text-gray-300 hover:text-kronox-accent transition-colors">Catálogo</a>
-                <a href="ubicacion" class="text-gray-300 hover:text-kronox-accent transition-colors">Ubicación</a>
-                <a href="rutinas" id="nav-rutinas" class="hidden text-emerald-400 font-bold hover:text-emerald-300 transition-colors flex items-center gap-1.5"><i class="fas fa-dumbbell"></i> Rutinas</a>
-            </nav>
+        <header class="sticky top-0 z-40 bg-kronox-bg/85 backdrop-blur-lg border-b border-kronox-cardBorder/60">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-24 flex items-center justify-between">
+                <a href="index" class="flex items-center gap-2 group py-2 ml-14 sm:ml-0">
+                    <img src="https://res.cloudinary.com/bo5jzelh/image/upload/v1783041430/Logo_Kronox_Gym_lfg9tl.jpg" alt="Logo" class="h-16 md:h-20 w-auto rounded-xl border border-kronox-accent/40 object-contain shadow-[0_0_15px_rgba(0,210,255,0.2)]">
+                </a>
 
-            <div class="hidden md:flex items-center space-x-3">
-                <div id="user-session-info" class="hidden items-center gap-2 text-xs font-bold text-cyan-400">
-                    <span id="welcome-user-name"></span>
-                    <button onclick="logoutUser()" class="text-red-400 hover:text-red-300 text-sm ml-2"><i class="fas fa-sign-out-alt"></i></button>
+                <nav class="hidden md:flex items-center space-x-6 font-semibold text-sm">
+                    <a href="index" class="text-gray-300 hover:text-kronox-accent transition-colors">Inicio</a>
+                    <a href="informacion" class="text-kronox-accent font-bold border-b-2 border-kronox-accent pb-1">Información</a>
+                    <a href="planes" class="text-gray-300 hover:text-kronox-accent transition-colors">Planes</a>
+                    <a href="catalogo" class="text-gray-300 hover:text-kronox-accent transition-colors">Catálogo</a>
+                    <a href="ubicacion" class="text-gray-300 hover:text-kronox-accent transition-colors">Ubicación</a>
+                    <a href="rutinas" id="nav-rutinas" class="hidden text-emerald-400 font-bold hover:text-emerald-300 transition-colors flex items-center gap-1.5"><i class="fas fa-dumbbell"></i> Rutinas</a>
+                </nav>
+
+                <div class="hidden md:flex items-center space-x-3">
+                    <div id="user-session-info" class="hidden items-center gap-2 text-xs font-bold text-cyan-400">
+                        <span id="welcome-user-name"></span>
+                        <button onclick="logoutUser()" class="text-red-400 hover:text-red-300 text-sm ml-2"><i class="fas fa-sign-out-alt"></i></button>
+                    </div>
+                    <button id="btn-open-login" onclick="openLoginModal()" class="btn-neon-solid px-4 py-2 rounded-lg font-bold text-xs uppercase tracking-wider">
+                        <i class="fas fa-user-lock mr-1"></i> Iniciar Sesión
+                    </button>
+                    <a href="https://wa.me/527779393985?text=Hola%20Kronox%20Gym" target="_blank" class="btn-neon-solid px-4 py-2 rounded-lg font-bold text-xs uppercase tracking-wider flex items-center gap-2">
+                        <i class="fab fa-whatsapp text-base"></i> Contactar
+                    </a>
                 </div>
-                <button id="btn-open-login" onclick="openLoginModal()" class="btn-neon-solid px-4 py-2 rounded-lg font-bold text-xs uppercase tracking-wider">
-                    <i class="fas fa-user-lock mr-1"></i> Iniciar Sesión
+
+                <button id="mobile-menu-btn" class="md:hidden text-gray-300 hover:text-white text-2xl focus:outline-none p-2">
+                    <i class="fas fa-bars" id="mobile-menu-icon"></i>
                 </button>
-                <a href="https://wa.me/527779393985?text=Hola%20Kronox%20Gym" target="_blank" class="btn-neon-solid px-4 py-2 rounded-lg font-bold text-xs uppercase tracking-wider flex items-center gap-2">
-                    <i class="fab fa-whatsapp text-base"></i> Contactar
+            </div>
+
+            <div id="mobile-menu" class="hidden md:hidden bg-kronox-blueDark border-b border-kronox-cardBorder px-6 pt-3 pb-6 space-y-3">
+                <a href="index" class="block py-2 text-gray-300 hover:text-kronox-accent font-medium">Inicio</a>
+                <a href="informacion" class="block py-2 text-kronox-accent font-bold">Información</a>
+                <a href="planes" class="block py-2 text-gray-300 hover:text-kronox-accent font-medium">Planes</a>
+                <a href="catalogo" class="block py-2 text-gray-300 hover:text-kronox-accent font-medium">Catálogo</a>
+                <a href="ubicacion" class="block py-2 text-gray-300 hover:text-kronox-accent font-medium">Ubicación</a>
+                <a href="rutinas" id="mobile-nav-rutinas" class="hidden py-2 text-emerald-400 font-bold"><i class="fas fa-dumbbell"></i> Rutinas Exclusivas</a>
+                
+                <div id="mobile-session-container" class="pt-2 border-t border-gray-800">
+                    <button id="mobile-btn-login" onclick="openLoginModal()" class="w-full text-center btn-neon-solid py-2.5 rounded-lg font-bold text-xs uppercase">
+                        Iniciar Sesión
+                    </button>
+                    <div id="mobile-user-info" class="hidden flex justify-between items-center py-2 text-xs text-cyan-400 font-bold">
+                        <span id="mobile-welcome-name"></span>
+                        <button onclick="logoutUser()" class="text-red-400"><i class="fas fa-sign-out-alt"></i> Salir</button>
+                    </div>
+                </div>
+                <a href="https://wa.me/527779393985?text=Hola%20Kronox%20Gym" target="_blank" class="inline-block mt-3 w-full text-center btn-neon-solid py-2.5 rounded-lg font-bold text-xs uppercase">
+                    <i class="fab fa-whatsapp"></i> Contactar por WhatsApp
                 </a>
             </div>
+        </header>
 
-            <button id="mobile-menu-btn" class="md:hidden text-gray-300 hover:text-white text-2xl focus:outline-none p-2">
-                <i class="fas fa-bars" id="mobile-menu-icon"></i>
-            </button>
-        </div>
-
-        <div id="mobile-menu" class="hidden md:hidden bg-kronox-blueDark border-b border-kronox-cardBorder px-6 pt-3 pb-6 space-y-3">
-            <a href="index" class="block py-2 text-gray-300 hover:text-kronox-accent font-medium">Inicio</a>
-            <a href="informacion" class="block py-2 text-kronox-accent font-bold">Información</a>
-            <a href="planes" class="block py-2 text-gray-300 hover:text-kronox-accent font-medium">Planes</a>
-            <a href="catalogo" class="block py-2 text-gray-300 hover:text-kronox-accent font-medium">Catálogo</a>
-            <a href="ubicacion" class="block py-2 text-gray-300 hover:text-kronox-accent font-medium">Ubicación</a>
-            <a href="rutinas" id="mobile-nav-rutinas" class="hidden py-2 text-emerald-400 font-bold"><i class="fas fa-dumbbell"></i> Rutinas Exclusivas</a>
-            
-            <div id="mobile-session-container" class="pt-2 border-t border-gray-800">
-                <button id="mobile-btn-login" onclick="openLoginModal()" class="w-full text-center btn-neon-solid py-2.5 rounded-lg font-bold text-xs uppercase">
-                    Iniciar Sesión
-                </button>
-                <div id="mobile-user-info" class="hidden flex justify-between items-center py-2 text-xs text-cyan-400 font-bold">
-                    <span id="mobile-welcome-name"></span>
-                    <button onclick="logoutUser()" class="text-red-400"><i class="fas fa-sign-out-alt"></i> Salir</button>
-                </div>
+        <main class="relative z-10 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12 flex-grow">
+            <div class="text-center max-w-3xl mx-auto mb-16">
+                <span class="inline-block bg-kronox-accent/10 border border-kronox-accent/40 text-kronox-accent text-xs font-black uppercase tracking-widest px-4 py-1.5 rounded-full mb-5">
+                    Nuestra Esencia
+                </span>
+                <h1 class="text-4xl sm:text-6xl font-black tracking-tight text-white uppercase italic leading-none">
+                    ACERCA DE <span class="text-transparent bg-clip-text bg-gradient-to-r from-kronox-accent to-blue-500">KRONOX GYM</span>
+                </h1>
+                <p class="mt-5 text-gray-400 text-base sm:text-lg">Más que un gimnasio, una comunidad enfocada en resultados reales y superación constante.</p>
             </div>
-            <a href="https://wa.me/527779393985?text=Hola%20Kronox%20Gym" target="_blank" class="inline-block mt-3 w-full text-center btn-neon-solid py-2.5 rounded-lg font-bold text-xs uppercase">
-                <i class="fab fa-whatsapp"></i> Contactar por WhatsApp
-            </a>
-        </div>
-    </header>
 
-    <main class="relative z-10 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12 flex-grow">
-        <div class="text-center max-w-3xl mx-auto mb-16">
-            <span class="inline-block bg-kronox-accent/10 border border-kronox-accent/40 text-kronox-accent text-xs font-black uppercase tracking-widest px-4 py-1.5 rounded-full mb-5">
-                Nuestra Esencia
-            </span>
-            <h1 class="text-4xl sm:text-6xl font-black tracking-tight text-white uppercase italic leading-none">
-                ACERCA DE <span class="text-transparent bg-clip-text bg-gradient-to-r from-kronox-accent to-blue-500">KRONOX GYM</span>
-            </h1>
-            <p class="mt-5 text-gray-400 text-base sm:text-lg">Más que un gimnasio, una comunidad enfocada en resultados reales y superación constante.</p>
-        </div>
-
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
-            <div class="kronox-card p-8 flex flex-col justify-between">
-                <div>
-                    <div class="w-12 h-12 rounded-xl bg-kronox-accent/10 border border-kronox-accent/30 text-kronox-accent flex items-center justify-center text-xl mb-6">
-                        <i class="fas fa-bullseye"></i>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
+                <div class="kronox-card p-8 flex flex-col justify-between">
+                    <div>
+                        <div class="w-12 h-12 rounded-xl bg-kronox-accent/10 border border-kronox-accent/30 text-kronox-accent flex items-center justify-center text-xl mb-6">
+                            <i class="fas fa-bullseye"></i>
+                        </div>
+                        <h2 class="text-2xl font-black text-white uppercase italic mb-3">Nuestra Misión</h2>
+                        <p class="text-gray-300 text-sm leading-relaxed">
+                            Proveer un espacio de entrenamiento óptimo, con equipo de primer nivel y un entorno motivador que impulse a cada atleta a superar sus propios límites diarios.
+                        </p>
                     </div>
-                    <h2 class="text-2xl font-black text-white uppercase italic mb-3">Nuestra Misión</h2>
-                    <p class="text-gray-300 text-sm leading-relaxed">
-                        Proveer un espacio de entrenamiento óptimo, con equipo de primer nivel y un entorno motivador que impulse a cada atleta a superar sus propios límites diarios.
-                    </p>
                 </div>
-            </div>
 
-            <div class="kronox-card p-8 flex flex-col justify-between">
-                <div>
-                    <div class="w-12 h-12 rounded-xl bg-kronox-accent/10 border border-kronox-accent/30 text-kronox-accent flex items-center justify-center text-xl mb-6">
-                        <i class="fas fa-eye"></i>
+                <div class="kronox-card p-8 flex flex-col justify-between">
+                    <div>
+                        <div class="w-12 h-12 rounded-xl bg-kronox-accent/10 border border-kronox-accent/30 text-kronox-accent flex items-center justify-center text-xl mb-6">
+                            <i class="fas fa-eye"></i>
+                        </div>
+                        <h2 class="text-2xl font-black text-white uppercase italic mb-3">Nuestra Visión</h2>
+                        <p class="text-gray-300 text-sm leading-relaxed">
+                            Ser el gimnasio de referencia en desarrollo físico y acondicionamiento integral, reconocido por la calidad humana, profesionalismo y resultados comprobados de nuestros socios.
+                        </p>
                     </div>
-                    <h2 class="text-2xl font-black text-white uppercase italic mb-3">Nuestra Visión</h2>
-                    <p class="text-gray-300 text-sm leading-relaxed">
-                        Ser el gimnasio de referencia en desarrollo físico y acondicionamiento integral, reconocido por la calidad humana, profesionalismo y resultados comprobados de nuestros socios.
-                    </p>
                 </div>
             </div>
-        </div>
-    </main>
+        </main>
 
-    <footer class="relative z-10 bg-kronox-blueDark border-t border-kronox-cardBorder/80 py-10">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-6">
-            <div class="text-center md:text-left">
-                <img src="https://res.cloudinary.com/bo5jzelh/image/upload/v1783041430/Logo_Kronox_Gym_lfg9tl.jpg" alt="Logo" class="h-16 w-auto rounded-xl border border-kronox-cardBorder object-contain shadow-md">
+        <footer class="relative z-10 bg-kronox-blueDark border-t border-kronox-cardBorder/80 py-10">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-6">
+                <div class="text-center md:text-left">
+                    <img src="https://res.cloudinary.com/bo5jzelh/image/upload/v1783041430/Logo_Kronox_Gym_lfg9tl.jpg" alt="Logo" class="h-16 w-auto rounded-xl border border-kronox-cardBorder object-contain shadow-md">
+                </div>
+                <div class="flex items-center space-x-5">
+                    <a href="https://www.instagram.com/kronoxgym" target="_blank" class="w-10 h-10 rounded-full text-white bg-gradient-to-tr from-yellow-500 via-pink-500 to-purple-600 flex items-center justify-center hover:scale-110 transition-all"><i class="fab fa-instagram text-lg"></i></a>
+                    <a href="https://www.facebook.com/profile.php?id=61591217086184" target="_blank" class="w-10 h-10 rounded-full text-white bg-[#1877F2] flex items-center justify-center hover:scale-110 transition-all"><i class="fab fa-facebook-f text-lg"></i></a>
+                    <a href="https://www.tiktok.com/@kronoxgym_" target="_blank" class="w-10 h-10 rounded-full text-white bg-black flex items-center justify-center hover:scale-110 transition-all"><i class="fab fa-tiktok text-lg"></i></a>
+                    <a href="https://wa.me/527779393985?text=Hola" target="_blank" class="w-10 h-10 rounded-full text-white bg-[#25D366] flex items-center justify-center hover:scale-110 transition-all"><i class="fab fa-whatsapp text-lg"></i></a>
+                </div>
             </div>
-            <div class="flex items-center space-x-5">
-                <a href="https://www.instagram.com/kronoxgym" target="_blank" class="w-10 h-10 rounded-full text-white bg-gradient-to-tr from-yellow-500 via-pink-500 to-purple-600 flex items-center justify-center hover:scale-110 transition-all"><i class="fab fa-instagram text-lg"></i></a>
-                <a href="https://www.facebook.com/profile.php?id=61591217086184" target="_blank" class="w-10 h-10 rounded-full text-white bg-[#1877F2] flex items-center justify-center hover:scale-110 transition-all"><i class="fab fa-facebook-f text-lg"></i></a>
-                <a href="https://www.tiktok.com/@kronoxgym_" target="_blank" class="w-10 h-10 rounded-full text-white bg-black flex items-center justify-center hover:scale-110 transition-all"><i class="fab fa-tiktok text-lg"></i></a>
-                <a href="https://wa.me/527779393985?text=Hola" target="_blank" class="w-10 h-10 rounded-full text-white bg-[#25D366] flex items-center justify-center hover:scale-110 transition-all"><i class="fab fa-whatsapp text-lg"></i></a>
-            </div>
-        </div>
-    </footer>
+        </footer>
+    </div>
 
     <!-- SCRIPT BLINDADO -->
     <script>
+        // ================= UTILIDADES SEGURAS DE localStorage =================
+        function lsGet(key) {
+            try { return localStorage.getItem(key); } catch (e) { return null; }
+        }
+        function lsSet(key, value) {
+            try { localStorage.setItem(key, value); } catch (e) {}
+        }
+
         document.addEventListener("DOMContentLoaded", () => {
             checkUserSession();
             loadAccessibilityPreferences();
@@ -358,6 +399,19 @@
                     }
                 });
             }
+        });
+
+        // Si cambias algo en una pestaña, las demás pestañas abiertas se actualizan solas
+        window.addEventListener('storage', (e) => {
+            if (!e.key) return;
+            if (e.key === 'kronox_logged_user') checkUserSession();
+            if (e.key.startsWith('kronox_')) loadAccessibilityPreferences();
+        });
+
+        // Al volver a una pestaña (o desde el caché del navegador) se re-sincroniza todo
+        window.addEventListener('pageshow', () => {
+            checkUserSession();
+            loadAccessibilityPreferences();
         });
 
         function openLoginModal() { document.getElementById('login-modal').classList.remove('hidden'); }
@@ -413,168 +467,255 @@
             }
         }
 
+        // ================= ACCESIBILIDAD =================
         function toggleAccessibilityPanel() {
             const panel = document.getElementById('accessibility-panel');
             if (panel) panel.classList.toggle('hidden');
         }
 
+        // ---- Tamaño de letra ----
         let currentFontSize = 100;
+
+        function applyFontSize(size) {
+            currentFontSize = size;
+            document.documentElement.style.fontSize = `${size}%`;
+        }
+
         function adjustFontSize(amount) {
-            currentFontSize += amount;
-            if (currentFontSize < 70) currentFontSize = 70;
-            if (currentFontSize > 200) currentFontSize = 200;
-            document.documentElement.style.fontSize = `${currentFontSize}%`;
-            localStorage.setItem('kronox_font_size', currentFontSize);
+            let size = currentFontSize + amount;
+            if (size < 70) size = 70;
+            if (size > 200) size = 200;
+            applyFontSize(size);
+            lsSet('kronox_font_size', size);
         }
 
         function resetFontSize() {
-            currentFontSize = 100;
-            document.documentElement.style.fontSize = '100%';
-            localStorage.setItem('kronox_font_size', 100);
+            applyFontSize(100);
+            lsSet('kronox_font_size', 100);
         }
 
-        function setDaltonism(type) {
-            document.body.classList.remove('daltonism-protanopia', 'daltonism-deuteranopia', 'daltonism-tritanopia');
-            ['none', 'protan', 'deut', 'trit'].forEach(t => {
+        // ---- Daltonismo ----
+        const DALTON_TYPES = ['none', 'protanopia', 'deuteranopia', 'tritanopia'];
+
+        function applyDaltonism(type) {
+            if (!DALTON_TYPES.includes(type)) type = 'none';
+            const wrapper = document.getElementById('page-wrapper');
+
+            if (wrapper) {
+                wrapper.classList.remove('daltonism-protanopia', 'daltonism-deuteranopia', 'daltonism-tritanopia');
+                if (type !== 'none') wrapper.classList.add(`daltonism-${type}`);
+            }
+
+            DALTON_TYPES.forEach(t => {
                 const btn = document.getElementById(`btn-dalton-${t}`);
-                if (btn) {
+                if (!btn) return;
+                if (t === type) {
+                    btn.classList.add('bg-red-600', 'text-white', 'border-red-500');
+                    btn.classList.remove('bg-[#1f293d]', 'text-gray-300', 'border-gray-700');
+                } else {
                     btn.classList.remove('bg-red-600', 'text-white', 'border-red-500');
                     btn.classList.add('bg-[#1f293d]', 'text-gray-300', 'border-gray-700');
                 }
             });
+        }
 
-            if (type !== 'none') {
-                document.body.classList.add(`daltonism-${type}`);
-                const activeBtn = document.getElementById(`btn-dalton-${type.substring(0,4)}`);
-                if (activeBtn) {
-                    activeBtn.classList.add('bg-red-600', 'text-white', 'border-red-500');
-                    activeBtn.classList.remove('bg-[#1f293d]', 'text-gray-300');
-                }
-            } else {
-                const noneBtn = document.getElementById('btn-dalton-none');
-                if (noneBtn) {
-                    noneBtn.classList.add('bg-red-600', 'text-white', 'border-red-500');
-                    noneBtn.classList.remove('bg-[#1f293d]', 'text-gray-300');
-                }
+        function setDaltonism(type) {
+            applyDaltonism(type);
+            lsSet('kronox_daltonism', type);
+        }
+
+        // ---- Alto contraste ----
+        function applyHighContrast(enabled) {
+            document.body.classList.toggle('high-contrast', enabled);
+            const btn = document.getElementById('btn-high-contrast');
+            if (btn) {
+                btn.classList.toggle('bg-red-600', enabled);
+                btn.classList.toggle('text-white', enabled);
+                btn.classList.toggle('border-red-500', enabled);
+                btn.textContent = enabled ? 'Desactivar Alto Contraste' : 'Activar Alto Contraste';
             }
-            localStorage.setItem('kronox_daltonism', type);
         }
 
         function toggleHighContrast() {
-            document.body.classList.toggle('high-contrast');
-            const isActive = document.body.classList.contains('high-contrast');
-            const btn = document.getElementById('btn-high-contrast');
-            if (isActive) {
-                btn.classList.add('bg-red-600', 'text-white', 'border-red-500');
-            } else {
-                btn.classList.remove('bg-red-600', 'text-white', 'border-red-500');
-            }
-            localStorage.setItem('kronox_high_contrast', isActive ? 'enabled' : 'disabled');
+            const enabled = !document.body.classList.contains('high-contrast');
+            applyHighContrast(enabled);
+            lsSet('kronox_high_contrast', enabled ? 'enabled' : 'disabled');
         }
 
+        // ---- Lector de voz ----
         let speechActive = false;
+
         function toggleSpeechReader() {
             speechActive = !speechActive;
-            localStorage.setItem('kronox_speech_active', speechActive ? 'enabled' : 'disabled');
-            actualizarEstadoLectorUI();
+            lsSet('kronox_speech_active', speechActive ? 'enabled' : 'disabled');
+            actualizarEstadoLectorUI(true); // con aviso, porque lo cambió el usuario
         }
 
-        function actualizarEstadoLectorUI() {
+        function actualizarEstadoLectorUI(mostrarAviso) {
             const btn = document.getElementById('btn-speech-toggle');
             const subtitleBox = document.getElementById('speech-subtitle-box');
-            
-            let avisoFlotante = document.getElementById('toast-aviso-accesibilidad');
-            if (!avisoFlotante) {
-                avisoFlotante = document.createElement('div');
-                avisoFlotante.id = 'toast-aviso-accesibilidad';
-                avisoFlotante.style.cssText = "position:fixed; top:20px; right:20px; background:#091122; border:2px solid #00d2ff; color:#fff; padding:12px 20px; border-radius:12px; font-size:13px; z-index:99999; box-shadow:0 0 20px rgba(0,210,255,0.4); transition: opacity 0.5s ease;";
-                document.body.appendChild(avisoFlotante);
-            }
 
             if (speechActive) {
                 if (btn) {
                     btn.innerHTML = `<i class="fas fa-volume-xmark"></i> Desactivar Lector`;
-                    btn.classList.replace('bg-cyan-600', 'bg-red-600');
+                    btn.classList.remove('bg-cyan-600');
+                    btn.classList.add('bg-red-600');
                 }
-                const mensaje = "Lector interactivo activado.";
-                avisoFlotante.innerHTML = `<i class="fas fa-info-circle text-cyan-400 mr-2"></i> ${mensaje}`;
-                avisoFlotante.style.opacity = '1';
-                setTimeout(() => { avisoFlotante.style.opacity = '0'; }, 3000);
             } else {
                 if (btn) {
                     btn.innerHTML = `<i class="fas fa-volume-high"></i> Activar Lector Interactivo`;
-                    btn.classList.replace('bg-red-600', 'bg-cyan-600');
+                    btn.classList.remove('bg-red-600');
+                    btn.classList.add('bg-cyan-600');
                 }
                 if ('speechSynthesis' in window) window.speechSynthesis.cancel();
                 if (subtitleBox) subtitleBox.style.display = 'none';
+                const btnEscuchar = document.getElementById('btn-escuchar');
+                if (btnEscuchar) btnEscuchar.style.display = 'none';
+                _ultimoTextoLeido = '';
+                _textoPendiente = '';
+            }
 
-                avisoFlotante.innerHTML = `<i class="fas fa-info-circle text-red-400 mr-2"></i> Lector desactivado.`;
-                avisoFlotante.style.opacity = '1';
-                setTimeout(() => { avisoFlotante.style.opacity = '0'; }, 3000);
+            // Al cargar la página NO se muestra aviso; solo cuando el usuario lo activa/desactiva
+            if (!mostrarAviso) return;
+
+            let aviso = document.getElementById('toast-aviso-accesibilidad');
+            if (!aviso) {
+                aviso = document.createElement('div');
+                aviso.id = 'toast-aviso-accesibilidad';
+                // pointer-events:none => el aviso nunca intercepta toques (esto bloqueaba el menú hamburguesa)
+                aviso.style.cssText = "position:fixed; top:20px; right:20px; background:#091122; border:2px solid #00d2ff; color:#fff; padding:12px 20px; border-radius:12px; font-size:13px; z-index:99999; box-shadow:0 0 20px rgba(0,210,255,0.4); transition: opacity 0.5s ease; pointer-events:none;";
+                document.body.appendChild(aviso);
+            }
+
+            aviso.innerHTML = speechActive
+                ? `<i class="fas fa-info-circle text-cyan-400 mr-2"></i> Lector interactivo activado.`
+                : `<i class="fas fa-info-circle text-red-400 mr-2"></i> Lector desactivado.`;
+            aviso.style.opacity = '1';
+
+            clearTimeout(aviso._t);
+            aviso._t = setTimeout(() => {
+                aviso.style.opacity = '0';
+                setTimeout(() => { if (aviso.style.opacity === '0') aviso.remove(); }, 500);
+            }, 3000);
+        }
+
+        // ---- Lectura del texto seleccionado (PC y celular) ----
+        const ES_TACTIL = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
+        let _selTimer = null;
+        let _ocultarBtnTimer = null;
+        let _ultimoTextoLeido = '';
+        let _textoPendiente = '';
+        let _utteranceActual = null; // referencia para que el navegador no la descarte
+
+        // Precargar la lista de voces (en Android a veces llega vacía al inicio)
+        if ('speechSynthesis' in window) {
+            window.speechSynthesis.getVoices();
+            window.speechSynthesis.onvoiceschanged = () => window.speechSynthesis.getVoices();
+        }
+
+        function elementoExcluido(node) {
+            const el = node && (node.nodeType === 1 ? node : node.parentElement);
+            return !!(el && el.closest('header, #accessibility-panel, #speech-subtitle-box, #btn-escuchar'));
+        }
+
+        function obtenerVozEspanol() {
+            const voces = window.speechSynthesis.getVoices();
+            return voces.find(v => v.lang === 'es-MX')
+                || voces.find(v => v.lang && v.lang.toLowerCase().startsWith('es'))
+                || null;
+        }
+
+        function hablar(texto, conDemora) {
+            if (!('speechSynthesis' in window) || !texto) return;
+
+            const subtitleBox = document.getElementById('speech-subtitle-box');
+            const subtitleText = document.getElementById('subtitle-text');
+            if (subtitleText && subtitleBox) {
+                subtitleText.innerText = texto;
+                subtitleBox.style.display = 'block';
+            }
+
+            const ocultar = () => { if (subtitleBox) subtitleBox.style.display = 'none'; };
+
+            const iniciar = () => {
+                const utterance = new SpeechSynthesisUtterance(texto);
+                utterance.lang = 'es-MX';
+                const voz = obtenerVozEspanol();
+                if (voz) { utterance.voice = voz; utterance.lang = voz.lang; }
+                utterance.rate = 1;
+                utterance.volume = 1;
+
+                utterance.onend = ocultar;
+                utterance.onerror = (ev) => {
+                    // Muestra el motivo para poder diagnosticar (por ejemplo: not-allowed, synthesis-failed)
+                    if (subtitleText) subtitleText.innerText = 'Audio no disponible (' + (ev.error || 'error') + ')';
+                    setTimeout(ocultar, 3000);
+                };
+
+                _utteranceActual = utterance;
+                window.speechSynthesis.speak(utterance);
+            };
+
+            if (window.speechSynthesis.speaking || window.speechSynthesis.pending) {
+                window.speechSynthesis.cancel();
+            }
+
+            // En PC una pausa corta evita que cancel()+speak() seguidos se queden mudos.
+            // En celular se llama directo, para no perder el permiso que da el toque.
+            if (conDemora) setTimeout(iniciar, 60); else iniciar();
+        }
+
+        function hablarTextoPendiente() {
+            hablar(_textoPendiente, false);
+        }
+
+        function leerTextoSeleccionado() {
+            if (!speechActive || !('speechSynthesis' in window)) return;
+
+            const sel = window.getSelection();
+            const texto = sel ? sel.toString().trim() : '';
+            const btn = document.getElementById('btn-escuchar');
+
+            if (texto.length < 2) {
+                _ultimoTextoLeido = '';
+                if (btn && ES_TACTIL) {
+                    clearTimeout(_ocultarBtnTimer);
+                    _ocultarBtnTimer = setTimeout(() => { btn.style.display = 'none'; }, 4000);
+                }
+                return;
+            }
+            if (elementoExcluido(sel.anchorNode)) return;
+            if (texto === _ultimoTextoLeido) return;
+
+            _ultimoTextoLeido = texto;
+            _textoPendiente = texto;
+
+            if (ES_TACTIL) {
+                // Celular: aparece el botón "Escuchar" (el toque habilita el audio)
+                clearTimeout(_ocultarBtnTimer);
+                if (btn) btn.style.display = 'flex';
+            } else {
+                // PC: lectura automática
+                hablar(texto, true);
             }
         }
 
-        function leerTextoSeleccionado(e) {
-            if (!speechActive) return;
+        // Funciona en PC y en celular; espera 600 ms a que termines de ajustar la selección
+        document.addEventListener('selectionchange', () => {
+            clearTimeout(_selTimer);
+            _selTimer = setTimeout(leerTextoSeleccionado, 600);
+        });
 
-            if (e && e.target) {
-                const el = e.target;
-                if (el.closest('#mobile-menu') || el.closest('#accessibility-panel') || el.closest('header') || el.closest('button') || el.closest('a') || el.closest('input')) {
-                    return;
-                }
-            }
-
-            const seleccion = window.getSelection();
-            const textoSeleccionado = seleccion ? seleccion.toString().trim() : "";
-
-            if (textoSeleccionado.length > 1) {
-                if ('speechSynthesis' in window) {
-                    window.speechSynthesis.cancel();
-                    const utterance = new SpeechSynthesisUtterance(textoSeleccionado);
-                    utterance.lang = 'es-MX';
-                    
-                    const subtitleBox = document.getElementById('speech-subtitle-box');
-                    const subtitleText = document.getElementById('subtitle-text');
-                    if (subtitleText && subtitleBox) {
-                        subtitleText.innerText = textoSeleccionado;
-                        subtitleBox.style.display = 'block';
-                    }
-
-                    utterance.onend = () => { if (subtitleBox) subtitleBox.style.display = 'none'; };
-                    window.speechSynthesis.speak(utterance);
-                }
-            }
-        }
-
-        document.addEventListener('mouseup', leerTextoSeleccionado);
-        document.addEventListener('touchend', (e) => {
-            if (speechActive) {
-                setTimeout(() => leerTextoSeleccionado(e), 200);
-            }
-        }, { passive: true });
-
+        // ---- Cargar TODAS las preferencias guardadas ----
         function loadAccessibilityPreferences() {
-            const savedFontSize = localStorage.getItem('kronox_font_size');
-            if (savedFontSize) {
-                currentFontSize = parseInt(savedFontSize);
-                document.documentElement.style.fontSize = `${currentFontSize}%`;
-            }
+            const size = parseInt(lsGet('kronox_font_size'), 10);
+            applyFontSize(size || 100);
 
-            const savedDaltonism = localStorage.getItem('kronox_daltonism');
-            if (savedDaltonism) {
-                setDaltonism(savedDaltonism);
-            }
+            applyDaltonism(lsGet('kronox_daltonism') || 'none');
+            applyHighContrast(lsGet('kronox_high_contrast') === 'enabled');
 
-            const savedContrast = localStorage.getItem('kronox_high_contrast');
-            if (savedContrast === 'enabled') {
-                toggleHighContrast();
-            }
-
-            const savedSpeech = localStorage.getItem('kronox_speech_active');
-            if (savedSpeech === 'enabled') {
-                speechActive = true;
-                actualizarEstadoLectorUI();
-            }
+            speechActive = lsGet('kronox_speech_active') === 'enabled';
+            actualizarEstadoLectorUI(false);
         }
     </script>
 </body>
