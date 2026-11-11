@@ -271,7 +271,7 @@
                                 <i class="fas fa-dumbbell text-emerald-400"></i> Mi Rutina
                             </a>
                         </div>
-                        <button onclick="logoutUser()" class="w-full mt-2 bg-red-500/10 hover:bg-red-500 hover:text-white border border-red-500/30 text-red-400 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-2">
+                        <button onclick="logoutUser()" class="w-full mt-2 bg-red-500/10 hover:bg-red-500 text-red-400 hover:text-white border border-red-500/30 text-red-400 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-2">
                             <i class="fas fa-sign-out-alt"></i> Cerrar Sesión
                         </button>
                     </div>
@@ -285,9 +285,9 @@
                 </a>
             </div>
 
-            <!-- Botón Menú Móvil con onclick directo original y limpio -->
-            <button id="mobile-menu-btn" type="button" onclick="toggleMobileMenu()" title="Abrir menú" class="md:hidden text-gray-300 hover:text-white text-2xl focus:outline-none p-2 cursor-pointer z-50">
-                <i class="fas fa-bars" id="mobile-menu-icon"></i>
+            <!-- Botón Menú Móvil con respuesta táctil instantánea -->
+            <button id="mobile-menu-btn" type="button" title="Abrir menú" class="md:hidden text-gray-300 hover:text-white text-2xl focus:outline-none p-2 cursor-pointer z-50">
+                <i class="fas fa-bars pointer-events-none" id="mobile-menu-icon"></i>
             </button>
         </div>
 
@@ -388,11 +388,20 @@
         </div>
     </footer>
 
-    <!-- JAVASCRIPT CON LA EXCLUSIÓN CORRECTA EN EL LECTOR -->
+    <!-- JAVASCRIPT CON RESPUESTA MÓVIL TÁCTIL ULTRARRÁPIDA -->
     <script>
         document.addEventListener("DOMContentLoaded", () => {
             checkUserSession();
             loadAccessibilityPreferences();
+
+            // Vincular touchstart pasivo para respuesta táctil instantánea sin retrasos
+            const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+            if (mobileMenuBtn) {
+                mobileMenuBtn.addEventListener('touchstart', (e) => {
+                    e.preventDefault();
+                    toggleMobileMenu();
+                }, { passive: false });
+            }
 
             // Cerrar menús al hacer clic fuera
             document.addEventListener('click', (e) => {
@@ -419,9 +428,9 @@
             if (mobileMenu) {
                 mobileMenu.classList.toggle('hidden');
                 if (mobileMenu.classList.contains('hidden')) {
-                    if (mobileMenuIcon) mobileMenuIcon.className = "fas fa-bars";
+                    if (mobileMenuIcon) mobileMenuIcon.className = "fas fa-bars pointer-events-none";
                 } else {
-                    if (mobileMenuIcon) mobileMenuIcon.className = "fas fa-times";
+                    if (mobileMenuIcon) mobileMenuIcon.className = "fas fa-times pointer-events-none";
                 }
             }
         }
@@ -601,8 +610,7 @@
 
             if (e && e.target) {
                 const el = e.target;
-                // EXCLUSIÓN ORIGINAL: Si toca el botón hamburguesa, el menú móvil o accesibilidad, el lector no interfiere en absoluto
-                if (el.closest('#mobile-menu-btn') || el.closest('#mobile-menu') || el.closest('#accessibility-panel') || el.closest('[title="Accesibilidad Universal"]')) {
+                if (el.closest('#mobile-menu') || el.closest('#mobile-menu-btn') || el.closest('#accessibility-panel') || el.closest('[title="Accesibilidad Universal"]')) {
                     return;
                 }
             }
