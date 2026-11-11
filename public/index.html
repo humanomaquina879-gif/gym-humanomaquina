@@ -286,7 +286,7 @@
             </div>
 
             <!-- Botón Menú Móvil -->
-            <button id="mobile-menu-btn" type="button" title="Abrir menú" class="md:hidden text-gray-300 hover:text-white text-2xl focus:outline-none p-2 cursor-pointer">
+            <button id="mobile-menu-btn" type="button" onclick="toggleMobileMenu()" title="Abrir menú" class="md:hidden text-gray-300 hover:text-white text-2xl focus:outline-none p-2 cursor-pointer z-50">
                 <i class="fas fa-bars" id="mobile-menu-icon"></i>
             </button>
         </div>
@@ -304,9 +304,9 @@
                 <button id="mobile-btn-login" type="button" onclick="openLoginModal()" class="w-full text-center btn-neon-solid py-2.5 rounded-lg font-bold text-xs uppercase">
                     Iniciar Sesión
                 </button>
-                <!-- PERFIL MÓVIL LLAMATIVO CON TOGGLE DE CLIC CORREGIDO -->
+                <!-- PERFIL MÓVIL LLAMATIVO CON TOGGLE GLOBAL -->
                 <div id="mobile-user-container" class="hidden relative">
-                    <button type="button" id="mobile-user-toggle-btn" class="w-full flex items-center justify-between bg-[#091122] border border-cyan-500/40 p-3 rounded-xl shadow-md transition-all cursor-pointer">
+                    <button type="button" onclick="toggleMobileUserDropdown(event)" class="w-full flex items-center justify-between bg-[#091122] border border-cyan-500/40 p-3 rounded-xl shadow-md transition-all cursor-pointer">
                         <div class="flex items-center gap-3 pointer-events-none">
                             <div class="w-9 h-9 rounded-full bg-cyan-500/10 border border-cyan-400 text-cyan-400 flex items-center justify-center font-bold text-xs">
                                 <i class="fas fa-user"></i>
@@ -388,60 +388,13 @@
         </div>
     </footer>
 
-    <!-- JAVASCRIPT BLINDADO + EVENTOS TÁCTILES ROBUSTOS PARA MÓVIL -->
+    <!-- JAVASCRIPT BLINDADO GLOBAL PARA MENÚ MÓVIL Y PERFIL -->
     <script>
         document.addEventListener("DOMContentLoaded", () => {
             checkUserSession();
             loadAccessibilityPreferences();
 
-            const mobileMenuBtn = document.getElementById('mobile-menu-btn');
-            const mobileMenu = document.getElementById('mobile-menu');
-            const mobileMenuIcon = document.getElementById('mobile-menu-icon');
-
-            if (mobileMenuBtn && mobileMenu) {
-                const toggleMobileMenu = (e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    mobileMenu.classList.toggle('hidden');
-                    if (mobileMenu.classList.contains('hidden')) {
-                        if (mobileMenuIcon) mobileMenuIcon.className = "fas fa-bars";
-                    } else {
-                        if (mobileMenuIcon) mobileMenuIcon.className = "fas fa-times";
-                    }
-                };
-
-                mobileMenuBtn.addEventListener('click', toggleMobileMenu);
-                mobileMenuBtn.addEventListener('touchstart', toggleMobileMenu, { passive: false });
-
-                mobileMenu.querySelectorAll("a").forEach(link => {
-                    link.addEventListener("click", () => {
-                        mobileMenu.classList.add('hidden');
-                        if (mobileMenuIcon) mobileMenuIcon.className = "fas fa-bars";
-                    });
-                });
-
-                document.addEventListener('click', (e) => {
-                    if (!mobileMenu.contains(e.target) && !mobileMenuBtn.contains(e.target) && !mobileMenu.classList.contains('hidden')) {
-                        mobileMenu.classList.add('hidden');
-                        if (mobileMenuIcon) mobileMenuIcon.className = "fas fa-bars";
-                    }
-                });
-            }
-
-            const mobileUserToggleBtn = document.getElementById('mobile-user-toggle-btn');
-            if (mobileUserToggleBtn) {
-                const toggleMobileUser = (e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    const mobileDropdown = document.getElementById('mobile-user-dropdown');
-                    if (mobileDropdown) {
-                        mobileDropdown.classList.toggle('hidden');
-                    }
-                };
-                mobileUserToggleBtn.addEventListener('click', toggleMobileUser);
-                mobileUserToggleBtn.addEventListener('touchstart', toggleMobileUser, { passive: false });
-            }
-
+            // Cerrar menús al hacer clic fuera
             document.addEventListener('click', (e) => {
                 const desktopDropdown = document.getElementById('user-dropdown-menu');
                 if (desktopDropdown && !desktopDropdown.classList.contains('hidden')) {
@@ -459,11 +412,34 @@
             });
         });
 
+        // Función global y directa para abrir/cerrar el menú hamburguesa sin fallos móviles
+        function toggleMobileMenu() {
+            const mobileMenu = document.getElementById('mobile-menu');
+            const mobileMenuIcon = document.getElementById('mobile-menu-icon');
+
+            if (mobileMenu) {
+                mobileMenu.classList.toggle('hidden');
+                if (mobileMenu.classList.contains('hidden')) {
+                    if (mobileMenuIcon) mobileMenuIcon.className = "fas fa-bars";
+                } else {
+                    if (mobileMenuIcon) mobileMenuIcon.className = "fas fa-times";
+                }
+            }
+        }
+
         function toggleUserDropdown(e) {
             e.stopPropagation();
             const dropdown = document.getElementById('user-dropdown-menu');
             if (dropdown) {
                 dropdown.classList.toggle('hidden');
+            }
+        }
+
+        function toggleMobileUserDropdown(e) {
+            e.stopPropagation();
+            const mobileDropdown = document.getElementById('mobile-user-dropdown');
+            if (mobileDropdown) {
+                mobileDropdown.classList.toggle('hidden');
             }
         }
 
