@@ -47,11 +47,16 @@ document.addEventListener("visibilitychange", () => {
   }
 });
 
-// ================= ACCESIBILIDAD UNIVERSAL GLOBAL =================
+// ================= ACCESIBILIDAD UNIVERSAL GLOBAL (BLINDADA) =================
 function toggleAccessibilityPanel() {
   const panel = document.getElementById('accessibility-panel');
   if (panel) {
-    panel.classList.toggle('hidden');
+    // Forzar alternancia directa sin depender de clases complejas que fallen en móvil
+    const isHidden = panel.classList.toggle('hidden');
+    // Asegurar que si se abre, tenga prioridad visual máxima para que el toque no falle
+    if (!isHidden) {
+      panel.style.zIndex = '999999';
+    }
   }
 }
 
@@ -134,7 +139,7 @@ function actualizarEstadoLectorUI() {
 function leerTextoSeleccionado(e) {
   if (!speechActive) return;
 
-  // REGLA DE ORO: Si el toque o clic ocurre en un botón, menú, enlace o panel, se cancela al instante
+  // Ignorar absolutamente cualquier toque en botones, menús, enlaces o paneles de accesibilidad
   if (e && e.target && (e.target.closest('button') || e.target.closest('a') || e.target.closest('nav') || e.target.closest('#accessibility-panel') || e.target.closest('#mobile-menu'))) {
     return;
   }
@@ -194,10 +199,19 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // Cerrar menú o panel al tocar fuera
+  // ===== VINCULACIÓN DIRECTA DEL BOTÓN DE ACCESIBILIDAD =====
+  const accessibilityBtn = document.querySelector("button[onclick*='toggleAccessibilityPanel']") || document.getElementById('btn-accessibility-toggle');
+  if (accessibilityBtn) {
+    accessibilityBtn.onclick = (e) => {
+      e.stopPropagation();
+      toggleAccessibilityPanel();
+    };
+  }
+
+  // Cerrar menú o panel al tocar fuera de forma segura
   document.addEventListener('click', (e) => {
     const panel = document.getElementById('accessibility-panel');
-    const btnPanel = document.querySelector("button[onclick*='toggleAccessibilityPanel']");
+    const btnPanel = document.querySelector("button[onclick*='toggleAccessibilityPanel']") || document.getElementById('btn-accessibility-toggle');
 
     if (mobileMenu && mobileMenuBtn && !mobileMenu.contains(e.target) && !mobileMenuBtn.contains(e.target) && !mobileMenu.classList.contains('hidden')) {
       mobileMenu.classList.add('hidden');
@@ -209,7 +223,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  // Eventos de lectura seguros (Eliminamos selectionchange para liberar el procesador móvil)
+  // Eventos de lectura seguros
   document.addEventListener('mouseup', leerTextoSeleccionado);
   document.addEventListener('touchend', leerTextoSeleccionado);
 
