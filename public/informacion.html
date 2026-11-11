@@ -365,6 +365,9 @@
         function lsSet(key, value) {
             try { localStorage.setItem(key, value); } catch (e) {}
         }
+        function lsRemove(key) {
+            try { localStorage.removeItem(key); } catch (e) {}
+        }
 
         document.addEventListener("DOMContentLoaded", () => {
             checkUserSession();
@@ -417,22 +420,22 @@
         function openLoginModal() { document.getElementById('login-modal').classList.remove('hidden'); }
         function closeLoginModal() { document.getElementById('login-modal').classList.add('hidden'); }
 
+        // Al iniciar sesión te quedas en la misma página (sin redirección a rutinas)
         function handleLogin(e) {
             e.preventDefault();
             const user = document.getElementById('login-user').value;
-            localStorage.setItem('kronox_logged_user', user);
+            lsSet('kronox_logged_user', user);
             closeLoginModal();
             checkUserSession();
-            window.location.href = "rutinas";
         }
 
         function logoutUser() {
-            localStorage.removeItem('kronox_logged_user');
+            lsRemove('kronox_logged_user');
             window.location.href = "index";
         }
 
         function checkUserSession() {
-            const loggedUser = localStorage.getItem('kronox_logged_user');
+            const loggedUser = lsGet('kronox_logged_user');
             const navRutinas = document.getElementById('nav-rutinas');
             const mobileNavRutinas = document.getElementById('mobile-nav-rutinas');
             const btnLogin = document.getElementById('btn-open-login');
