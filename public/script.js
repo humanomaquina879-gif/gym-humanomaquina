@@ -47,13 +47,16 @@ document.addEventListener("visibilitychange", () => {
   }
 });
 
-// ================= ACCESIBILIDAD UNIVERSAL GLOBAL (BLINDADA) =================
+// ================= ACCESIBILIDAD UNIVERSAL GLOBAL =================
 function toggleAccessibilityPanel() {
+  // ROMPER CUALQUIER BLOQUEO DE AUDIO ANTES DE ABRIR EL PANEL
+  if (window.speechSynthesis) {
+    window.speechSynthesis.cancel();
+  }
+
   const panel = document.getElementById('accessibility-panel');
   if (panel) {
-    // Forzar alternancia directa sin depender de clases complejas que fallen en móvil
     const isHidden = panel.classList.toggle('hidden');
-    // Asegurar que si se abre, tenga prioridad visual máxima para que el toque no falle
     if (!isHidden) {
       panel.style.zIndex = '999999';
     }
@@ -139,7 +142,6 @@ function actualizarEstadoLectorUI() {
 function leerTextoSeleccionado(e) {
   if (!speechActive) return;
 
-  // Ignorar absolutamente cualquier toque en botones, menús, enlaces o paneles de accesibilidad
   if (e && e.target && (e.target.closest('button') || e.target.closest('a') || e.target.closest('nav') || e.target.closest('#accessibility-panel') || e.target.closest('#mobile-menu'))) {
     return;
   }
@@ -165,7 +167,7 @@ function leerTextoSeleccionado(e) {
       utterance.onend = () => { if (subtitleBox) subtitleBox.style.display = 'none'; };
       window.speechSynthesis.speak(utterance);
     }
-  }, 400);
+  }, 300);
 }
 
 // ================= INICIALIZACIÓN DEL SITIO =================
@@ -177,7 +179,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // Cargar preferencias globales de accesibilidad
   loadAccessibilityPreferences();
 
-  // ===== MENÚ HAMBURGUESA DIRECTO =====
+  // ===== MENÚ HAMBURGUESA BLINDADO CON LIBERACIÓN DE AUDIO =====
   const mobileMenuBtn = document.getElementById('mobile-menu-btn');
   const mobileMenu = document.getElementById('mobile-menu');
   const mobileMenuIcon = document.getElementById('mobile-menu-icon');
@@ -185,6 +187,12 @@ document.addEventListener("DOMContentLoaded", () => {
   if (mobileMenuBtn && mobileMenu) {
     mobileMenuBtn.onclick = (e) => {
       e.stopPropagation();
+      
+      // Matar cualquier síntesis de voz en curso para liberar el hilo principal del celular
+      if (window.speechSynthesis) {
+        window.speechSynthesis.cancel();
+      }
+
       const isHidden = mobileMenu.classList.toggle('hidden');
       if (mobileMenuIcon) {
         mobileMenuIcon.className = isHidden ? "fas fa-bars" : "fas fa-times";
@@ -193,6 +201,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     mobileMenu.querySelectorAll("a").forEach(link => {
       link.onclick = () => {
+        if (window.speechSynthesis) window.speechSynthesis.cancel();
         mobileMenu.classList.add('hidden');
         if (mobileMenuIcon) mobileMenuIcon.className = "fas fa-bars";
       };
@@ -214,11 +223,13 @@ document.addEventListener("DOMContentLoaded", () => {
     const btnPanel = document.querySelector("button[onclick*='toggleAccessibilityPanel']") || document.getElementById('btn-accessibility-toggle');
 
     if (mobileMenu && mobileMenuBtn && !mobileMenu.contains(e.target) && !mobileMenuBtn.contains(e.target) && !mobileMenu.classList.contains('hidden')) {
+      if (window.speechSynthesis) window.speechSynthesis.cancel();
       mobileMenu.classList.add('hidden');
       if (mobileMenuIcon) mobileMenuIcon.className = "fas fa-bars";
     }
 
     if (panel && btnPanel && !panel.contains(e.target) && !btnPanel.contains(e.target) && !panel.classList.contains('hidden')) {
+      if (window.speechSynthesis) window.speechSynthesis.cancel();
       panel.classList.add('hidden');
     }
   });
