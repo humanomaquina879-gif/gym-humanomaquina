@@ -6,7 +6,7 @@
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kronox Gym | Inicio</title>
+    <title>Kronox Gym | Alto Rendimiento</title>
 
     <!-- Font Awesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -41,7 +41,6 @@
         }
     </script>
 
-    <!-- Estilos CSS Personalizados y Accesibilidad Universal -->
     <style>
         body {
             background-color: #050a14;
@@ -52,7 +51,7 @@
             transition: font-size 0.3s ease;
         }
 
-        /* Modos de Daltonismo Especificados */
+        /* Filtros SVG para Daltonismo */
         body.daltonism-protanopia { filter: url('#protanopia-filter'); }
         body.daltonism-deuteranopia { filter: url('#deuteranopia-filter'); }
         body.daltonism-tritanopia { filter: url('#tritanopia-filter'); }
@@ -71,7 +70,6 @@
             color: #ffff00 !important;
         }
 
-        /* Patrón de cuadrícula del fondo (Gridlines) */
         .bg-grid-pattern {
             background-size: 36px 36px;
             background-image: 
@@ -79,18 +77,16 @@
                 linear-gradient(to bottom, rgba(0, 210, 255, 0.04) 1px, transparent 1px);
         }
 
-        /* Luces ambientales en degradado */
         .glow-light {
             position: absolute;
-            width: 500px;
-            height: 500px;
+            width: 450px;
+            height: 450px;
             background: radial-gradient(circle, rgba(0, 210, 255, 0.12) 0%, rgba(5, 10, 20, 0) 70%);
             border-radius: 50%;
             pointer-events: none;
             z-index: 0;
         }
 
-        /* Estilos generales de tarjetas */
         .kronox-card {
             background: linear-gradient(160deg, #0a1326 0%, #060c18 100%);
             border: 1px solid #16284a;
@@ -100,38 +96,22 @@
         }
 
         .kronox-card:hover {
-            transform: translateY(-8px);
             border-color: #00d2ff;
-            box-shadow: 0 15px 35px rgba(0, 210, 255, 0.2);
+            box-shadow: 0 15px 35px rgba(0, 210, 255, 0.18);
         }
 
-        /* Botón estilo Neón Transparente */
-        .btn-neon-outline {
-            background: transparent;
-            color: #00d2ff;
-            border: 2px solid #00d2ff;
-            transition: all 0.3s ease;
-            box-shadow: 0 0 10px rgba(0, 210, 255, 0.1);
-        }
-
-        .btn-neon-outline:hover {
-            background: #00d2ff;
-            color: #050a14;
-            box-shadow: 0 0 22px rgba(0, 210, 255, 0.6);
-        }
-
-        /* Botón estilo Neón Relleno */
         .btn-neon-solid {
             background: #00d2ff;
             color: #050a14;
+            border: 2px solid #00d2ff;
             transition: all 0.3s ease;
-            box-shadow: 0 0 18px rgba(0, 210, 255, 0.4);
+            box-shadow: 0 0 15px rgba(0, 210, 255, 0.4);
         }
 
         .btn-neon-solid:hover {
-            background: #2dd8ff;
-            box-shadow: 0 0 28px rgba(0, 210, 255, 0.8);
-            transform: scale(1.02);
+            background: transparent;
+            color: #00d2ff;
+            box-shadow: 0 0 25px rgba(0, 210, 255, 0.7);
         }
 
         /* Subtítulos flotantes para lector de voz */
@@ -180,16 +160,12 @@
             <i class="fas fa-universal-access text-xl"></i>
         </button>
 
-        <!-- Menú Desplegable Accesibilidad -->
         <div id="accessibility-panel" class="hidden absolute top-16 left-0 w-80 bg-[#141d2f] border border-red-600/40 rounded-2xl p-5 shadow-2xl backdrop-blur-xl space-y-5 text-gray-200 accessibility-panel">
             <div class="flex justify-between items-center border-b border-red-600/50 pb-2">
                 <span class="text-sm font-bold uppercase text-red-500 tracking-wider">Accesibilidad Universal</span>
-                <button onclick="toggleAccessibilityPanel()" class="text-gray-400 hover:text-white font-bold">
-                    <i class="fas fa-times"></i>
-                </button>
+                <button onclick="toggleAccessibilityPanel()" class="text-gray-400 hover:text-white font-bold"><i class="fas fa-times"></i></button>
             </div>
             
-            <!-- Tamaño de Letra -->
             <div>
                 <label class="block text-xs font-bold text-gray-300 uppercase mb-2">Tamaño de letra</label>
                 <div class="flex gap-2">
@@ -199,7 +175,6 @@
                 </div>
             </div>
 
-            <!-- Visión de Color -->
             <div>
                 <label class="block text-xs font-bold text-gray-300 uppercase mb-2">Visión de Color</label>
                 <div class="grid grid-cols-2 gap-2 text-xs">
@@ -210,7 +185,6 @@
                 </div>
             </div>
 
-            <!-- Contraste -->
             <div>
                 <label class="block text-xs font-bold text-gray-300 uppercase mb-2">Contraste</label>
                 <button onclick="toggleHighContrast()" id="btn-high-contrast" class="w-full bg-[#1f293d] hover:bg-red-600/50 border border-gray-700 text-gray-200 py-2.5 rounded-lg text-xs font-semibold transition-colors text-center">
@@ -218,7 +192,6 @@
                 </button>
             </div>
 
-            <!-- Lector de Voz -->
             <div>
                 <label class="block text-xs font-bold text-gray-300 uppercase mb-2">Lector de Voz</label>
                 <button onclick="toggleSpeechReader()" id="btn-speech-toggle" class="w-full bg-cyan-600 hover:bg-cyan-500 text-white py-2.5 rounded-lg text-xs font-bold transition-colors flex items-center justify-center gap-2">
@@ -244,7 +217,6 @@
                     <label class="block text-xs font-bold text-kronox-accent uppercase mb-1">Contraseña</label>
                     <input type="password" id="login-pass" required placeholder="••••••••" class="w-full bg-[#050a14] border border-kronox-cardBorder rounded-lg px-4 py-2.5 text-white text-sm focus:border-kronox-accent focus:outline-none">
                 </div>
-                <div id="login-error" class="text-red-400 text-xs font-bold hidden text-center">Credenciales incorrectas. Intenta de nuevo.</div>
                 <button type="submit" class="w-full btn-neon-solid py-3 rounded-lg font-black text-xs uppercase tracking-wider">
                     Entrar al Sistema
                 </button>
@@ -260,8 +232,7 @@
     <header class="sticky top-0 z-40 bg-kronox-bg/85 backdrop-blur-lg border-b border-kronox-cardBorder/60">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-24 flex items-center justify-between">
             
-            <!-- Logo en Imagen -->
-            <a href="index" title="Ir a la página de inicio de Kronox Gym" class="flex items-center gap-2 group py-2 ml-14 sm:ml-0">
+            <a href="index" title="Ir al inicio" class="flex items-center gap-2 group py-2 ml-14 sm:ml-0">
                 <img src="https://res.cloudinary.com/bo5jzelh/image/upload/v1783041430/Logo_Kronox_Gym_lfg9tl.jpg" 
                      alt="Kronox Gym Logo" 
                      class="h-16 md:h-20 w-auto rounded-xl border border-kronox-accent/40 object-contain shadow-[0_0_15px_rgba(0,210,255,0.2)] group-hover:border-kronox-accent transition-all duration-300">
@@ -274,21 +245,19 @@
                 <a href="planes" class="text-gray-300 hover:text-kronox-accent transition-colors">Planes</a>
                 <a href="catalogo" class="text-gray-300 hover:text-kronox-accent transition-colors">Catálogo</a>
                 <a href="ubicacion" class="text-gray-300 hover:text-kronox-accent transition-colors">Ubicación</a>
-                <!-- Pestaña Rutinas (Oculta hasta iniciar sesión) -->
                 <a href="rutinas" id="nav-rutinas" class="hidden text-emerald-400 font-bold hover:text-emerald-300 transition-colors flex items-center gap-1.5"><i class="fas fa-dumbbell"></i> Rutinas</a>
             </nav>
 
-            <!-- Acciones Derecha Desktop -->
             <div class="hidden md:flex items-center space-x-3">
                 <div id="user-session-info" class="hidden items-center gap-2 text-xs font-bold text-cyan-400">
                     <span id="welcome-user-name"></span>
                     <button onclick="logoutUser()" title="Cerrar sesión" class="text-red-400 hover:text-red-300 text-sm ml-2"><i class="fas fa-sign-out-alt"></i></button>
                 </div>
-                <button id="btn-open-login" onclick="openLoginModal()" class="btn-neon-outline px-4 py-2 rounded-lg font-bold text-xs uppercase tracking-wider">
+                <button id="btn-open-login" onclick="openLoginModal()" class="btn-neon-solid px-4 py-2 rounded-lg font-bold text-xs uppercase tracking-wider">
                     <i class="fas fa-user-lock mr-1"></i> Iniciar Sesión
                 </button>
-                <a href="https://wa.me/527779393985?text=Hola%20Kronox%20Gym" target="_blank" class="btn-neon-outline px-4 py-2 rounded-lg font-bold text-xs uppercase tracking-wider flex items-center gap-1.5">
-                    <i class="fab fa-whatsapp text-sm"></i> Contactar
+                <a href="https://wa.me/527779393985?text=Hola%20Kronox%20Gym" target="_blank" class="btn-neon-solid px-4 py-2 rounded-lg font-bold text-xs uppercase tracking-wider flex items-center gap-2">
+                    <i class="fab fa-whatsapp text-base"></i> Contactar
                 </a>
             </div>
 
@@ -298,7 +267,7 @@
             </button>
         </div>
 
-        <!-- Menú Desplegable Móvil -->
+        <!-- Menú Móvil -->
         <div id="mobile-menu" class="hidden md:hidden bg-kronox-blueDark border-b border-kronox-cardBorder px-6 pt-3 pb-6 space-y-3">
             <a href="index" class="block py-2 text-kronox-accent font-bold">Inicio</a>
             <a href="informacion" class="block py-2 text-gray-300 hover:text-kronox-accent font-medium">Información</a>
@@ -308,7 +277,7 @@
             <a href="rutinas" id="mobile-nav-rutinas" class="hidden py-2 text-emerald-400 font-bold"><i class="fas fa-dumbbell"></i> Rutinas Exclusivas</a>
             
             <div id="mobile-session-container" class="pt-2 border-t border-gray-800">
-                <button id="mobile-btn-login" onclick="openLoginModal()" class="w-full text-center btn-neon-outline py-2.5 rounded-lg font-bold text-xs uppercase">
+                <button id="mobile-btn-login" onclick="openLoginModal()" class="w-full text-center btn-neon-solid py-2.5 rounded-lg font-bold text-xs uppercase">
                     Iniciar Sesión
                 </button>
                 <div id="mobile-user-info" class="hidden flex justify-between items-center py-2 text-xs text-cyan-400 font-bold">
@@ -316,49 +285,47 @@
                     <button onclick="logoutUser()" class="text-red-400"><i class="fas fa-sign-out-alt"></i> Salir</button>
                 </div>
             </div>
-            <a href="https://wa.me/527779393985?text=Hola%20Kronox%20Gym" target="_blank" class="inline-block w-full text-center btn-neon-outline py-2.5 rounded-lg font-bold text-xs uppercase">
-                <i class="fab fa-whatsapp"></i> WhatsApp
+            <a href="https://wa.me/527779393985?text=Hola%20Kronox%20Gym" target="_blank" class="inline-block mt-3 w-full text-center btn-neon-solid py-2.5 rounded-lg font-bold text-xs uppercase">
+                <i class="fab fa-whatsapp"></i> Contactar por WhatsApp
             </a>
         </div>
     </header>
 
-    <!-- SECCIÓN HERO PRINCIPAL -->
-    <main class="relative z-10 flex-grow">
-        <section class="relative py-16 md:py-24 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto text-center flex flex-col items-center justify-center min-h-[75vh]">
-            
-            <!-- Recuadro con la Imagen del Logotipo -->
-            <div class="mb-8 px-8 py-6 rounded-2xl bg-kronox-cardBg/90 border-2 border-kronox-accent/40 backdrop-blur-xl shadow-[0_0_40px_rgba(0,210,255,0.3)]">
-                <img src="https://res.cloudinary.com/bo5jzelh/image/upload/v1783041430/Logo_Kronox_Gym_lfg9tl.jpg" alt="Kronox Gym Logo" class="h-28 sm:h-36 md:h-48 w-auto object-contain mx-auto rounded-xl">
-            </div>
-
-            <!-- OBJETIVO DE LA PÁGINA -->
-            <div class="mb-6 max-w-3xl bg-kronox-cardBg/60 border border-kronox-accent/30 rounded-xl p-4 backdrop-blur-md">
-                <span class="text-kronox-accent text-[11px] font-black uppercase tracking-widest block mb-1">🎯 Objetivo de la Plataforma</span>
-                <p class="text-gray-300 text-xs sm:text-sm leading-relaxed">
-                    Brindar un sistema integral de gestión y control para Kronox Gym, facilitando a los usuarios la consulta de planes de entrenamiento, registro de inscripciones y optimizando la administración interna del centro de acondicionamiento físico.
+    <!-- SECCIÓN PRINCIPAL -->
+    <main class="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-24 flex-grow flex items-center">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center w-full">
+            <div class="space-y-6 text-center lg:text-left">
+                <span class="inline-block bg-kronox-accent/10 border border-kronox-accent/40 text-kronox-accent text-xs font-black uppercase tracking-widest px-4 py-1.5 rounded-full">
+                    Gimnasio de Alto Rendimiento
+                </span>
+                <h1 class="text-4xl sm:text-6xl font-black tracking-tight text-white uppercase italic leading-none">
+                    FORJA TU <span class="text-transparent bg-clip-text bg-gradient-to-r from-kronox-accent to-blue-500">GRANDEZA</span>
+                </h1>
+                <p class="text-gray-400 text-base sm:text-lg font-normal max-w-xl mx-auto lg:mx-0">
+                    Equipamiento de última generación, rutinas especializadas y un ambiente diseñado para llevar tus límites al siguiente nivel.
                 </p>
+                <div class="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start pt-4">
+                    <a href="planes" class="btn-neon-solid px-8 py-4 rounded-xl font-black text-xs uppercase tracking-wider text-center">
+                        Ver Membresías
+                    </a>
+                    <a href="ubicacion" class="bg-transparent border border-gray-700 hover:border-kronox-accent text-gray-300 hover:text-white px-8 py-4 rounded-xl font-black text-xs uppercase tracking-wider transition-all text-center">
+                        Ubicación
+                    </a>
+                </div>
             </div>
 
-            <!-- Título Principal -->
-            <h1 class="text-4xl sm:text-6xl md:text-7xl font-black tracking-tight text-white uppercase italic leading-tight max-w-5xl">
-                TRANSFORMA TU <span class="text-transparent bg-clip-text bg-gradient-to-r from-kronox-accent to-blue-500">CUERPO</span>
-            </h1>
-
-            <!-- Subtítulo -->
-            <p class="mt-6 text-gray-300 text-base sm:text-xl font-normal max-w-2xl mx-auto leading-relaxed">
-                Entrena con disciplina, energía y un entorno diseñado para tu máximo rendimiento.
-            </p>
-
-            <!-- Botones Principales -->
-            <div class="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4 w-full sm:w-auto">
-                <a href="informacion" class="w-full sm:w-auto btn-neon-solid px-8 py-4 rounded-xl font-black uppercase text-xs tracking-wider text-center">
-                    Información
-                </a>
-                <a href="planes" class="w-full sm:w-auto btn-neon-outline px-8 py-4 rounded-xl font-extrabold uppercase text-xs tracking-wider text-center">
-                    Planes
+            <div class="kronox-card p-8 flex flex-col items-center justify-center text-center relative overflow-hidden">
+                <div class="absolute inset-0 bg-gradient-to-tr from-kronox-accent/5 to-blue-600/10 pointer-events-none"></div>
+                <div class="mb-6 p-4 rounded-2xl bg-kronox-cardBg/90 border border-kronox-accent/40 shadow-[0_0_30px_rgba(0,210,255,0.25)]">
+                    <img src="https://res.cloudinary.com/bo5jzelh/image/upload/v1783041430/Logo_Kronox_Gym_lfg9tl.jpg" alt="Logo" class="h-28 md:h-36 w-auto rounded-xl object-contain">
+                </div>
+                <h2 class="text-2xl font-black text-white uppercase italic mb-2">KRONOX GYM</h2>
+                <p class="text-gray-400 text-sm max-w-xs mx-auto mb-6">Tu disciplina es nuestro motor. Entrena fuerte, vive sin excusas.</p>
+                <a href="informacion" class="text-kronox-accent font-bold text-xs uppercase tracking-wider hover:underline flex items-center gap-2">
+                    Conoce más sobre nosotros <i class="fas fa-arrow-right"></i>
                 </a>
             </div>
-        </section>
+        </div>
     </main>
 
     <!-- PIE DE PÁGINA -->
@@ -376,13 +343,12 @@
         </div>
     </footer>
 
-    <!-- LÓGICA JAVASCRIPT BLINDADA Y LIBRE DE CONFLICTOS TÁCTILES -->
+    <!-- JAVASCRIPT BLINDADO -->
     <script>
         document.addEventListener("DOMContentLoaded", () => {
             checkUserSession();
             loadAccessibilityPreferences();
 
-            // Configuración del Menú Móvil (Hamburguesa) a prueba de fallos
             const mobileMenuBtn = document.getElementById('mobile-menu-btn');
             const mobileMenu = document.getElementById('mobile-menu');
             const mobileMenuIcon = document.getElementById('mobile-menu-icon');
@@ -391,38 +357,31 @@
                 mobileMenuBtn.addEventListener('click', (e) => {
                     e.stopPropagation();
                     mobileMenu.classList.toggle('hidden');
-
                     if (mobileMenu.classList.contains('hidden')) {
-                        mobileMenuIcon.className = "fas fa-bars";
+                        if (mobileMenuIcon) mobileMenuIcon.className = "fas fa-bars";
                     } else {
-                        mobileMenuIcon.className = "fas fa-times";
+                        if (mobileMenuIcon) mobileMenuIcon.className = "fas fa-times";
                     }
                 });
 
                 mobileMenu.querySelectorAll("a").forEach(link => {
                     link.addEventListener("click", () => {
                         mobileMenu.classList.add('hidden');
-                        mobileMenuIcon.className = "fas fa-bars";
+                        if (mobileMenuIcon) mobileMenuIcon.className = "fas fa-bars";
                     });
                 });
 
                 document.addEventListener('click', (e) => {
                     if (!mobileMenu.contains(e.target) && !mobileMenuBtn.contains(e.target) && !mobileMenu.classList.contains('hidden')) {
                         mobileMenu.classList.add('hidden');
-                        mobileMenuIcon.className = "fas fa-bars";
+                        if (mobileMenuIcon) mobileMenuIcon.className = "fas fa-bars";
                     }
                 });
             }
         });
 
-        // --- 1. GESTIÓN DE INICIO DE SESIÓN Y PERSISTENCIA ---
-        function openLoginModal() {
-            document.getElementById('login-modal').classList.remove('hidden');
-        }
-
-        function closeLoginModal() {
-            document.getElementById('login-modal').classList.add('hidden');
-        }
+        function openLoginModal() { document.getElementById('login-modal').classList.remove('hidden'); }
+        function closeLoginModal() { document.getElementById('login-modal').classList.add('hidden'); }
 
         function handleLogin(e) {
             e.preventDefault();
@@ -430,11 +389,12 @@
             localStorage.setItem('kronox_logged_user', user);
             closeLoginModal();
             checkUserSession();
+            window.location.href = "rutinas";
         }
 
         function logoutUser() {
             localStorage.removeItem('kronox_logged_user');
-            checkUserSession();
+            window.location.href = "index";
         }
 
         function checkUserSession() {
@@ -473,7 +433,6 @@
             }
         }
 
-        // --- 2. ACCESIBILIDAD UNIVERSAL Y PERSISTENCIA ---
         function toggleAccessibilityPanel() {
             const panel = document.getElementById('accessibility-panel');
             if (panel) panel.classList.toggle('hidden');
@@ -533,9 +492,7 @@
             localStorage.setItem('kronox_high_contrast', isActive ? 'enabled' : 'disabled');
         }
 
-        // --- 3. LECTOR DE VOZ (AISLADO PARA EVITAR CONGELAMIENTO TÁCTIL EN MÓVIL) ---
         let speechActive = false;
-
         function toggleSpeechReader() {
             speechActive = !speechActive;
             localStorage.setItem('kronox_speech_active', speechActive ? 'enabled' : 'disabled');
@@ -559,10 +516,10 @@
                     btn.innerHTML = `<i class="fas fa-volume-xmark"></i> Desactivar Lector`;
                     btn.classList.replace('bg-cyan-600', 'bg-red-600');
                 }
-                const mensaje = "Lector interactivo activado. Seleccione cualquier texto para escucharlo.";
+                const mensaje = "Lector interactivo activado.";
                 avisoFlotante.innerHTML = `<i class="fas fa-info-circle text-cyan-400 mr-2"></i> ${mensaje}`;
                 avisoFlotante.style.opacity = '1';
-                setTimeout(() => { avisoFlotante.style.opacity = '0'; }, 4000);
+                setTimeout(() => { avisoFlotante.style.opacity = '0'; }, 3000);
             } else {
                 if (btn) {
                     btn.innerHTML = `<i class="fas fa-volume-high"></i> Activar Lector Interactivo`;
@@ -580,9 +537,11 @@
         function leerTextoSeleccionado(e) {
             if (!speechActive) return;
 
-            // Si el toque o clic ocurre dentro del menú o panel, cancelamos la lectura para liberar el hilo táctil
-            if (e && e.target && (e.target.closest('#mobile-menu') || e.target.closest('#accessibility-panel') || e.target.closest('header'))) {
-                return;
+            if (e && e.target) {
+                const el = e.target;
+                if (el.closest('#mobile-menu') || el.closest('#accessibility-panel') || el.closest('header') || el.closest('button') || el.closest('a') || el.closest('input')) {
+                    return;
+                }
             }
 
             const seleccion = window.getSelection();
@@ -607,16 +566,13 @@
             }
         }
 
-        // Eventos seguros (Validando que no interfieran con la navegación)
         document.addEventListener('mouseup', leerTextoSeleccionado);
         document.addEventListener('touchend', (e) => {
-            // Solo procesar si el lector está activo y no se tocó la zona de menús
             if (speechActive) {
-                setTimeout(() => leerTextoSeleccionado(e), 150);
+                setTimeout(() => leerTextoSeleccionado(e), 200);
             }
-        });
+        }, { passive: true });
 
-        // --- 4. FUNCIÓN PARA CARGAR PREFERENCIAS GUARDADAS EN TODAS LAS PESTAÑAS ---
         function loadAccessibilityPreferences() {
             const savedFontSize = localStorage.getItem('kronox_font_size');
             if (savedFontSize) {
