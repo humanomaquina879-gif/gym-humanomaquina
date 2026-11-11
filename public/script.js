@@ -102,15 +102,12 @@ function setDaltonism(type) {
   localStorage.setItem('kronox_daltonism', type);
 }
 
-// ================= LECTOR DE VOZ EXCLUSIVO PARA ESCRITORIO =================
+// ================= LECTOR DE VOZ (EXCLUSIVO ESCRITORIO) =================
 let speechActive = false;
 let speechTimeout = null;
 
 function toggleSpeechReader() {
-  if (esMovil) {
-    alert("El lector interactivo de voz está disponible únicamente en equipos de escritorio debido a incompatibilidades del navegador móvil con los menús flotantes.");
-    return;
-  }
+  if (esMovil) return; // Por seguridad si llegara a mostrarse
 
   speechActive = !speechActive;
   const btn = document.getElementById('btn-speech-toggle');
@@ -174,6 +171,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
   speechActive = false;
   localStorage.removeItem('kronox_speech_active');
+
+  // ===== OCULTAR LECTOR DE VOZ EN MÓVILES =====
+  if (esMovil) {
+    const speechBtn = document.getElementById('btn-speech-toggle');
+    if (speechBtn) {
+      speechBtn.style.display = 'none'; // Desaparece el botón por completo en celulares
+    }
+  }
 
   // ===== MENÚ HAMBURGUESA BÁSICO Y NATIVO =====
   const mobileMenuBtn = document.getElementById('mobile-menu-btn');
