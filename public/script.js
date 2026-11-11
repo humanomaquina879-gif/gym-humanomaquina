@@ -49,11 +49,7 @@ document.addEventListener("visibilitychange", () => {
 
 // ================= ACCESIBILIDAD UNIVERSAL GLOBAL =================
 function toggleAccessibilityPanel() {
-  // ROMPER CUALQUIER BLOQUEO DE AUDIO ANTES DE ABRIR EL PANEL
-  if (window.speechSynthesis) {
-    window.speechSynthesis.cancel();
-  }
-
+  safeCancelSpeech();
   const panel = document.getElementById('accessibility-panel');
   if (panel) {
     const isHidden = panel.classList.toggle('hidden');
@@ -107,9 +103,19 @@ function setDaltonism(type) {
   localStorage.setItem('kronox_daltonism', type);
 }
 
-// ================= LECTOR DE VOZ ULTRA-LIGERO =================
+// ================= LECTOR DE VOZ BLINDADO PARA MÓVIL =================
 let speechActive = false;
 let speechTimeout = null;
+
+function safeCancelSpeech() {
+  try {
+    if ('speechSynthesis' in window) {
+      window.speechSynthesis.cancel();
+    }
+  } catch (err) {
+    // Ignorar errores del motor nativo
+  }
+}
 
 function toggleSpeechReader() {
   speechActive = !speechActive;
@@ -125,7 +131,7 @@ function actualizarEstadoLectorUI() {
       btn.innerHTML = `<i class="fas fa-volume-xmark"></i> Desactivar Lector`;
       btn.classList.replace('bg-cyan-600', 'bg-red-600');
     }
-    window.speechSynthesis.cancel();
+    safeCancelSpeech();
     const utteranceInicio = new SpeechSynthesisUtterance("Lector activado.");
     utteranceInicio.lang = 'es-MX';
     window.speechSynthesis.speak(utteranceInicio);
@@ -134,7 +140,7 @@ function actualizarEstadoLectorUI() {
       btn.innerHTML = `<i class="fas fa-volume-high"></i> Activar Lector Interactivo`;
       btn.classList.replace('bg-red-600', 'bg-cyan-600');
     }
-    window.speechSynthesis.cancel();
+    safeCancelSpeech();
     if (subtitleBox) subtitleBox.style.display = 'none';
   }
 }
@@ -142,7 +148,9 @@ function actualizarEstadoLectorUI() {
 function leerTextoSeleccionado(e) {
   if (!speechActive) return;
 
+  // Si el usuario toca cualquier elemento de la interfaz, matamos la voz y salimos al instante
   if (e && e.target && (e.target.closest('button') || e.target.closest('a') || e.target.closest('nav') || e.target.closest('#accessibility-panel') || e.target.closest('#mobile-menu'))) {
+    safeCancelSpeech();
     return;
   }
 
@@ -153,7 +161,8 @@ function leerTextoSeleccionado(e) {
     const textoSeleccionado = seleccion ? seleccion.toString().trim() : "";
 
     if (textoSeleccionado && textoSeleccionado.length > 2) {
-      window.speechSynthesis.cancel();
+      safeCancelSpeech();
+      
       const utterance = new SpeechSynthesisUtterance(textoSeleccionado);
       utterance.lang = 'es-MX';
       
@@ -165,9 +174,11 @@ function leerTextoSeleccionado(e) {
       }
 
       utterance.onend = () => { if (subtitleBox) subtitleBox.style.display = 'none'; };
+      utterance.onerror = () => { if (subtitleBox) subtitleBox.style.display = 'none'; };
+
       window.speechSynthesis.speak(utterance);
     }
-  }, 300);
+  }, 500); // 500ms de respiro para que el procesador del celular procese con soltura
 }
 
 // ================= INICIALIZACIÓN DEL SITIO =================
@@ -179,7 +190,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // Cargar preferencias globales de accesibilidad
   loadAccessibilityPreferences();
 
-  // ===== MENÚ HAMBURGUESA BLINDADO CON LIBERACIÓN DE AUDIO =====
+  // ===== MENÚ HAMBURGUESA BLINDADO CONTRA CONGELAMIENTO =====
   const mobileMenuBtn = document.getElementById('mobile-menu-btn');
   const mobileMenu = document.getElementById('mobile-menu');
   const mobileMenuIcon = document.getElementById('mobile-menu-icon');
@@ -187,11 +198,7 @@ document.addEventListener("DOMContentLoaded", () => {
   if (mobileMenuBtn && mobileMenu) {
     mobileMenuBtn.onclick = (e) => {
       e.stopPropagation();
-      
-      // Matar cualquier síntesis de voz en curso para liberar el hilo principal del celular
-      if (window.speechSynthesis) {
-        window.speechSynthesis.cancel();
-      }
+      safeCancelSpeech(); // Forzar liberación de audio al tocar el menú
 
       const isHidden = mobileMenu.classList.toggle('hidden');
       if (mobileMenuIcon) {
@@ -201,7 +208,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     mobileMenu.querySelectorAll("a").forEach(link => {
       link.onclick = () => {
-        if (window.speechSynthesis) window.speechSynthesis.cancel();
+        safeCancelSpeech();
         mobileMenu.classList.add('hidden');
         if (mobileMenuIcon) mobileMenuIcon.className = "fas fa-bars";
       };
@@ -213,6 +220,7 @@ document.addEventListener("DOMContentLoaded", () => {
   if (accessibilityBtn) {
     accessibilityBtn.onclick = (e) => {
       e.stopPropagation();
+      safeCancelSpeech(); // Forzar liberación de audio al tocar el panel
       toggleAccessibilityPanel();
     };
   }
@@ -223,18 +231,18 @@ document.addEventListener("DOMContentLoaded", () => {
     const btnPanel = document.querySelector("button[onclick*='toggleAccessibilityPanel']") || document.getElementById('btn-accessibility-toggle');
 
     if (mobileMenu && mobileMenuBtn && !mobileMenu.contains(e.target) && !mobileMenuBtn.contains(e.target) && !mobileMenu.classList.contains('hidden')) {
-      if (window.speechSynthesis) window.speechSynthesis.cancel();
+      safeCancelSpeech();
       mobileMenu.classList.add('hidden');
       if (mobileMenuIcon) mobileMenuIcon.className = "fas fa-bars";
     }
 
     if (panel && btnPanel && !panel.contains(e.target) && !btnPanel.contains(e.target) && !panel.classList.contains('hidden')) {
-      if (window.speechSynthesis) window.speechSynthesis.cancel();
+      safeCancelSpeech();
       panel.classList.add('hidden');
     }
   });
 
-  // Eventos de lectura seguros
+  // Eventos de lectura optimizados exclusivamente para móvil
   document.addEventListener('mouseup', leerTextoSeleccionado);
   document.addEventListener('touchend', leerTextoSeleccionado);
 
