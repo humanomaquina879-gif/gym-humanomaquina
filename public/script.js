@@ -107,7 +107,7 @@ let speechActive = false;
 let speechTimeout = null;
 
 function toggleSpeechReader() {
-  if (esMovil) return; // Por seguridad si llegara a mostrarse
+  if (esMovil) return;
 
   speechActive = !speechActive;
   const btn = document.getElementById('btn-speech-toggle');
@@ -172,12 +172,13 @@ document.addEventListener("DOMContentLoaded", () => {
   speechActive = false;
   localStorage.removeItem('kronox_speech_active');
 
-  // ===== OCULTAR LECTOR DE VOZ EN MÓVILES =====
+  // ===== OCULTAR EL LECTOR DE VOZ EN MÓVILES (INCLUYENDO DENTRO DEL PANEL) =====
   if (esMovil) {
-    const speechBtn = document.getElementById('btn-speech-toggle');
-    if (speechBtn) {
-      speechBtn.style.display = 'none'; // Desaparece el botón por completo en celulares
-    }
+    const speechButtons = document.querySelectorAll("button[onclick*='toggleSpeechReader'], #btn-speech-toggle");
+    speechButtons.forEach(btn => {
+      let container = btn.closest('div') || btn;
+      container.style.display = 'none';
+    });
   }
 
   // ===== MENÚ HAMBURGUESA BÁSICO Y NATIVO =====
