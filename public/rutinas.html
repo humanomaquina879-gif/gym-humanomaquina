@@ -729,17 +729,19 @@
                 avisoFlotante.style.opacity = '1';
                 setTimeout(() => { avisoFlotante.style.opacity = '0'; }, 5000);
 
-                window.speechSynthesis.cancel();
-                const utteranceInicio = new SpeechSynthesisUtterance(mensaje);
-                utteranceInicio.lang = 'es-MX';
-                window.speechSynthesis.speak(utteranceInicio);
+                if ('speechSynthesis' in window) {
+                    window.speechSynthesis.cancel();
+                    const utteranceInicio = new SpeechSynthesisUtterance(mensaje);
+                    utteranceInicio.lang = 'es-MX';
+                    window.speechSynthesis.speak(utteranceInicio);
+                }
 
             } else {
                 if (btn) {
                     btn.innerHTML = `<i class="fas fa-volume-high"></i> Activar Lector Interactivo`;
                     btn.classList.replace('bg-red-600', 'bg-cyan-600');
                 }
-                window.speechSynthesis.cancel();
+                if ('speechSynthesis' in window) window.speechSynthesis.cancel();
                 if (subtitleBox) subtitleBox.style.display = 'none';
 
                 avisoFlotante.innerHTML = `<i class="fas fa-info-circle text-red-400 mr-2"></i> Lector desactivado.`;
@@ -748,28 +750,42 @@
             }
         }
 
-        function leerTextoSeleccionado() {
+        function leerTextoSeleccionado(e) {
             if (!speechActive) return;
+
+            // Evitar bloqueos táctiles ignorando toques en la barra, menú o panel de accesibilidad
+            if (e && e.target && (e.target.closest('#mobile-menu') || e.target.closest('#accessibility-panel') || e.target.closest('header'))) {
+                return;
+            }
+
             const seleccion = window.getSelection();
-            const textoSeleccionado = seleccion.toString().trim();
+            const textoSeleccionado = seleccion ? seleccion.toString().trim() : "";
 
             if (textoSeleccionado.length > 1) {
-                window.speechSynthesis.cancel();
-                const utterance = new SpeechSynthesisUtterance(textoSeleccionado);
-                utterance.lang = 'es-MX';
-                
-                const subtitleBox = document.getElementById('speech-subtitle-box');
-                const subtitleText = document.getElementById('subtitle-text');
-                subtitleText.innerText = textoSeleccionado;
-                subtitleBox.style.display = 'block';
+                if ('speechSynthesis' in window) {
+                    window.speechSynthesis.cancel();
+                    const utterance = new SpeechSynthesisUtterance(textoSeleccionado);
+                    utterance.lang = 'es-MX';
+                    
+                    const subtitleBox = document.getElementById('speech-subtitle-box');
+                    const subtitleText = document.getElementById('subtitle-text');
+                    if (subtitleText && subtitleBox) {
+                        subtitleText.innerText = textoSeleccionado;
+                        subtitleBox.style.display = 'block';
+                    }
 
-                utterance.onend = () => { subtitleBox.style.display = 'none'; };
-                window.speechSynthesis.speak(utterance);
+                    utterance.onend = () => { if (subtitleBox) subtitleBox.style.display = 'none'; };
+                    window.speechSynthesis.speak(utterance);
+                }
             }
         }
 
         document.addEventListener('mouseup', leerTextoSeleccionado);
-        document.addEventListener('touchend', () => { setTimeout(leerTextoSeleccionado, 300); });
+        document.addEventListener('touchend', (e) => {
+            if (speechActive) {
+                setTimeout(() => leerTextoSeleccionado(e), 300);
+            }
+        });
     </script>
 </body>
 </html>
