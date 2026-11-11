@@ -47,20 +47,11 @@ document.addEventListener("visibilitychange", () => {
   }
 });
 
-// Detector rápido para saber si es un dispositivo móvil
-const esDispositivoMovil = /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
-
 // ================= ACCESIBILIDAD UNIVERSAL GLOBAL =================
 function toggleAccessibilityPanel() {
   const panel = document.getElementById('accessibility-panel');
   if (panel) {
-    const isHidden = panel.classList.toggle('hidden');
-    if (!isHidden) {
-      panel.style.display = 'block';
-      panel.style.zIndex = '999999';
-    } else {
-      panel.style.display = 'none';
-    }
+    panel.classList.toggle('hidden');
   }
 }
 
@@ -108,46 +99,37 @@ function setDaltonism(type) {
   localStorage.setItem('kronox_daltonism', type);
 }
 
-// ================= LECTOR DE VOZ (ADAPTATIVO) =================
+// ================= LECTOR DE VOZ SILENCIOSO Y SEGURO =================
 let speechActive = false;
 let speechTimeout = null;
 
 function toggleSpeechReader() {
-  // Si intenta activarlo en celular, le avisamos amablemente que no es compatible para proteger su navegación
-  if (esDispositivoMovil) {
-    alert("El lector interactivo de voz está optimizado exclusivamente para equipos de escritorio (PC/Laptop) debido a restricciones del navegador móvil con el menú y los paneles.");
-    return;
-  }
-
   speechActive = !speechActive;
-  actualizarEstadoLectorUI();
-}
-
-function actualizarEstadoLectorUI() {
   const btn = document.getElementById('btn-speech-toggle');
   const subtitleBox = document.getElementById('speech-subtitle-box');
-  
+
+  // Cancelamos cualquier síntesis previa para mantener el hilo libre
+  if ('speechSynthesis' in window) {
+    window.speechSynthesis.cancel();
+  }
+
   if (speechActive) {
     if (btn) {
       btn.innerHTML = `<i class="fas fa-volume-xmark"></i> Desactivar Lector`;
       btn.classList.replace('bg-cyan-600', 'bg-red-600');
     }
-    if ('speechSynthesis' in window) window.speechSynthesis.cancel();
-    const utteranceInicio = new SpeechSynthesisUtterance("Lector activado.");
-    utteranceInicio.lang = 'es-MX';
-    window.speechSynthesis.speak(utteranceInicio);
+    // NOTA: Eliminamos la locución inicial forzada para proteger la respuesta táctil del celular.
   } else {
     if (btn) {
       btn.innerHTML = `<i class="fas fa-volume-high"></i> Activar Lector Interactivo`;
       btn.classList.replace('bg-red-600', 'bg-cyan-600');
     }
-    if ('speechSynthesis' in window) window.speechSynthesis.cancel();
     if (subtitleBox) subtitleBox.style.display = 'none';
   }
 }
 
-function leerTextoSeleccionado(e) {
-  if (esDispositivoMovil || !speechActive) return;
+function leerTextoSeleccionado() {
+  if (!speechActive) return;
 
   if (speechTimeout) clearTimeout(speechTimeout);
 
@@ -156,24 +138,23 @@ function leerTextoSeleccionado(e) {
     const textoSeleccionado = seleccion ? seleccion.toString().trim() : "";
 
     if (textoSeleccionado && textoSeleccionado.length > 2) {
-      if ('speechSynthesis' in window) window.speechSynthesis.cancel();
-      
-      const utterance = new SpeechSynthesisUtterance(textoSeleccionado);
-      utterance.lang = 'es-MX';
-      
-      const subtitleBox = document.getElementById('speech-subtitle-box');
-      const subtitleText = document.getElementById('subtitle-text');
-      if (subtitleText && subtitleBox) {
-        subtitleText.innerText = textoSeleccionado;
-        subtitleBox.style.display = 'block';
+      if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+        const utterance = new SpeechSynthesisUtterance(textoSeleccionado);
+        utterance.lang = 'es-MX';
+        
+        const subtitleBox = document.getElementById('speech-subtitle-box');
+        const subtitleText = document.getElementById('subtitle-text');
+        if (subtitleText && subtitleBox) {
+          subtitleText.innerText = textoSeleccionado;
+          subtitleBox.style.display = 'block';
+        }
+
+        utterance.onend = () => { if (subtitleBox) subtitleBox.style.display = 'none'; };
+        window.speechSynthesis.speak(utterance);
       }
-
-      utterance.onend = () => { if (subtitleBox) subtitleBox.style.display = 'none'; };
-      utterance.onerror = () => { if (subtitleBox) subtitleBox.style.display = 'none'; };
-
-      window.speechSynthesis.speak(utterance);
     }
-  }, 400);
+  }, 300);
 }
 
 // ================= INICIALIZACIÓN DEL SITIO =================
@@ -185,71 +166,49 @@ document.addEventListener("DOMContentLoaded", () => {
   // Cargar preferencias globales de accesibilidad
   loadAccessibilityPreferences();
 
-  // Ocultar botón del lector en celulares si causa conflictos directos de UI
-  if (esDispositivoMovil) {
-    const speechBtnContainer = document.getElementById('btn-speech-toggle');
-    if (speechBtnContainer && speechBtnContainer.parentElement) {
-      // Opcional: Puedes ocultarlo por completo en móvil para que el usuario no intente activarlo
-      // speechBtnContainer.parentElement.style.display = 'none';
-    }
-  }
+  // Forzar que el lector inicie apagado por seguridad móvil
+  speechActive = false;
+  localStorage.removeItem('kronox_speech_active');
 
-  // ===== MENÚ HAMBURGUESA DIRECTO =====
+  // ===== MENÚ HAMBURGUESA BÁSICO Y NATIVO =====
   const mobileMenuBtn = document.getElementById('mobile-menu-btn');
   const mobileMenu = document.getElementById('mobile-menu');
   const mobileMenuIcon = document.getElementById('mobile-menu-icon');
 
   if (mobileMenuBtn && mobileMenu) {
-    mobileMenuBtn.onclick = (e) => {
+    mobileMenuBtn.addEventListener('click', (e) => {
       e.stopPropagation();
       const isHidden = mobileMenu.classList.toggle('hidden');
-      if (!isHidden) {
-        mobileMenu.style.display = 'block';
-      } else {
-        mobileMenu.style.display = 'none';
-      }
-
       if (mobileMenuIcon) {
         mobileMenuIcon.className = isHidden ? "fas fa-bars" : "fas fa-times";
       }
-    };
+    });
 
     mobileMenu.querySelectorAll("a").forEach(link => {
-      link.onclick = () => {
+      link.addEventListener('click', () => {
         mobileMenu.classList.add('hidden');
-        mobileMenu.style.display = 'none';
         if (mobileMenuIcon) mobileMenuIcon.className = "fas fa-bars";
-      };
+      });
     });
   }
 
-  // ===== VINCULACIÓN DIRECTA DEL BOTÓN DE ACCESIBILIDAD =====
-  const accessibilityBtn = document.querySelector("button[onclick*='toggleAccessibilityPanel']") || document.getElementById('btn-accessibility-toggle');
-  if (accessibilityBtn) {
-    accessibilityBtn.onclick = (e) => {
-      e.stopPropagation();
-      toggleAccessibilityPanel();
-    };
-  }
-
-  // Cerrar menú o panel al tocar fuera
+  // Cerrar menús al hacer clic fuera
   document.addEventListener('click', (e) => {
     const panel = document.getElementById('accessibility-panel');
-    const btnPanel = document.querySelector("button[onclick*='toggleAccessibilityPanel']") || document.getElementById('btn-accessibility-toggle');
+    const btnPanel = document.querySelector("button[onclick*='toggleAccessibilityPanel']");
 
     if (mobileMenu && mobileMenuBtn && !mobileMenu.contains(e.target) && !mobileMenuBtn.contains(e.target) && !mobileMenu.classList.contains('hidden')) {
       mobileMenu.classList.add('hidden');
-      mobileMenu.style.display = 'none';
       if (mobileMenuIcon) mobileMenuIcon.className = "fas fa-bars";
     }
 
     if (panel && btnPanel && !panel.contains(e.target) && !btnPanel.contains(e.target) && !panel.classList.contains('hidden')) {
       panel.classList.add('hidden');
-      panel.style.display = 'none';
     }
   });
 
-  // Eventos de lectura (Solo actúan en PC)
+  // Evento de lectura limpio
   document.addEventListener('mouseup', leerTextoSeleccionado);
+  document.addEventListener('touchend', leerTextoSeleccionado);
 
 });
