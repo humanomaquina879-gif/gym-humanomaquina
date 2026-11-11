@@ -99,7 +99,7 @@ function setDaltonism(type) {
   localStorage.setItem('kronox_daltonism', type);
 }
 
-// ================= LECTOR DE VOZ SEGURO Y MANUAL =================
+// ================= LECTOR DE VOZ ULTRA-LIGERO =================
 let speechActive = false;
 let speechTimeout = null;
 
@@ -112,30 +112,15 @@ function actualizarEstadoLectorUI() {
   const btn = document.getElementById('btn-speech-toggle');
   const subtitleBox = document.getElementById('speech-subtitle-box');
   
-  let avisoFlotante = document.getElementById('toast-aviso-accesibilidad');
-  if (!avisoFlotante) {
-    avisoFlotante = document.createElement('div');
-    avisoFlotante.id = 'toast-aviso-accesibilidad';
-    avisoFlotante.style.cssText = "position:fixed; top:20px; right:20px; background:#091122; border:2px solid #00d2ff; color:#fff; padding:12px 20px; border-radius:12px; font-size:13px; z-index:99999; box-shadow:0 0 20px rgba(0,210,255,0.4); transition: opacity 0.5s ease;";
-    document.body.appendChild(avisoFlotante);
-  }
-
   if (speechActive) {
     if (btn) {
       btn.innerHTML = `<i class="fas fa-volume-xmark"></i> Desactivar Lector`;
       btn.classList.replace('bg-cyan-600', 'bg-red-600');
     }
-    const mensaje = "Lector interactivo activado. Selecciona cualquier texto para escucharlo.";
-    
-    avisoFlotante.innerHTML = `<i class="fas fa-info-circle text-cyan-400 mr-2"></i> ${mensaje}`;
-    avisoFlotante.style.opacity = '1';
-    setTimeout(() => { avisoFlotante.style.opacity = '0'; }, 3000);
-
     window.speechSynthesis.cancel();
-    const utteranceInicio = new SpeechSynthesisUtterance(mensaje);
+    const utteranceInicio = new SpeechSynthesisUtterance("Lector activado.");
     utteranceInicio.lang = 'es-MX';
     window.speechSynthesis.speak(utteranceInicio);
-
   } else {
     if (btn) {
       btn.innerHTML = `<i class="fas fa-volume-high"></i> Activar Lector Interactivo`;
@@ -143,17 +128,14 @@ function actualizarEstadoLectorUI() {
     }
     window.speechSynthesis.cancel();
     if (subtitleBox) subtitleBox.style.display = 'none';
-
-    avisoFlotante.innerHTML = `<i class="fas fa-info-circle text-red-400 mr-2"></i> Lector desactivado.`;
-    avisoFlotante.style.opacity = '1';
-    setTimeout(() => { avisoFlotante.style.opacity = '0'; }, 2000);
   }
 }
 
 function leerTextoSeleccionado(e) {
   if (!speechActive) return;
 
-  if (e && e.target && (e.target.closest('button') || e.target.closest('a') || e.target.closest('nav') || e.target.closest('#accessibility-panel'))) {
+  // REGLA DE ORO: Si el toque o clic ocurre en un botón, menú, enlace o panel, se cancela al instante
+  if (e && e.target && (e.target.closest('button') || e.target.closest('a') || e.target.closest('nav') || e.target.closest('#accessibility-panel') || e.target.closest('#mobile-menu'))) {
     return;
   }
 
@@ -178,7 +160,7 @@ function leerTextoSeleccionado(e) {
       utterance.onend = () => { if (subtitleBox) subtitleBox.style.display = 'none'; };
       window.speechSynthesis.speak(utterance);
     }
-  }, 300);
+  }, 400);
 }
 
 // ================= INICIALIZACIÓN DEL SITIO =================
@@ -187,10 +169,8 @@ document.addEventListener("DOMContentLoaded", () => {
   // Links de WhatsApp
   initWA();
 
-  // Cargar preferencias globales de accesibilidad (Tamaño, contraste, daltonismo)
+  // Cargar preferencias globales de accesibilidad
   loadAccessibilityPreferences();
-
-  // NOTA: Eliminamos el auto-inicio del lector para evitar que colapse el móvil al cargar.
 
   // ===== MENÚ HAMBURGUESA DIRECTO =====
   const mobileMenuBtn = document.getElementById('mobile-menu-btn');
@@ -198,7 +178,8 @@ document.addEventListener("DOMContentLoaded", () => {
   const mobileMenuIcon = document.getElementById('mobile-menu-icon');
 
   if (mobileMenuBtn && mobileMenu) {
-    mobileMenuBtn.onclick = () => {
+    mobileMenuBtn.onclick = (e) => {
+      e.stopPropagation();
       const isHidden = mobileMenu.classList.toggle('hidden');
       if (mobileMenuIcon) {
         mobileMenuIcon.className = isHidden ? "fas fa-bars" : "fas fa-times";
@@ -228,10 +209,8 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  // Eventos del lector de voz
+  // Eventos de lectura seguros (Eliminamos selectionchange para liberar el procesador móvil)
   document.addEventListener('mouseup', leerTextoSeleccionado);
-  document.addEventListener('selectionchange', () => {
-    if (speechActive) leerTextoSeleccionado();
-  });
+  document.addEventListener('touchend', leerTextoSeleccionado);
 
 });
