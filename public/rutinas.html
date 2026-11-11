@@ -41,7 +41,6 @@
         }
     </script>
 
-    <!-- Estilos CSS Personalizados y Accesibilidad Universal -->
     <style>
         body {
             background-color: #050a14;
@@ -71,7 +70,6 @@
             color: #ffff00 !important;
         }
 
-        /* Patrón de cuadrícula del fondo */
         .bg-grid-pattern {
             background-size: 36px 36px;
             background-image: 
@@ -79,7 +77,6 @@
                 linear-gradient(to bottom, rgba(0, 210, 255, 0.04) 1px, transparent 1px);
         }
 
-        /* Luces ambientales */
         .glow-light {
             position: absolute;
             width: 400px;
@@ -90,7 +87,6 @@
             z-index: 0;
         }
 
-        /* Tarjetas de Rutinas con acabado profesional */
         .kronox-card {
             background: linear-gradient(160deg, #0a1326 0%, #060c18 100%);
             border: 1px solid #16284a;
@@ -106,7 +102,6 @@
             transform: translateY(-4px);
         }
 
-        /* Botones Neón */
         .btn-neon-outline {
             background: transparent;
             color: #00d2ff;
@@ -135,7 +130,6 @@
             transform: scale(1.02);
         }
 
-        /* Subtítulos flotantes para lector de voz */
         #speech-subtitle-box {
             position: fixed;
             bottom: 20px;
@@ -292,7 +286,6 @@
             </h1>
             <p class="text-gray-400 text-sm mt-2 max-w-xl mx-auto">Guías de entrenamiento optimizadas para hipertrofia y fuerza por grupos musculares.</p>
             
-            <!-- Botón General para Generar Nueva Variación Manual -->
             <div class="mt-6">
                 <button onclick="generarNuevaRutina()" class="btn-neon-solid px-6 py-3 rounded-xl font-black text-xs uppercase tracking-wider inline-flex items-center gap-2">
                     <i class="fas fa-random"></i> Generar Rutina Alternativa
@@ -300,7 +293,6 @@
             </div>
         </div>
 
-        <!-- GRID DE RUTINAS CON IMÁGENES OFICIALES DE CLOUDINARY -->
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             
             <!-- TARJETA 1: PECHO -->
@@ -418,10 +410,9 @@
         </div>
     </footer>
 
-    <!-- LÓGICA JAVASCRIPT COMPLETA Y PERSISTENTE -->
+    <!-- LÓGICA JAVASCRIPT BLINDADA Y ANTI-CONGELAMIENTO -->
     <script>
         document.addEventListener("DOMContentLoaded", () => {
-            // 1. Verificar sesión o bloquear acceso
             const loggedUser = localStorage.getItem('kronox_logged_user');
             if (!loggedUser) {
                 alert("Debes iniciar sesión para acceder al apartado de rutinas.");
@@ -434,7 +425,6 @@
             if (userNameSpan) userNameSpan.innerText = shortName;
             if (mobileUserNameSpan) mobileUserNameSpan.innerText = `Usuario: ${shortName}`;
 
-            // Cargar Preferencias de Accesibilidad
             const savedSize = localStorage.getItem('kronox_font_size');
             if (savedSize) {
                 currentFontSize = parseInt(savedSize);
@@ -456,7 +446,6 @@
                 actualizarEstadoLectorUI();
             }
 
-            // 2. Configuración del Menú Móvil (Hamburguesa)
             const mobileMenuBtn = document.getElementById('mobile-menu-btn');
             const mobileMenu = document.getElementById('mobile-menu');
             const mobileMenuIcon = document.getElementById('mobile-menu-icon');
@@ -493,7 +482,6 @@
             window.location.href = "index";
         }
 
-        // --- 2. GENERADOR DE RUTINAS ALTERNATIVAS MANUALES ---
         const variantesRutinas = {
             pecho: [
                 [
@@ -638,7 +626,6 @@
             }
         }
 
-        // --- 3. ACCESIBILIDAD UNIVERSAL ---
         function toggleAccessibilityPanel() {
             const panel = document.getElementById('accessibility-panel');
             if (panel) panel.classList.toggle('hidden');
@@ -698,7 +685,6 @@
             localStorage.setItem('kronox_high_contrast', isActive ? 'enabled' : 'disabled');
         }
 
-        // --- 4. LECTOR DE VOZ CON SUBTÍTULOS Y PERSISTENCIA ---
         let speechActive = false;
         function toggleSpeechReader() {
             speechActive = !speechActive;
@@ -723,19 +709,10 @@
                     btn.innerHTML = `<i class="fas fa-volume-xmark"></i> Desactivar Lector`;
                     btn.classList.replace('bg-cyan-600', 'bg-red-600');
                 }
-                const mensaje = "Lector interactivo activado. Selecciona cualquier rutina o texto para escucharlo con subtítulos.";
-                
+                const mensaje = "Lector interactivo activado.";
                 avisoFlotante.innerHTML = `<i class="fas fa-info-circle text-cyan-400 mr-2"></i> ${mensaje}`;
                 avisoFlotante.style.opacity = '1';
-                setTimeout(() => { avisoFlotante.style.opacity = '0'; }, 5000);
-
-                if ('speechSynthesis' in window) {
-                    window.speechSynthesis.cancel();
-                    const utteranceInicio = new SpeechSynthesisUtterance(mensaje);
-                    utteranceInicio.lang = 'es-MX';
-                    window.speechSynthesis.speak(utteranceInicio);
-                }
-
+                setTimeout(() => { avisoFlotante.style.opacity = '0'; }, 3000);
             } else {
                 if (btn) {
                     btn.innerHTML = `<i class="fas fa-volume-high"></i> Activar Lector Interactivo`;
@@ -753,9 +730,12 @@
         function leerTextoSeleccionado(e) {
             if (!speechActive) return;
 
-            // Evitar bloqueos táctiles ignorando toques en la barra, menú o panel de accesibilidad
-            if (e && e.target && (e.target.closest('#mobile-menu') || e.target.closest('#accessibility-panel') || e.target.closest('header'))) {
-                return;
+            // Filtro absoluto: evita que el lector intercepte los clics del menú o los botones
+            if (e && e.target) {
+                const el = e.target;
+                if (el.closest('#mobile-menu') || el.closest('#accessibility-panel') || el.closest('header') || el.closest('button') || el.closest('a') || el.closest('input')) {
+                    return;
+                }
             }
 
             const seleccion = window.getSelection();
@@ -783,9 +763,9 @@
         document.addEventListener('mouseup', leerTextoSeleccionado);
         document.addEventListener('touchend', (e) => {
             if (speechActive) {
-                setTimeout(() => leerTextoSeleccionado(e), 300);
+                setTimeout(() => leerTextoSeleccionado(e), 200);
             }
-        });
+        }, { passive: true });
     </script>
 </body>
 </html>
