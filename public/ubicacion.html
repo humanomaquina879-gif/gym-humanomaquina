@@ -385,13 +385,12 @@
         </div>
     </footer>
 
-    <!-- LÓGICA JAVASCRIPT BLINDADA Y PERSISTENTE -->
+    <!-- LÓGICA JAVASCRIPT BLINDADA Y ANTI-CONGELAMIENTO -->
     <script>
         document.addEventListener("DOMContentLoaded", () => {
             checkUserSession();
             loadAccessibilityPreferences();
 
-            // Configuración del Menú Móvil (Hamburguesa)
             const mobileMenuBtn = document.getElementById('mobile-menu-btn');
             const mobileMenu = document.getElementById('mobile-menu');
             const mobileMenuIcon = document.getElementById('mobile-menu-icon');
@@ -400,7 +399,6 @@
                 mobileMenuBtn.addEventListener('click', (e) => {
                     e.stopPropagation();
                     mobileMenu.classList.toggle('hidden');
-
                     if (mobileMenu.classList.contains('hidden')) {
                         if (mobileMenuIcon) mobileMenuIcon.className = "fas fa-bars";
                     } else {
@@ -424,7 +422,6 @@
             }
         });
 
-        // --- 1. GESTIÓN DE SESIÓN ---
         function openLoginModal() { document.getElementById('login-modal').classList.remove('hidden'); }
         function closeLoginModal() { document.getElementById('login-modal').classList.add('hidden'); }
 
@@ -477,7 +474,6 @@
             }
         }
 
-        // --- 2. ACCESIBILIDAD UNIVERSAL ---
         function toggleAccessibilityPanel() {
             const panel = document.getElementById('accessibility-panel');
             if (panel) panel.classList.toggle('hidden');
@@ -537,9 +533,7 @@
             localStorage.setItem('kronox_high_contrast', isActive ? 'enabled' : 'disabled');
         }
 
-        // --- 3. LECTOR DE VOZ (AISLADO Y SEGURO) ---
         let speechActive = false;
-
         function toggleSpeechReader() {
             speechActive = !speechActive;
             localStorage.setItem('kronox_speech_active', speechActive ? 'enabled' : 'disabled');
@@ -563,10 +557,10 @@
                     btn.innerHTML = `<i class="fas fa-volume-xmark"></i> Desactivar Lector`;
                     btn.classList.replace('bg-cyan-600', 'bg-red-600');
                 }
-                const mensaje = "Lector interactivo activado. Seleccione cualquier texto para escucharlo.";
+                const mensaje = "Lector interactivo activado.";
                 avisoFlotante.innerHTML = `<i class="fas fa-info-circle text-cyan-400 mr-2"></i> ${mensaje}`;
                 avisoFlotante.style.opacity = '1';
-                setTimeout(() => { avisoFlotante.style.opacity = '0'; }, 4000);
+                setTimeout(() => { avisoFlotante.style.opacity = '0'; }, 3000);
             } else {
                 if (btn) {
                     btn.innerHTML = `<i class="fas fa-volume-high"></i> Activar Lector Interactivo`;
@@ -584,9 +578,12 @@
         function leerTextoSeleccionado(e) {
             if (!speechActive) return;
 
-            // Evitar bloqueos táctiles ignorando toques en la barra, menú o panel
-            if (e && e.target && (e.target.closest('#mobile-menu') || e.target.closest('#accessibility-panel') || e.target.closest('header'))) {
-                return;
+            // Filtro absoluto: si el usuario toca un botón, enlace, menú o header, NUNCA se traba ni lee
+            if (e && e.target) {
+                const el = e.target;
+                if (el.closest('#mobile-menu') || el.closest('#accessibility-panel') || el.closest('header') || el.closest('button') || el.closest('a') || el.closest('input')) {
+                    return;
+                }
             }
 
             const seleccion = window.getSelection();
@@ -611,15 +608,13 @@
             }
         }
 
-        // Eventos seguros que no interfieren con la navegación
         document.addEventListener('mouseup', leerTextoSeleccionado);
         document.addEventListener('touchend', (e) => {
             if (speechActive) {
-                setTimeout(() => leerTextoSeleccionado(e), 150);
+                setTimeout(() => leerTextoSeleccionado(e), 200);
             }
-        });
+        }, { passive: true });
 
-        // --- 4. CARGAR PREFERENCIAS GUARDADAS ---
         function loadAccessibilityPreferences() {
             const savedFontSize = localStorage.getItem('kronox_font_size');
             if (savedFontSize) {
