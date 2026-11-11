@@ -99,13 +99,12 @@ function setDaltonism(type) {
   localStorage.setItem('kronox_daltonism', type);
 }
 
-// ================= LECTOR DE VOZ SEGURO =================
+// ================= LECTOR DE VOZ SEGURO Y MANUAL =================
 let speechActive = false;
 let speechTimeout = null;
 
 function toggleSpeechReader() {
   speechActive = !speechActive;
-  localStorage.setItem('kronox_speech_active', speechActive ? 'enabled' : 'disabled');
   actualizarEstadoLectorUI();
 }
 
@@ -113,15 +112,30 @@ function actualizarEstadoLectorUI() {
   const btn = document.getElementById('btn-speech-toggle');
   const subtitleBox = document.getElementById('speech-subtitle-box');
   
+  let avisoFlotante = document.getElementById('toast-aviso-accesibilidad');
+  if (!avisoFlotante) {
+    avisoFlotante = document.createElement('div');
+    avisoFlotante.id = 'toast-aviso-accesibilidad';
+    avisoFlotante.style.cssText = "position:fixed; top:20px; right:20px; background:#091122; border:2px solid #00d2ff; color:#fff; padding:12px 20px; border-radius:12px; font-size:13px; z-index:99999; box-shadow:0 0 20px rgba(0,210,255,0.4); transition: opacity 0.5s ease;";
+    document.body.appendChild(avisoFlotante);
+  }
+
   if (speechActive) {
     if (btn) {
       btn.innerHTML = `<i class="fas fa-volume-xmark"></i> Desactivar Lector`;
       btn.classList.replace('bg-cyan-600', 'bg-red-600');
     }
+    const mensaje = "Lector interactivo activado. Selecciona cualquier texto para escucharlo.";
+    
+    avisoFlotante.innerHTML = `<i class="fas fa-info-circle text-cyan-400 mr-2"></i> ${mensaje}`;
+    avisoFlotante.style.opacity = '1';
+    setTimeout(() => { avisoFlotante.style.opacity = '0'; }, 3000);
+
     window.speechSynthesis.cancel();
-    const utteranceInicio = new SpeechSynthesisUtterance("Lector activado.");
+    const utteranceInicio = new SpeechSynthesisUtterance(mensaje);
     utteranceInicio.lang = 'es-MX';
     window.speechSynthesis.speak(utteranceInicio);
+
   } else {
     if (btn) {
       btn.innerHTML = `<i class="fas fa-volume-high"></i> Activar Lector Interactivo`;
@@ -129,13 +143,16 @@ function actualizarEstadoLectorUI() {
     }
     window.speechSynthesis.cancel();
     if (subtitleBox) subtitleBox.style.display = 'none';
+
+    avisoFlotante.innerHTML = `<i class="fas fa-info-circle text-red-400 mr-2"></i> Lector desactivado.`;
+    avisoFlotante.style.opacity = '1';
+    setTimeout(() => { avisoFlotante.style.opacity = '0'; }, 2000);
   }
 }
 
 function leerTextoSeleccionado(e) {
   if (!speechActive) return;
 
-  // Ignorar clics en controles de la interfaz
   if (e && e.target && (e.target.closest('button') || e.target.closest('a') || e.target.closest('nav') || e.target.closest('#accessibility-panel'))) {
     return;
   }
@@ -164,21 +181,18 @@ function leerTextoSeleccionado(e) {
   }, 300);
 }
 
-// ================= INICIALIZACIÓN DEL SITIO (NATIVO Y DIRECTO) =================
+// ================= INICIALIZACIÓN DEL SITIO =================
 document.addEventListener("DOMContentLoaded", () => {
 
   // Links de WhatsApp
   initWA();
 
-  // Cargar preferencias globales de accesibilidad
+  // Cargar preferencias globales de accesibilidad (Tamaño, contraste, daltonismo)
   loadAccessibilityPreferences();
 
-  if (localStorage.getItem('kronox_speech_active') === 'enabled') {
-    speechActive = true;
-    actualizarEstadoLectorUI();
-  }
+  // NOTA: Eliminamos el auto-inicio del lector para evitar que colapse el móvil al cargar.
 
-  // ===== MENÚ HAMBURGUESA DIRECTO (SIN BLOQUEOS) =====
+  // ===== MENÚ HAMBURGUESA DIRECTO =====
   const mobileMenuBtn = document.getElementById('mobile-menu-btn');
   const mobileMenu = document.getElementById('mobile-menu');
   const mobileMenuIcon = document.getElementById('mobile-menu-icon');
@@ -191,7 +205,6 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     };
 
-    // Cerrar al hacer clic en enlaces del menú
     mobileMenu.querySelectorAll("a").forEach(link => {
       link.onclick = () => {
         mobileMenu.classList.add('hidden');
@@ -200,18 +213,16 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // Cerrar menú o panel al tocar cualquier parte fuera de ellos
+  // Cerrar menú o panel al tocar fuera
   document.addEventListener('click', (e) => {
     const panel = document.getElementById('accessibility-panel');
     const btnPanel = document.querySelector("button[onclick*='toggleAccessibilityPanel']");
 
-    // Cerrar menú hamburguesa si se hace clic afuera
     if (mobileMenu && mobileMenuBtn && !mobileMenu.contains(e.target) && !mobileMenuBtn.contains(e.target) && !mobileMenu.classList.contains('hidden')) {
       mobileMenu.classList.add('hidden');
       if (mobileMenuIcon) mobileMenuIcon.className = "fas fa-bars";
     }
 
-    // Cerrar panel de accesibilidad si se hace clic afuera
     if (panel && btnPanel && !panel.contains(e.target) && !btnPanel.contains(e.target) && !panel.classList.contains('hidden')) {
       panel.classList.add('hidden');
     }
