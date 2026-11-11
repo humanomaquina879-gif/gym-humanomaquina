@@ -271,7 +271,7 @@
                                 <i class="fas fa-dumbbell text-emerald-400"></i> Mi Rutina
                             </a>
                         </div>
-                        <button onclick="logoutUser()" class="w-full mt-2 bg-red-500/10 hover:bg-red-500 hover:text-white border border-red-500/30 text-red-400 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-2">
+                        <button onclick="logoutUser()" class="w-full mt-2 bg-red-500/10 hover:bg-red-500 text-red-400 hover:text-white border border-red-500/30 text-red-400 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-2">
                             <i class="fas fa-sign-out-alt"></i> Cerrar Sesión
                         </button>
                     </div>
@@ -285,9 +285,9 @@
                 </a>
             </div>
 
-            <!-- Botón Menú Móvil con onclick directo -->
-            <button id="mobile-menu-btn" type="button" onclick="toggleMobileMenu()" title="Abrir menú" class="md:hidden text-gray-300 hover:text-white text-2xl focus:outline-none p-2 cursor-pointer z-50">
-                <i class="fas fa-bars" id="mobile-menu-icon"></i>
+            <!-- Botón Menú Móvil SIN onclick directo (manejado de forma segura por JS) -->
+            <button id="mobile-menu-btn" type="button" title="Abrir menú" class="md:hidden text-gray-300 hover:text-white text-2xl focus:outline-none p-3 cursor-pointer z-50">
+                <i class="fas fa-bars pointer-events-none" id="mobile-menu-icon"></i>
             </button>
         </div>
 
@@ -388,11 +388,23 @@
         </div>
     </footer>
 
-    <!-- JAVASCRIPT COMPLETO Y BLINDADO -->
+    <!-- JAVASCRIPT BLINDADO CONTRA BLOQUEOS DE LECTOR -->
     <script>
         document.addEventListener("DOMContentLoaded", () => {
             checkUserSession();
             loadAccessibilityPreferences();
+
+            // Enlace robusto por JS que intercepta el clic y el toque sin bloquearse jamás
+            const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+            if (mobileMenuBtn) {
+                const triggerMenu = (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    toggleMobileMenu();
+                };
+                mobileMenuBtn.addEventListener('click', triggerMenu);
+                mobileMenuBtn.addEventListener('touchend', triggerMenu);
+            }
 
             // Cerrar menús al hacer clic fuera
             document.addEventListener('click', (e) => {
@@ -419,9 +431,9 @@
             if (mobileMenu) {
                 mobileMenu.classList.toggle('hidden');
                 if (mobileMenu.classList.contains('hidden')) {
-                    if (mobileMenuIcon) mobileMenuIcon.className = "fas fa-bars";
+                    if (mobileMenuIcon) mobileMenuIcon.className = "fas fa-bars pointer-events-none";
                 } else {
-                    if (mobileMenuIcon) mobileMenuIcon.className = "fas fa-times";
+                    if (mobileMenuIcon) mobileMenuIcon.className = "fas fa-times pointer-events-none";
                 }
             }
         }
