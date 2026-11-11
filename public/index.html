@@ -304,20 +304,30 @@
                 <button id="mobile-btn-login" onclick="openLoginModal()" class="w-full text-center btn-neon-solid py-2.5 rounded-lg font-bold text-xs uppercase">
                     Iniciar Sesión
                 </button>
-                <!-- PERFIL MÓVIL LLAMATIVO -->
-                <div id="mobile-user-info" class="hidden bg-[#091122] border border-cyan-500/30 p-4 rounded-xl space-y-3">
-                    <div class="flex items-center gap-3">
-                        <div class="w-10 h-10 rounded-full bg-cyan-500/10 border border-cyan-400 text-cyan-400 flex items-center justify-center font-bold">
-                            <i class="fas fa-user"></i>
+                <!-- PERFIL MÓVIL LLAMATIVO CON TOGGLE DE CLIC -->
+                <div id="mobile-user-container" class="hidden relative">
+                    <button onclick="toggleMobileUserDropdown(event)" class="w-full flex items-center justify-between bg-[#091122] border border-cyan-500/40 p-3 rounded-xl shadow-md transition-all">
+                        <div class="flex items-center gap-3">
+                            <div class="w-9 h-9 rounded-full bg-cyan-500/10 border border-cyan-400 text-cyan-400 flex items-center justify-center font-bold text-xs">
+                                <i class="fas fa-user"></i>
+                            </div>
+                            <div class="text-left">
+                                <span id="mobile-welcome-name" class="text-xs font-bold text-cyan-400 block truncate max-w-[160px]"></span>
+                                <span class="text-[10px] text-emerald-400 flex items-center gap-1"><i class="fas fa-heart text-[9px]"></i> ¡Qué gusto tenerte aquí! 💪</span>
+                            </div>
                         </div>
-                        <div>
-                            <span id="mobile-welcome-name" class="text-xs font-bold text-cyan-400 block truncate max-w-[180px]"></span>
-                            <span class="text-[10px] text-emerald-400 flex items-center gap-1"><i class="fas fa-heart text-[9px]"></i> ¡Qué gusto tenerte aquí! 💪</span>
-                        </div>
-                    </div>
-                    <button onclick="logoutUser()" class="w-full bg-red-500/10 hover:bg-red-500 text-red-400 hover:text-white border border-red-500/30 py-2 rounded-lg text-xs font-bold uppercase transition-all flex items-center justify-center gap-2">
-                        <i class="fas fa-sign-out-alt"></i> Salir del Sistema
+                        <i class="fas fa-chevron-down text-xs text-cyan-400 pr-1"></i>
                     </button>
+
+                    <!-- DESPLEGABLE MÓVIL -->
+                    <div id="mobile-user-dropdown" class="hidden mt-2 bg-[#050a14] border border-cyan-500/30 p-3 rounded-xl space-y-2">
+                        <a href="rutinas" class="flex items-center gap-2 text-xs font-bold text-gray-300 hover:text-cyan-400 p-2 rounded-lg hover:bg-white/5 transition-colors">
+                            <i class="fas fa-dumbbell text-emerald-400"></i> Mis Rutinas Exclusivas
+                        </a>
+                        <button onclick="logoutUser()" class="w-full bg-red-500/10 hover:bg-red-500 text-red-400 hover:text-white border border-red-500/30 py-2 rounded-lg text-xs font-bold uppercase transition-all flex items-center justify-center gap-2">
+                            <i class="fas fa-sign-out-alt"></i> Salir del Sistema
+                        </button>
+                    </div>
                 </div>
             </div>
             <a href="https://wa.me/527779393985?text=Hola%20Kronox%20Gym" target="_blank" class="inline-block mt-3 w-full text-center btn-neon-solid py-2.5 rounded-lg font-bold text-xs uppercase">
@@ -378,7 +388,7 @@
         </div>
     </footer>
 
-    <!-- JAVASCRIPT BLINDADO + CONTROL DE MENÚ DE PERFIL -->
+    <!-- JAVASCRIPT BLINDADO + CONTROL DE MENÚ DE PERFIL CON TOGGLE -->
     <script>
         document.addEventListener("DOMContentLoaded", () => {
             checkUserSession();
@@ -414,7 +424,7 @@
                 });
             }
 
-            // Cerrar menú desplegable de usuario al hacer clic fuera
+            // Cerrar menús desplegables de usuario al hacer clic fuera
             document.addEventListener('click', (e) => {
                 const dropdown = document.getElementById('user-dropdown-menu');
                 if (dropdown && !dropdown.classList.contains('hidden')) {
@@ -430,6 +440,14 @@
             const dropdown = document.getElementById('user-dropdown-menu');
             if (dropdown) {
                 dropdown.classList.toggle('hidden');
+            }
+        }
+
+        function toggleMobileUserDropdown(e) {
+            e.stopPropagation();
+            const mobileDropdown = document.getElementById('mobile-user-dropdown');
+            if (mobileDropdown) {
+                mobileDropdown.classList.toggle('hidden');
             }
         }
 
@@ -457,7 +475,7 @@
             const btnLogin = document.getElementById('btn-open-login');
             const userInfo = document.getElementById('user-session-info');
             const mobileBtnLogin = document.getElementById('mobile-btn-login');
-            const mobileUserInfo = document.getElementById('mobile-user-info');
+            const mobileUserContainer = document.getElementById('mobile-user-container');
 
             if (loggedUser) {
                 if (navRutinas) navRutinas.classList.remove('hidden');
@@ -470,8 +488,8 @@
                     document.getElementById('dropdown-user-email').innerText = loggedUser;
                 }
                 if (mobileBtnLogin) mobileBtnLogin.classList.add('hidden');
-                if (mobileUserInfo) {
-                    mobileUserInfo.classList.remove('hidden');
+                if (mobileUserContainer) {
+                    mobileUserContainer.classList.remove('hidden');
                     document.getElementById('mobile-welcome-name').innerText = loggedUser;
                 }
             } else {
@@ -483,7 +501,7 @@
                     userInfo.classList.remove('flex');
                 }
                 if (mobileBtnLogin) mobileBtnLogin.classList.remove('hidden');
-                if (mobileUserInfo) mobileUserInfo.classList.add('hidden');
+                if (mobileUserContainer) mobileUserContainer.classList.add('hidden');
             }
         }
 
