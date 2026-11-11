@@ -628,6 +628,7 @@
                 }
                 if ('speechSynthesis' in window) window.speechSynthesis.cancel();
                 if (subtitleBox) subtitleBox.style.display = 'none';
+                _ultimoTextoLeido = '';
             }
 
             // Al cargar la página NO se muestra aviso; solo cuando el usuario lo activa/desactiva
@@ -654,41 +655,61 @@
             }, 3000);
         }
 
-        function leerTextoSeleccionado(e) {
-            if (!speechActive) return;
+        // ---- Lectura del texto seleccionado (PC y celular) ----
+        let _selTimer = null;
+        let _ultimoTextoLeido = '';
 
-            // Si el clic ocurre dentro del header o del panel de accesibilidad, no se hace nada
-            if (e && e.target && e.target.closest) {
-                const el = e.target;
-                if (el.closest('#mobile-menu-btn') || el.closest('#mobile-menu') || el.closest('header') || el.closest('#accessibility-panel') || el.closest('[title="Accesibilidad Universal"]')) {
-                    return;
-                }
-            }
-
-            const seleccion = window.getSelection();
-            const textoSeleccionado = seleccion ? seleccion.toString().trim() : "";
-
-            if (textoSeleccionado.length > 1) {
-                if ('speechSynthesis' in window) {
-                    window.speechSynthesis.cancel();
-                    const utterance = new SpeechSynthesisUtterance(textoSeleccionado);
-                    utterance.lang = 'es-MX';
-
-                    const subtitleBox = document.getElementById('speech-subtitle-box');
-                    const subtitleText = document.getElementById('subtitle-text');
-                    if (subtitleText && subtitleBox) {
-                        subtitleText.innerText = textoSeleccionado;
-                        subtitleBox.style.display = 'block';
-                    }
-
-                    utterance.onend = () => { if (subtitleBox) subtitleBox.style.display = 'none'; };
-                    utterance.onerror = () => { if (subtitleBox) subtitleBox.style.display = 'none'; };
-                    window.speechSynthesis.speak(utterance);
-                }
-            }
+        function elementoExcluido(node) {
+            const el = node && (node.nodeType === 1 ? node : node.parentElement);
+            return !!(el && el.closest('header, #accessibility-panel, #speech-subtitle-box'));
         }
 
-        document.addEventListener('mouseup', leerTextoSeleccionado);
+        function obtenerVozEspanol() {
+            const voces = window.speechSynthesis.getVoices();
+            return voces.find(v => v.lang === 'es-MX')
+                || voces.find(v => v.lang && v.lang.toLowerCase().startsWith('es'))
+                || null;
+        }
+
+        function leerTextoSeleccionado() {
+            if (!speechActive || !('speechSynthesis' in window)) return;
+
+            const sel = window.getSelection();
+            const texto = sel ? sel.toString().trim() : '';
+
+            if (texto.length < 2) { _ultimoTextoLeido = ''; return; }
+            if (texto === _ultimoTextoLeido) return;
+            if (elementoExcluido(sel.anchorNode)) return;
+
+            _ultimoTextoLeido = texto;
+
+            const subtitleBox = document.getElementById('speech-subtitle-box');
+            const subtitleText = document.getElementById('subtitle-text');
+            if (subtitleText && subtitleBox) {
+                subtitleText.innerText = texto;
+                subtitleBox.style.display = 'block';
+            }
+
+            window.speechSynthesis.cancel();
+
+            // Pequeña pausa: en algunos navegadores, cancel() seguido de speak() inmediato no suena
+            setTimeout(() => {
+                const utterance = new SpeechSynthesisUtterance(texto);
+                utterance.lang = 'es-MX';
+                const voz = obtenerVozEspanol();
+                if (voz) utterance.voice = voz;
+
+                utterance.onend = () => { if (subtitleBox) subtitleBox.style.display = 'none'; };
+                utterance.onerror = () => { if (subtitleBox) subtitleBox.style.display = 'none'; };
+                window.speechSynthesis.speak(utterance);
+            }, 60);
+        }
+
+        // Funciona en PC y en celular; espera 600 ms a que termines de ajustar la selección
+        document.addEventListener('selectionchange', () => {
+            clearTimeout(_selTimer);
+            _selTimer = setTimeout(leerTextoSeleccionado, 600);
+        });
 
         // ---- Cargar TODAS las preferencias guardadas ----
         function loadAccessibilityPreferences() {
