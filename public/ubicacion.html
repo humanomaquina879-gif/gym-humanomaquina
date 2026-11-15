@@ -278,6 +278,8 @@
                     <a href="ubicacion" title="Consultar dirección" class="text-kronox-accent font-bold border-b-2 border-kronox-accent pb-1">Ubicación</a>
                     <!-- Pestaña Mi Rutina oculta hasta iniciar sesión -->
                     <a href="rutinas" id="nav-rutinas" class="hidden text-emerald-400 font-bold hover:text-emerald-300 transition-colors flex items-center gap-1.5"><i class="fas fa-dumbbell"></i> Mi Rutina</a>
+                    <!-- ENLACE OCULTO PANEL ADMIN (DESKTOP) -->
+                    <a href="admin" id="nav-admin-panel" class="hidden text-cyan-400 font-bold hover:underline transition-colors flex items-center gap-1.5"><i class="fas fa-user-shield"></i> Panel Admin</a>
                 </nav>
 
                 <div class="hidden md:flex items-center space-x-3">
@@ -331,6 +333,8 @@
                 <a href="catalogo" title="Catálogo" class="block py-2 text-gray-300 hover:text-kronox-accent font-medium">Catálogo</a>
                 <a href="ubicacion" title="Ubicación" class="block py-2 text-kronox-accent font-bold">Ubicación</a>
                 <a href="rutinas" id="mobile-nav-rutinas" class="hidden py-2 text-emerald-400 font-bold"><i class="fas fa-dumbbell"></i> Mi Rutina</a>
+                <!-- ENLACE OCULTO PANEL ADMIN (MÓVIL) -->
+                <a href="admin" id="mobile-nav-admin-panel" class="hidden py-2 text-cyan-400 font-bold"><i class="fas fa-user-shield"></i> Panel Admin</a>
                 
                 <div id="mobile-session-container" class="pt-2 border-t border-gray-800">
                     <button id="mobile-btn-login" type="button" onclick="openLoginModal()" class="w-full text-center btn-neon-solid py-2.5 rounded-lg font-bold text-xs uppercase">
@@ -559,7 +563,7 @@
             if (mobileDropdown) mobileDropdown.classList.toggle('hidden');
         }
 
-        // ================= SESIÓN =================
+        // ================= SESIÓN Y ACCESO ADMIN =================
         function openLoginModal() { document.getElementById('login-modal').classList.remove('hidden'); }
         function closeLoginModal() { document.getElementById('login-modal').classList.add('hidden'); }
 
@@ -581,6 +585,10 @@
             const loggedUser = lsGet('kronox_logged_user');
             const navRutinas = document.getElementById('nav-rutinas');
             const mobileNavRutinas = document.getElementById('mobile-nav-rutinas');
+            
+            const navAdmin = document.getElementById('nav-admin-panel');
+            const mobileNavAdmin = document.getElementById('mobile-nav-admin-panel');
+
             const btnLogin = document.getElementById('btn-open-login');
             const userInfo = document.getElementById('user-session-info');
             const mobileBtnLogin = document.getElementById('mobile-btn-login');
@@ -589,6 +597,16 @@
             if (loggedUser) {
                 if (navRutinas) navRutinas.classList.remove('hidden');
                 if (mobileNavRutinas) mobileNavRutinas.classList.remove('hidden');
+                
+                // Si el usuario logueado es admin, mostramos el acceso al panel admin
+                if (loggedUser.toLowerCase() === 'admin') {
+                    if (navAdmin) navAdmin.classList.remove('hidden');
+                    if (mobileNavAdmin) mobileNavAdmin.classList.remove('hidden');
+                } else {
+                    if (navAdmin) navAdmin.classList.add('hidden');
+                    if (mobileNavAdmin) mobileNavAdmin.classList.add('hidden');
+                }
+
                 if (btnLogin) btnLogin.classList.add('hidden');
                 if (userInfo) {
                     userInfo.classList.remove('hidden');
@@ -604,6 +622,9 @@
             } else {
                 if (navRutinas) navRutinas.classList.add('hidden');
                 if (mobileNavRutinas) mobileNavRutinas.classList.add('hidden');
+                if (navAdmin) navAdmin.classList.add('hidden');
+                if (mobileNavAdmin) mobileNavAdmin.classList.add('hidden');
+
                 if (btnLogin) btnLogin.classList.remove('hidden');
                 if (userInfo) {
                     userInfo.classList.add('hidden');
