@@ -571,7 +571,7 @@
             if (mobileDropdown) mobileDropdown.classList.toggle('hidden');
         }
 
-        // ================= SESIÓN =================
+        // ================= SESIÓN Y ACCESO ADMIN =================
         function openLoginModal() { document.getElementById('login-modal').classList.remove('hidden'); }
         function closeLoginModal() { document.getElementById('login-modal').classList.add('hidden'); }
 
@@ -600,6 +600,36 @@
             if (loggedUser) {
                 if (navRutinas) navRutinas.classList.remove('hidden');
                 if (mobileNavRutinas) mobileNavRutinas.classList.remove('hidden');
+                
+                // INYECCIÓN DINÁMICA DEL BOTÓN ADMIN SI EL USUARIO ES ADMIN
+                if (loggedUser.toLowerCase() === 'admin') {
+                    let adminLinkDesktop = document.getElementById('nav-admin-panel');
+                    if (!adminLinkDesktop) {
+                        const desktopNav = document.querySelector('header nav.hidden.md\\:flex');
+                        if (desktopNav) {
+                            adminLinkDesktop = document.createElement('a');
+                            adminLinkDesktop.id = 'nav-admin-panel';
+                            adminLinkDesktop.href = '/admin';
+                            adminLinkDesktop.className = 'text-cyan-400 font-bold hover:underline transition-colors flex items-center gap-1.5';
+                            adminLinkDesktop.innerHTML = '<i class="fas fa-user-shield"></i> Panel Admin';
+                            desktopNav.appendChild(adminLinkDesktop);
+                        }
+                    }
+
+                    let adminLinkMobile = document.getElementById('mobile-nav-admin-panel');
+                    if (!adminLinkMobile) {
+                        const mobileMenu = document.getElementById('mobile-menu');
+                        if (mobileMenu) {
+                            adminLinkMobile = document.createElement('a');
+                            adminLinkMobile.id = 'mobile-nav-admin-panel';
+                            adminLinkMobile.href = '/admin';
+                            adminLinkMobile.className = 'block py-2 text-cyan-400 font-bold';
+                            adminLinkMobile.innerHTML = '<i class="fas fa-user-shield"></i> Panel Admin';
+                            mobileMenu.insertBefore(adminLinkMobile, mobileMenu.querySelector('#mobile-session-container'));
+                        }
+                    }
+                }
+
                 if (btnLogin) btnLogin.classList.add('hidden');
                 if (userInfo) {
                     userInfo.classList.remove('hidden');
@@ -613,6 +643,12 @@
                     document.getElementById('mobile-welcome-name').innerText = loggedUser;
                 }
             } else {
+                // Remover botón admin si no hay sesión
+                const adminLinkDesktop = document.getElementById('nav-admin-panel');
+                if (adminLinkDesktop) adminLinkDesktop.remove();
+                const adminLinkMobile = document.getElementById('mobile-nav-admin-panel');
+                if (adminLinkMobile) adminLinkMobile.remove();
+
                 if (navRutinas) navRutinas.classList.add('hidden');
                 if (mobileNavRutinas) mobileNavRutinas.classList.add('hidden');
                 if (btnLogin) btnLogin.classList.remove('hidden');
