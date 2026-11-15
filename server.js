@@ -15,17 +15,35 @@ const db = new sqlite3.Database('./kronox.db', (err) => {
     }
 });
 
-// 2. CREAR TABLA SI NO EXISTE
-db.run(`CREATE TABLE IF NOT EXISTS inscripciones (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    nombre TEXT,
-    telefono TEXT,
-    plan TEXT,
-    monto TEXT,
-    metodo_pago TEXT,
-    estado TEXT DEFAULT 'Pendiente',
-    fecha DATETIME DEFAULT CURRENT_TIMESTAMP
-)`);
+// 2. CREAR TABLAS SI NO EXISTEN
+db.serialize(() => {
+    // Tabla de inscripciones (se mantiene intacta para que los planes/inscripciones no se borren nunca)
+    db.run(`CREATE TABLE IF NOT EXISTS inscripciones (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        nombre TEXT,
+        telefono TEXT,
+        plan TEXT,
+        monto TEXT,
+        metodo_pago TEXT,
+        estado TEXT DEFAULT 'Pendiente',
+        fecha DATETIME DEFAULT CURRENT_TIMESTAMP
+    )`);
+
+    // NUEVA: Tabla para el control persistente de la afluencia del gimnasio
+    db.run(`CREATE TABLE IF NOT EXISTS afluencia_config (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        porcentaje INTEGER,
+        estado TEXT,
+        modo_manual INTEGER DEFAULT 0
+    )`, () => {
+        // Inicializar con un registro por defecto si está vacía
+        db.get(`SELECT COUNT(*) as count FROM afluencia_config`, (err, row) => {
+            if (row && row.count === 0) {
+                db.run(`INSERT INTO afluencia_config (porcentaje, estado, modo_manual) VALUES (45, 'Fluencia Moderada', 0)`);
+            }
+        });
+    });
+});
 
 // 3. RUTA PARA RECIBIR INSCRIPCIONES (Desde planes.html) con hora local de México
 app.post('/api/inscripciones', (req, res) => {
@@ -83,6 +101,27 @@ app.delete('/api/inscripciones/:id', (req, res) => {
         res.json({ success: true });
     });
 });
+
+// ================= APIS PARA LA AFLUENCIA EN TIEMPO REAL =================
+
+// Obtener estado actual de afluencia
+app.get('/api/afluencia', (req, res) => {
+    db.get(`SELECT * FROM afluencia_config ORDER BY id DESC LIMIT 1`, [], (err, row) => {
+        if (err) return res.status(500).json({ error: err.message });
+        res.json(row || { porcentaje: 45, estado: "Fluencia Moderada", modo_manual: 0 });
+    });
+});
+
+// Actualizar estado de afluencia desde el panel de admin
+app.post('/api/afluencia', (req, res) => {
+    const { porcentaje, estado } = req.body;
+    db.run(`UPDATE afluencia_config SET porcentaje = ?, estado = ?, modo_manual = 1 WHERE id = 1`, [porcentaje, estado], function(err) {
+        if (err) return res.status(500).json({ error: err.message });
+        res.json({ success: true, mensaje: "Afluencia actualizada correctamente" });
+    });
+});
+
+// =========================================================================
 
 // 6. RUTAS AMIGABLES PARA LAS PÁGINAS WEB
 app.get('/admin', (req, res) => {
