@@ -40,7 +40,12 @@
     <div class="max-w-7xl mx-auto">
         <div class="flex justify-between items-center mb-8 border-b border-gray-800 pb-4">
             <h1 class="text-2xl font-black text-white uppercase italic">Panel de Socios e Inscripciones</h1>
-            <a href="planes" class="text-cyan-400 text-xs font-bold uppercase border border-cyan-400/40 px-4 py-2 rounded-lg hover:bg-cyan-400 hover:text-gray-950 transition-colors">Volver a Planes</a>
+            <div class="flex items-center gap-3">
+                <button onclick="cargarInscripcionesConAnimacion()" class="text-cyan-400 text-xs font-bold uppercase border border-cyan-400/40 px-4 py-2 rounded-lg hover:bg-cyan-400 hover:text-gray-950 transition-colors flex items-center gap-2">
+                    <i class="fa-solid fa-sync-alt" id="icono-refrescar"></i> Actualizar
+                </button>
+                <a href="planes" class="text-cyan-400 text-xs font-bold uppercase border border-cyan-400/40 px-4 py-2 rounded-lg hover:bg-cyan-400 hover:text-gray-950 transition-colors">Volver a Planes</a>
+            </div>
         </div>
 
         <div class="card overflow-x-auto shadow-2xl">
@@ -74,6 +79,12 @@
             if (localStorage.getItem("admin_ok") === "true") {
                 document.getElementById("login-box").style.display = "none";
                 cargarInscripciones();
+                
+                // Auto-refresco automático cada 5 segundos (5000 ms) sin corromper nada
+                setInterval(() => {
+                    cargarInscripciones();
+                }, 5000);
+
                 return;
             }
             revisarBloqueo();
@@ -104,6 +115,12 @@
                 localStorage.removeItem("lock_until");
                 document.getElementById("login-box").style.display = "none";
                 cargarInscripciones();
+
+                // Activa el auto-refresco de 5 segundos justo al iniciar sesión exitosamente
+                setInterval(() => {
+                    cargarInscripciones();
+                }, 5000);
+
             } else {
                 intentos++;
                 localStorage.setItem("intentos", intentos);
@@ -183,7 +200,6 @@
                 rows.forEach(row => {
                     const esVigente = row.estado === 'Vigente';
                     
-                    // Cálculo de vigencia o aviso de pendiente
                     let infoVigencia = esVigente 
                         ? calcularVigencia(row.fecha, row.plan) 
                         : `<span class="text-gray-500 text-xs block">Pendiente de pago</span>`;
@@ -221,12 +237,24 @@
             }
         }
 
+        // Función para refrescar manualmente con animación en el botón
+        async function cargarInscripcionesConAnimacion() {
+            const icono = document.getElementById('icono-refrescar');
+            if (icono) icono.classList.add('fa-spin');
+            
+            await cargarInscripciones();
+
+            if (icono) {
+                setTimeout(() => icono.classList.remove('fa-spin'), 500);
+            }
+        }
+
         // Función para cambiar el estado al hacer clic en el botón de recepción
         async function toggleLiberar(id) {
             try {
                 const res = await fetch(`/api/inscripciones/${id}/liberar`, { method: 'POST' });
                 if (res.ok) {
-                    cargarInscripciones(); // Recarga la tabla al instante
+                    cargarInscripciones();
                 }
             } catch (error) {
                 console.error("Error al actualizar estatus:", error);
@@ -239,7 +267,7 @@
             try {
                 const res = await fetch(`/api/inscripciones/${id}`, { method: 'DELETE' });
                 if (res.ok) {
-                    cargarInscripciones(); // Recarga la tabla al instante
+                    cargarInscripciones();
                 } else {
                     alert("No se pudo eliminar el registro.");
                 }
