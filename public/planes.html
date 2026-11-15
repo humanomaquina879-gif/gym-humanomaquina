@@ -47,8 +47,6 @@
             transition: font-size 0.3s ease;
         }
 
-        /* Filtros de daltonismo: se aplican a #page-wrapper y NO al body,
-           porque un filter en el body rompe los elementos position:fixed */
         #page-wrapper.daltonism-protanopia { filter: url('#protanopia-filter'); }
         #page-wrapper.daltonism-deuteranopia { filter: url('#deuteranopia-filter'); }
         #page-wrapper.daltonism-tritanopia { filter: url('#tritanopia-filter'); }
@@ -129,7 +127,6 @@
             pointer-events: none;
         }
 
-        /* Botón "Escuchar" (solo aparece en celular al seleccionar texto) */
         #btn-escuchar {
             position: fixed;
             bottom: 20px;
@@ -163,13 +160,10 @@
         </filter>
     </svg>
 
-    <!-- ===== ELEMENTOS FIJOS (fuera del wrapper para que el filtro no los afecte) ===== -->
-
     <div id="speech-subtitle-box">
         <i class="fas fa-volume-high text-cyan-400 mr-2"></i><span id="subtitle-text">Reproduciendo audio...</span>
     </div>
 
-    <!-- BOTÓN ESCUCHAR (celular) -->
     <button id="btn-escuchar" type="button" onclick="hablarTextoPendiente()">
         <i class="fas fa-volume-high"></i> Escuchar
     </button>
@@ -244,7 +238,7 @@
         </div>
     </div>
 
-    <!-- MODAL DE ADQUISICIÓN DE PLANES (ADMIN / INSCRIPCIONES) -->
+    <!-- MODAL DE ADQUISICIÓN DE PLANES -->
     <div id="modal-plan" class="hidden fixed inset-0 bg-black/80 flex items-center justify-center p-4 z-50 backdrop-blur-md">
         <div class="kronox-card p-8 max-w-md w-full border border-kronox-accent/40 shadow-2xl relative">
             <button onclick="closePlanModal()" class="absolute top-4 right-4 text-gray-400 hover:text-white font-bold text-lg"><i class="fas fa-times"></i></button>
@@ -276,7 +270,7 @@
         </div>
     </div>
 
-    <!-- ===== CONTENIDO DE LA PÁGINA (aquí se aplica el filtro de daltonismo) ===== -->
+    <!-- CONTENIDO DE LA PÁGINA -->
     <div id="page-wrapper" class="bg-grid-pattern relative min-h-screen flex flex-col justify-between">
 
         <div class="glow-light top-0 left-1/2 -translate-x-1/2"></div>
@@ -297,7 +291,6 @@
                 </nav>
 
                 <div class="hidden md:flex items-center space-x-3">
-                    <!-- AVATAR DE USUARIO INTERACTIVO (DESKTOP) -->
                     <div id="user-session-info" class="hidden relative">
                         <button onclick="toggleUserDropdown(event)" class="flex items-center gap-2 bg-[#091122] border border-kronox-accent/50 hover:border-kronox-accent px-3 py-1.5 rounded-full shadow-[0_0_15px_rgba(0,210,255,0.2)] transition-all">
                             <div class="w-8 h-8 rounded-full bg-cyan-500/10 border border-cyan-400 text-cyan-400 flex items-center justify-center font-bold text-xs">
@@ -307,7 +300,6 @@
                             <i class="fas fa-chevron-down text-[10px] text-cyan-400"></i>
                         </button>
 
-                        <!-- MENÚ DESPLEGABLE DEL PERFIL -->
                         <div id="user-dropdown-menu" class="hidden absolute right-0 mt-2 w-64 bg-[#091122] border border-kronox-accent/40 rounded-2xl p-4 shadow-2xl backdrop-blur-xl z-50 text-gray-200 space-y-3">
                             <div class="border-b border-gray-800 pb-3">
                                 <p class="text-[10px] uppercase font-bold text-gray-400 tracking-wider">¡HOLA DE NUEVO, ATLETA!</p>
@@ -333,13 +325,11 @@
                     </a>
                 </div>
 
-                <!-- Botón Menú Móvil -->
                 <button id="mobile-menu-btn" type="button" onclick="toggleMobileMenu()" title="Abrir menú" class="md:hidden text-gray-300 hover:text-white text-2xl focus:outline-none p-3 cursor-pointer z-50">
                     <i class="fas fa-bars pointer-events-none" id="mobile-menu-icon"></i>
                 </button>
             </div>
 
-            <!-- Menú Móvil -->
             <div id="mobile-menu" class="hidden md:hidden bg-kronox-blueDark border-b border-kronox-cardBorder px-6 pt-3 pb-6 space-y-3">
                 <a href="index" class="block py-2 text-gray-300 hover:text-kronox-accent font-medium">Inicio</a>
                 <a href="informacion" class="block py-2 text-gray-300 hover:text-kronox-accent font-medium">Información</a>
@@ -352,7 +342,6 @@
                     <button id="mobile-btn-login" type="button" onclick="openLoginModal()" class="w-full text-center btn-neon-solid py-2.5 rounded-lg font-bold text-xs uppercase">
                         Iniciar Sesión
                     </button>
-                    <!-- PERFIL MÓVIL -->
                     <div id="mobile-user-container" class="hidden relative">
                         <button type="button" onclick="toggleMobileUserDropdown(event)" class="w-full flex items-center justify-between bg-[#091122] border border-cyan-500/40 p-3 rounded-xl shadow-md transition-all cursor-pointer">
                             <div class="flex items-center gap-3 pointer-events-none">
@@ -367,7 +356,6 @@
                             <i class="fas fa-chevron-down text-xs text-cyan-400 pr-1 pointer-events-none"></i>
                         </button>
 
-                        <!-- DESPLEGABLE MÓVIL -->
                         <div id="mobile-user-dropdown" class="hidden mt-2 bg-[#050a14] border border-cyan-500/30 p-3 rounded-xl space-y-2">
                             <a href="rutinas" class="flex items-center gap-2 text-xs font-bold text-gray-300 hover:text-kronox-accent p-2 rounded-lg hover:bg-white/5 transition-colors">
                                 <i class="fas fa-dumbbell text-emerald-400"></i> Mi Rutina
@@ -385,9 +373,47 @@
         </header>
 
         <main class="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 flex-grow">
-            <div class="text-center max-w-3xl mx-auto mb-16">
-                <p class="mt-2 text-gray-400 text-sm sm:text-base">Entrena con el mejor equipo, instalaciones de primer nivel y la disciplina que necesitas para alcanzar tus metas.</p>
+            <div class="text-center max-w-3xl mx-auto mb-12">
+                <h1 class="text-3xl sm:text-4xl font-black uppercase italic tracking-wider text-white mb-3">Nuestras <span class="text-kronox-accent">Membresías</span></h1>
+                <p class="text-gray-400 text-sm sm:text-base">Entrena con el mejor equipo, instalaciones de primer nivel y la disciplina que necesitas para alcanzar tus metas.</p>
             </div>
+
+            <!-- ===== CALCULADORA INTERACTIVA DE IMC (USUARIO COMÚN) ===== -->
+            <div class="max-w-2xl mx-auto mb-16">
+                <div class="kronox-card p-6 sm:p-8 border border-cyan-500/30 shadow-2xl">
+                    <h3 class="text-base font-black text-white uppercase italic mb-4 flex items-center gap-2 text-center sm:text-left">
+                        <i class="fas fa-calculator text-cyan-400"></i> Calculadora Interactiva de IMC y Sugerencia de Plan
+                    </h3>
+                    
+                    <div class="space-y-4 mb-6">
+                        <div>
+                            <div class="flex justify-between text-xs font-bold text-gray-300 uppercase mb-1">
+                                <span>Peso: <span id="val-peso" class="text-cyan-400">70</span> kg</span>
+                            </div>
+                            <input type="range" id="input-peso" min="40" max="150" value="70" class="w-full accent-cyan-400 cursor-pointer" oninput="calcularIMC()">
+                        </div>
+                        
+                        <div>
+                            <div class="flex justify-between text-xs font-bold text-gray-300 uppercase mb-1">
+                                <span>Altura: <span id="val-altura" class="text-cyan-400">170</span> cm</span>
+                            </div>
+                            <input type="range" id="input-altura" min="140" max="210" value="170" class="w-full accent-cyan-400 cursor-pointer" oninput="calcularIMC()">
+                        </div>
+                    </div>
+
+                    <div class="p-4 bg-[#050a14] rounded-xl border border-gray-800 flex flex-col sm:flex-row items-center justify-between gap-4 text-center sm:text-left">
+                        <div>
+                            <p class="text-[10px] text-gray-400 uppercase font-bold">Tu IMC Estimado:</p>
+                            <p id="resultado-imc" class="text-2xl font-black text-cyan-400">--</p>
+                        </div>
+                        <div class="sm:text-right">
+                            <p class="text-[10px] text-gray-400 uppercase font-bold">Plan Recomendado:</p>
+                            <p id="sugerencia-plan" class="text-xs font-semibold text-emerald-400">Desliza para calcular...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- ========================================================= -->
 
             <div class="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
                 <!-- TARJETA 1: VISITA -->
@@ -470,9 +496,8 @@
         </footer>
     </div>
 
-    <!-- SCRIPT COMPLETO CON CONEXIÓN DIRECTA A LA API DEL ADMIN -->
+    <!-- SCRIPT COMPLETO -->
     <script>
-        // ================= UTILIDADES SEGURAS DE localStorage =================
         function lsGet(key) {
             try { return localStorage.getItem(key); } catch (e) { return null; }
         }
@@ -483,16 +508,15 @@
             try { localStorage.removeItem(key); } catch (e) {}
         }
 
-        // ================= INICIO =================
         document.addEventListener("DOMContentLoaded", () => {
             checkUserSession();
             loadAccessibilityPreferences();
+            calcularIMC(); // Inicializa la calculadora interactiva
 
             const mobileMenu = document.getElementById('mobile-menu');
             const mobileMenuBtn = document.getElementById('mobile-menu-btn');
             const mobileMenuIcon = document.getElementById('mobile-menu-icon');
 
-            // Cerrar el menú móvil al tocar un enlace
             if (mobileMenu) {
                 mobileMenu.querySelectorAll("a").forEach(link => {
                     link.addEventListener("click", () => {
@@ -502,7 +526,6 @@
                 });
             }
 
-            // Cerrar menús al hacer clic fuera
             document.addEventListener('click', (e) => {
                 const desktopDropdown = document.getElementById('user-dropdown-menu');
                 if (desktopDropdown && !desktopDropdown.classList.contains('hidden')) {
@@ -527,18 +550,43 @@
             });
         });
 
-        // Si cambias algo en una pestaña, las demás pestañas abiertas se actualizan solas
         window.addEventListener('storage', (e) => {
             if (!e.key) return;
             if (e.key === 'kronox_logged_user') checkUserSession();
             if (e.key.startsWith('kronox_')) loadAccessibilityPreferences();
         });
 
-        // Al volver a una pestaña (o desde el caché del navegador) se re-sincroniza todo
         window.addEventListener('pageshow', () => {
             checkUserSession();
             loadAccessibilityPreferences();
         });
+
+        // ================= CÁLCULO DE IMC EN TIEMPO REAL =================
+        function calcularIMC() {
+            const peso = parseFloat(document.getElementById('input-peso').value);
+            const alturaCm = parseFloat(document.getElementById('input-altura').value);
+
+            document.getElementById('val-peso').innerText = peso;
+            document.getElementById('val-altura').innerText = alturaCm;
+
+            const alturaM = alturaCm / 100;
+            const imc = (peso / (alturaM * alturaM)).toFixed(1);
+
+            const resImc = document.getElementById('resultado-imc');
+            const sugPlan = document.getElementById('sugerencia-plan');
+
+            if (resImc) resImc.innerText = imc;
+
+            if (sugPlan) {
+                if (imc < 18.5) {
+                    sugPlan.innerHTML = `¡Te sugerimos la <span class="text-cyan-400 font-bold">Mensualidad o Anualidad de Volumen</span>!`;
+                } else if (imc >= 18.5 && imc < 25) {
+                    sugPlan.innerHTML = `¡Ideal para la <span class="text-cyan-400 font-bold">Mensualidad Estándar</span>!`;
+                } else {
+                    sugPlan.innerHTML = `¡Perfecto para el <span class="text-cyan-400 font-bold">Plan Anual de Definición</span>!`;
+                }
+            }
+        }
 
         // ================= MENÚS =================
         function toggleMobileMenu() {
@@ -571,7 +619,6 @@
         function openLoginModal() { document.getElementById('login-modal').classList.remove('hidden'); }
         function closeLoginModal() { document.getElementById('login-modal').classList.add('hidden'); }
 
-        // Al iniciar sesión te quedas en la misma página (sin redirección a rutinas)
         function handleLogin(e) {
             e.preventDefault();
             const user = document.getElementById('login-user').value;
@@ -622,7 +669,6 @@
             }
         }
 
-        // --- GESTIÓN DE PLANES Y ENVÍO A LA API DEL ADMIN ---
         function openPlanModal(nombrePlan) {
             const modal = document.getElementById('modal-plan');
             const titleSpan = document.getElementById('modal-plan-title');
@@ -659,9 +705,7 @@
             try {
                 const response = await fetch('/api/inscripciones', {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(nuevaInscripcion)
                 });
 
@@ -683,16 +727,13 @@
             if (!notif) {
                 notif = document.createElement('div');
                 notif.id = 'kronox-toast-notification';
-                // pointer-events:none => la notificación nunca tapa toques (ni el botón "Escuchar")
                 notif.style.cssText = "position:fixed; bottom:30px; right:30px; background:#091122; border:2px solid #00d2ff; color:#fff; padding:16px 24px; border-radius:12px; font-size:14px; font-weight:bold; z-index:99999; box-shadow:0 0 25px rgba(0,210,255,0.5); transition: opacity 0.5s ease; display:flex; align-items:center; gap:12px; pointer-events:none;";
                 document.body.appendChild(notif);
             }
             notif.innerHTML = `<i class="fas fa-check-circle text-cyan-400 text-xl"></i> <span>${mensaje}</span>`;
             notif.style.opacity = '1';
             
-            setTimeout(() => {
-                notif.style.opacity = '0';
-            }, 4000);
+            setTimeout(() => { notif.style.opacity = '0'; }, 4000);
         }
 
         // ================= ACCESIBILIDAD =================
@@ -701,7 +742,6 @@
             if (panel) panel.classList.toggle('hidden');
         }
 
-        // ---- Tamaño de letra ----
         let currentFontSize = 100;
 
         function applyFontSize(size) {
@@ -722,7 +762,6 @@
             lsSet('kronox_font_size', 100);
         }
 
-        // ---- Daltonismo ----
         const DALTON_TYPES = ['none', 'protanopia', 'deuteranopia', 'tritanopia'];
 
         function applyDaltonism(type) {
@@ -752,7 +791,6 @@
             lsSet('kronox_daltonism', type);
         }
 
-        // ---- Alto contraste ----
         function applyHighContrast(enabled) {
             document.body.classList.toggle('high-contrast', enabled);
             const btn = document.getElementById('btn-high-contrast');
@@ -770,13 +808,12 @@
             lsSet('kronox_high_contrast', enabled ? 'enabled' : 'disabled');
         }
 
-        // ---- Lector de voz ----
         let speechActive = false;
 
         function toggleSpeechReader() {
             speechActive = !speechActive;
             lsSet('kronox_speech_active', speechActive ? 'enabled' : 'disabled');
-            actualizarEstadoLectorUI(true); // con aviso, porque lo cambió el usuario
+            actualizarEstadoLectorUI(true);
         }
 
         function actualizarEstadoLectorUI(mostrarAviso) {
@@ -803,14 +840,12 @@
                 _textoPendiente = '';
             }
 
-            // Al cargar la página NO se muestra aviso; solo cuando el usuario lo activa/desactiva
             if (!mostrarAviso) return;
 
             let aviso = document.getElementById('toast-aviso-accesibilidad');
             if (!aviso) {
                 aviso = document.createElement('div');
                 aviso.id = 'toast-aviso-accesibilidad';
-                // pointer-events:none => el aviso nunca intercepta toques (esto bloqueaba el menú hamburguesa)
                 aviso.style.cssText = "position:fixed; top:20px; right:20px; background:#091122; border:2px solid #00d2ff; color:#fff; padding:12px 20px; border-radius:12px; font-size:13px; z-index:99999; box-shadow:0 0 20px rgba(0,210,255,0.4); transition: opacity 0.5s ease; pointer-events:none;";
                 document.body.appendChild(aviso);
             }
@@ -827,15 +862,13 @@
             }, 3000);
         }
 
-        // ---- Lectura del texto seleccionado (PC y celular) ----
         const ES_TACTIL = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
         let _selTimer = null;
         let _ocultarBtnTimer = null;
         let _ultimoTextoLeido = '';
         let _textoPendiente = '';
-        let _utteranceActual = null; // referencia para que el navegador no la descarte
+        let _utteranceActual = null;
 
-        // Precargar la lista de voces (en Android a veces llega vacía al inicio)
         if ('speechSynthesis' in window) {
             window.speechSynthesis.getVoices();
             window.speechSynthesis.onvoiceschanged = () => window.speechSynthesis.getVoices();
@@ -875,7 +908,6 @@
 
                 utterance.onend = ocultar;
                 utterance.onerror = (ev) => {
-                    // Muestra el motivo para poder diagnosticar (por ejemplo: not-allowed, synthesis-failed)
                     if (subtitleText) subtitleText.innerText = 'Audio no disponible (' + (ev.error || 'error') + ')';
                     setTimeout(ocultar, 3000);
                 };
@@ -888,8 +920,6 @@
                 window.speechSynthesis.cancel();
             }
 
-            // En PC una pausa corta evita que cancel()+speak() seguidos se queden mudos.
-            // En celular se llama directo, para no perder el permiso que da el toque.
             if (conDemora) setTimeout(iniciar, 60); else iniciar();
         }
 
@@ -919,22 +949,18 @@
             _textoPendiente = texto;
 
             if (ES_TACTIL) {
-                // Celular: aparece el botón "Escuchar" (el toque habilita el audio)
                 clearTimeout(_ocultarBtnTimer);
                 if (btn) btn.style.display = 'flex';
             } else {
-                // PC: lectura automática
                 hablar(texto, true);
             }
         }
 
-        // Funciona en PC y en celular; espera 600 ms a que termines de ajustar la selección
         document.addEventListener('selectionchange', () => {
             clearTimeout(_selTimer);
             _selTimer = setTimeout(leerTextoSeleccionado, 600);
         });
 
-        // ---- Cargar TODAS las preferencias guardadas ----
         function loadAccessibilityPreferences() {
             const size = parseInt(lsGet('kronox_font_size'), 10);
             applyFontSize(size || 100);
