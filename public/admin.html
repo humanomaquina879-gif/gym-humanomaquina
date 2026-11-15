@@ -9,6 +9,8 @@
     <style>
         body { background-color: #050a14; color: #f8fafc; font-family: sans-serif; min-height: 100vh; }
         .card { background: #091122; border: 1px solid #16284a; border-radius: 1rem; }
+        .btn-neon { background: #00d2ff; color: #050a14; font-weight: bold; transition: all 0.3s ease; box-shadow: 0 0 15px rgba(0, 210, 255, 0.4); }
+        .btn-neon:hover { background: transparent; color: #00d2ff; box-shadow: 0 0 25px rgba(0, 210, 255, 0.7); }
     </style>
 </head>
 <body class="p-6">
@@ -36,38 +38,88 @@
         </div>
     </div>
 
-    <!-- PANEL -->
+    <!-- PANEL DE ADMINISTRACIÓN -->
     <div class="max-w-7xl mx-auto">
-        <div class="flex justify-between items-center mb-8 border-b border-gray-800 pb-4">
-            <h1 class="text-2xl font-black text-white uppercase italic">Panel de Socios e Inscripciones</h1>
-            <div class="flex items-center gap-3">
-                <button onclick="cargarInscripcionesConAnimacion()" class="text-cyan-400 text-xs font-bold uppercase border border-cyan-400/40 px-4 py-2 rounded-lg hover:bg-cyan-400 hover:text-gray-950 transition-colors flex items-center gap-2">
-                    <i class="fa-solid fa-sync-alt" id="icono-refrescar"></i> Actualizar
+        <div class="flex flex-col md:flex-row justify-between items-center mb-8 border-b border-gray-800 pb-4 gap-4">
+            <div>
+                <h1 class="text-2xl font-black text-white uppercase italic">Panel de Control <span class="text-cyan-400">Kronox Admin</span></h1>
+                <p class="text-xs text-gray-400">Gestiona inscripciones y el estado del gimnasio.</p>
+            </div>
+            
+            <!-- NAVEGACIÓN DE SECCIONES (PESTAÑAS) -->
+            <div class="flex items-center gap-2">
+                <button onclick="cambiarSeccion('socios')" id="btn-tab-socios" class="px-4 py-2 rounded-lg text-xs font-bold uppercase transition-all bg-cyan-400 text-gray-950 shadow-[0_0_15px_rgba(0,210,255,0.3)]">
+                    <i class="fas fa-users mr-1"></i> Panel de Socios
                 </button>
-                <a href="planes" class="text-cyan-400 text-xs font-bold uppercase border border-cyan-400/40 px-4 py-2 rounded-lg hover:bg-cyan-400 hover:text-gray-950 transition-colors">Volver a Planes</a>
+                <button onclick="cambiarSeccion('afluencia')" id="btn-tab-afluencia" class="px-4 py-2 rounded-lg text-xs font-bold uppercase transition-all bg-[#091122] text-gray-300 border border-gray-800 hover:border-cyan-500/50">
+                    <i class="fas fa-users-viewfinder mr-1"></i> Afluencia Gym
+                </button>
+                <a href="planes" class="text-gray-400 hover:text-white text-xs font-bold uppercase border border-gray-800 px-3 py-2 rounded-lg transition-colors">Volver a Planes</a>
             </div>
         </div>
 
-        <div class="card overflow-x-auto shadow-2xl">
-            <table class="w-full text-left border-collapse text-sm">
-                <thead>
-                    <tr class="border-b border-gray-800 text-cyan-400 text-xs uppercase bg-gray-900/50">
-                        <th class="p-4">ID</th>
-                        <th class="p-4">Cliente</th>
-                        <th class="p-4">Teléfono</th>
-                        <th class="p-4">Plan</th>
-                        <th class="p-4">Monto</th>
-                        <th class="p-4">Pago</th>
-                        <th class="p-4">Estatus</th>
-                        <th class="p-4">Fecha</th>
-                        <th class="p-4 text-center">Acción</th>
-                    </tr>
-                </thead>
-                <tbody id="tabla-inscripciones" class="divide-y divide-gray-800 text-gray-300">
-                    <!-- Los datos se cargan dinámicamente vía JS -->
-                </tbody>
-            </table>
+        <!-- ================= SECCIÓN 1: PANEL DE SOCIOS E INSCRIPCIONES ================= -->
+        <div id="seccion-socios" class="space-y-4">
+            <div class="flex justify-between items-center">
+                <h2 class="text-lg font-bold text-white uppercase italic">Listado de Inscripciones Persistentes</h2>
+                <button onclick="cargarInscripcionesConAnimacion()" class="text-cyan-400 text-xs font-bold uppercase border border-cyan-400/40 px-4 py-2 rounded-lg hover:bg-cyan-400 hover:text-gray-950 transition-colors flex items-center gap-2">
+                    <i class="fa-solid fa-sync-alt" id="icono-refrescar"></i> Actualizar
+                </button>
+            </div>
+
+            <div class="card overflow-x-auto shadow-2xl">
+                <table class="w-full text-left border-collapse text-sm">
+                    <thead>
+                        <tr class="border-b border-gray-800 text-cyan-400 text-xs uppercase bg-gray-900/50">
+                            <th class="p-4">ID</th>
+                            <th class="p-4">Cliente</th>
+                            <th class="p-4">Teléfono</th>
+                            <th class="p-4">Plan</th>
+                            <th class="p-4">Monto</th>
+                            <th class="p-4">Pago</th>
+                            <th class="p-4">Estatus</th>
+                            <th class="p-4">Fecha</th>
+                            <th class="p-4 text-center">Acción</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabla-inscripciones" class="divide-y divide-gray-800 text-gray-300">
+                        <!-- Los datos se cargan dinámicamente vía JS -->
+                    </tbody>
+                </table>
+            </div>
         </div>
+
+        <!-- ================= SECCIÓN 2: CONTROL DE AFLUENCIA EN TIEMPO REAL ================= -->
+        <div id="seccion-afluencia" class="hidden space-y-6 max-w-2xl mx-auto">
+            <div class="card p-8 border border-cyan-500/30 shadow-2xl space-y-6">
+                <div>
+                    <h2 class="text-xl font-black text-white uppercase italic mb-1 flex items-center gap-2">
+                        <i class="fas fa-users-viewfinder text-cyan-400"></i> Control de Afluencia del Gimnasio
+                    </h2>
+                    <p class="text-gray-400 text-xs">Modifica el nivel de ocupación en tiempo real para que los socios lo visualicen de inmediato en la página principal.</p>
+                </div>
+
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-xs font-bold text-cyan-400 uppercase mb-1">Porcentaje de Ocupación (%)</label>
+                        <input type="number" id="admin-porcentaje" min="0" max="100" class="w-full bg-[#080e1a] border border-cyan-500/30 rounded-lg px-4 py-3 text-white text-sm focus:outline-none focus:border-cyan-400">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-cyan-400 uppercase mb-1">Estado Descriptivo</label>
+                        <select id="admin-estado-txt" class="w-full bg-[#080e1a] border border-cyan-500/30 rounded-lg px-4 py-3 text-white text-sm focus:outline-none focus:border-cyan-400">
+                            <option value="Espacio Disponible">Espacio Disponible (Tranquilo)</option>
+                            <option value="Fluencia Moderada">Fluencia Moderada</option>
+                            <option value="¡Horario Pico / Alto!">¡Horario Pico / Alto!</option>
+                        </select>
+                    </div>
+
+                    <button onclick="guardarAfluenciaAdmin()" class="w-full btn-neon py-3.5 rounded-lg text-xs uppercase tracking-wider">
+                        Actualizar Afluencia en el Sistema
+                    </button>
+                </div>
+            </div>
+        </div>
+        <!-- ========================================================================= -->
     </div>
 
     <script>
@@ -79,8 +131,9 @@
             if (localStorage.getItem("admin_ok") === "true") {
                 document.getElementById("login-box").style.display = "none";
                 cargarInscripciones();
+                cargarAfluenciaAdmin();
                 
-                // Auto-refresco automático cada 5 segundos (5000 ms) sin corromper nada
+                // Auto-refresco automático cada 5 segundos sin corromper nada
                 setInterval(() => {
                     cargarInscripciones();
                 }, 5000);
@@ -89,6 +142,30 @@
             }
             revisarBloqueo();
         });
+
+        // Cambio entre pestañas (Secciones)
+        function cambiarSeccion(seccion) {
+            const btnSocios = document.getElementById("btn-tab-socios");
+            const btnAfluencia = document.getElementById("btn-tab-afluencia");
+            const secSocios = document.getElementById("seccion-socios");
+            const secAfluencia = document.getElementById("seccion-afluencia");
+
+            if (seccion === 'socios') {
+                secSocios.classList.remove("hidden");
+                secAfluencia.classList.add("hidden");
+                
+                btnSocios.className = "px-4 py-2 rounded-lg text-xs font-bold uppercase transition-all bg-cyan-400 text-gray-950 shadow-[0_0_15px_rgba(0,210,255,0.3)]";
+                btnAfluencia.className = "px-4 py-2 rounded-lg text-xs font-bold uppercase transition-all bg-[#091122] text-gray-300 border border-gray-800 hover:border-cyan-500/50";
+                cargarInscripciones();
+            } else {
+                secSocios.classList.add("hidden");
+                secAfluencia.classList.remove("hidden");
+
+                btnAfluencia.className = "px-4 py-2 rounded-lg text-xs font-bold uppercase transition-all bg-cyan-400 text-gray-950 shadow-[0_0_15px_rgba(0,210,255,0.3)]";
+                btnSocios.className = "px-4 py-2 rounded-lg text-xs font-bold uppercase transition-all bg-[#091122] text-gray-300 border border-gray-800 hover:border-cyan-500/50";
+                cargarAfluenciaAdmin();
+            }
+        }
 
         function revisarBloqueo() {
             let bloqueoHasta = parseInt(localStorage.getItem("lock_until") || "0");
@@ -115,8 +192,8 @@
                 localStorage.removeItem("lock_until");
                 document.getElementById("login-box").style.display = "none";
                 cargarInscripciones();
+                cargarAfluenciaAdmin();
 
-                // Activa el auto-refresco de 5 segundos justo al iniciar sesión exitosamente
                 setInterval(() => {
                     cargarInscripciones();
                 }, 5000);
@@ -146,7 +223,7 @@
             err.style.color = "#ff4d4d";
         }
 
-        // Función matemática corregida para calcular días restantes exactos
+        // Función matemática para calcular días restantes exactos
         function calcularVigencia(fechaRegistro, plan) {
             let partes = fechaRegistro.split(/[- :]/);
             let inicio = new Date(partes[0], partes[1] - 1, partes[2]);
@@ -184,7 +261,7 @@
             }
         }
 
-        // Función para cargar los registros persistentes desde la base de datos
+        // Cargar registros persistentes desde la base de datos
         async function cargarInscripciones() {
             try {
                 const res = await fetch('/api/inscripciones');
@@ -237,7 +314,48 @@
             }
         }
 
-        // Función para refrescar manualmente con animación en el botón
+        // Cargar datos actuales de afluencia en el panel de admin
+        async function cargarAfluenciaAdmin() {
+            try {
+                const res = await fetch('/api/afluencia');
+                const data = await res.json();
+                if (data) {
+                    document.getElementById('admin-porcentaje').value = data.porcentaje || 50;
+                    document.getElementById('admin-estado-txt').value = data.estado || 'Fluencia Moderada';
+                }
+            } catch (error) {
+                console.error("Error al cargar afluencia:", error);
+            }
+        }
+
+        // Guardar afluencia modificada por el admin
+        async function guardarAfluenciaAdmin() {
+            const porcentaje = parseInt(document.getElementById('admin-porcentaje').value);
+            const estado = document.getElementById('admin-estado-txt').value;
+
+            if (isNaN(porcentaje) || porcentaje < 0 || porcentaje > 100) {
+                alert("Por favor ingresa un porcentaje válido entre 0 y 100.");
+                return;
+            }
+
+            try {
+                const res = await fetch('/api/afluencia', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ porcentaje, estado })
+                });
+
+                if (res.ok) {
+                    alert("¡Afluencia actualizada con éxito para todos los socios en el inicio!");
+                } else {
+                    alert("Error al actualizar la afluencia.");
+                }
+            } catch (error) {
+                console.error("Error de conexión:", error);
+            }
+        }
+
+        // Refrescar manualmente con animación
         async function cargarInscripcionesConAnimacion() {
             const icono = document.getElementById('icono-refrescar');
             if (icono) icono.classList.add('fa-spin');
@@ -249,7 +367,7 @@
             }
         }
 
-        // Función para cambiar el estado al hacer clic en el botón de recepción
+        // Cambiar estatus de inscripción
         async function toggleLiberar(id) {
             try {
                 const res = await fetch(`/api/inscripciones/${id}/liberar`, { method: 'POST' });
@@ -261,7 +379,7 @@
             }
         }
 
-        // Función para eliminar un registro con confirmación
+        // Eliminar registro
         async function eliminarInscripcion(id) {
             if (!confirm(`¿Estás seguro de eliminar el registro #${id}?`)) return;
             try {
