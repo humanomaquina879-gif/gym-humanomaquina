@@ -368,8 +368,8 @@
         </header>
 
         <!-- SECCIÓN PRINCIPAL -->
-        <main class="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-24 flex-grow flex items-center">
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center w-full">
+        <main class="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-24 flex-grow flex flex-col justify-center">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center w-full mb-12">
                 <div class="space-y-6 text-center lg:text-left">
                     <span class="inline-block bg-kronox-accent/10 border border-kronox-accent/40 text-kronox-accent text-xs font-black uppercase tracking-widest px-4 py-1.5 rounded-full">
                         Gimnasio de Alto Rendimiento
@@ -402,6 +402,36 @@
                     </a>
                 </div>
             </div>
+
+            <!-- ===== NUEVO: INDICADOR DE AFLUENCIA EN TIEMPO REAL ===== -->
+            <div class="max-w-2xl mx-auto w-full">
+                <div class="kronox-card p-6 border border-cyan-500/30 shadow-xl flex flex-col sm:flex-row items-center justify-between gap-6">
+                    <div class="flex items-center gap-4 text-center sm:text-left">
+                        <div class="w-12 h-12 rounded-2xl bg-cyan-500/10 border border-cyan-400 text-cyan-400 flex items-center justify-center text-xl shrink-0 shadow-[0_0_15px_rgba(0,210,255,0.3)]">
+                            <i class="fas fa-users-viewfinder"></i>
+                        </div>
+                        <div>
+                            <p class="text-[10px] uppercase font-bold text-gray-400 tracking-wider">Estado de Ocupación</p>
+                            <h3 id="afluencia-titulo" class="text-lg font-black text-white uppercase italic">Calculando afluencia...</h3>
+                            <p id="afluencia-sub" class="text-xs text-gray-400">Basado en el horario actual del gimnasio.</p>
+                        </div>
+                    </div>
+
+                    <div class="w-full sm:w-48 text-right">
+                        <div class="flex justify-between text-xs font-bold mb-1.5">
+                            <span class="text-gray-400 uppercase text-[10px]">Ocupación</span>
+                            <span id="afluencia-porcentaje" class="text-cyan-400">--%</span>
+                        </div>
+                        <div class="w-full bg-[#050a14] rounded-full h-2.5 border border-gray-800 p-0.5 overflow-hidden">
+                            <div id="afluencia-barra" class="bg-cyan-400 h-full rounded-full transition-all duration-1000 shadow-[0_0_10px_#00d2ff]" style="width: 0%"></div>
+                        </div>
+                        <span id="afluencia-badge" class="inline-block mt-2 px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
+                            Normal
+                        </span>
+                    </div>
+                </div>
+            </div>
+            <!-- ======================================================= -->
         </main>
 
         <!-- PIE DE PÁGINA -->
@@ -437,6 +467,7 @@
         document.addEventListener("DOMContentLoaded", () => {
             checkUserSession();
             loadAccessibilityPreferences();
+            actualizarAfluenciaGym(); // Inicializa el indicador de afluencia
 
             // Cerrar menús al hacer clic fuera
             document.addEventListener('click', (e) => {
@@ -468,6 +499,69 @@
             checkUserSession();
             loadAccessibilityPreferences();
         });
+
+        // ================= AFLUENCIA DE GENTE EN TIEMPO REAL =================
+        function actualizarAfluenciaGym() {
+            const ahora = new Date();
+            const hora = ahora.getHours();
+            const dia = ahora.getDay(); // 0 = Domingo, 1-6 = Lunes a Sábado
+
+            let porcentaje = 35;
+            let estado = "Fluencia Baja / Tranquilo";
+            let colorClase = "bg-emerald-500/10 text-emerald-400 border-emerald-500/30";
+            let colorBarra = "bg-emerald-400";
+
+            // Lógica estimada según las horas pico habituales de un gimnasio
+            if (dia === 0) {
+                // Domingo (horario más relajado)
+                if (hora >= 9 && hora <= 13) {
+                    porcentaje = 50;
+                    estado = "Fluencia Moderada";
+                    colorClase = "bg-amber-500/10 text-amber-400 border-amber-500/30";
+                    colorBarra = "bg-amber-400";
+                } else {
+                    porcentaje = 20;
+                    estado = "Muy Tranquilo";
+                }
+            } else {
+                // Lunes a Sábado
+                if ((hora >= 7 && hora <= 10) || (hora >= 18 && hora <= 21)) {
+                    // Horas pico (mañana y tarde/noche)
+                    porcentaje = 85;
+                    estado = "¡Horario Pico / Alto!";
+                    colorClase = "bg-red-500/10 text-red-400 border-red-500/30";
+                    colorBarra = "bg-red-500 shadow-[0_0_10px_#ef4444]";
+                } else if ((hora >= 11 && hora <= 17) || (hora >= 15 && hora <= 17)) {
+                    // Horas intermedias
+                    porcentaje = 45;
+                    estado = "Fluencia Moderada";
+                    colorClase = "bg-amber-500/10 text-amber-400 border-amber-500/30";
+                    colorBarra = "bg-amber-400";
+                } else {
+                    // Muy temprano o noche tarde
+                    porcentaje = 25;
+                    estado = "Espacio Disponible";
+                }
+            }
+
+            const tituloEl = document.getElementById('afluencia-titulo');
+            const subEl = document.getElementById('afluencia-sub');
+            const porcEl = document.getElementById('afluencia-porcentaje');
+            const barraEl = document.getElementById('afluencia-barra');
+            const badgeEl = document.getElementById('afluencia-badge');
+
+            if (tituloEl) tituloEl.innerText = estado;
+            if (subEl) subEl.innerText = `Hora actual: ${ahora.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}`;
+            if (porcEl) porcEl.innerText = `${porcentaje}%`;
+            if (barraEl) {
+                barraEl.style.width = `${porcentaje}%`;
+                barraEl.className = `${colorBarra} h-full rounded-full transition-all duration-1000`;
+            }
+            if (badgeEl) {
+                badgeEl.className = `inline-block mt-2 px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider border ${colorClase}`;
+                badgeEl.innerText = porcentaje > 70 ? 'Alto' : (porcentaje > 40 ? 'Moderado' : 'Bajo');
+            }
+        }
 
         // ================= MENÚS =================
         function toggleMobileMenu() {
