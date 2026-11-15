@@ -403,7 +403,7 @@
                 </div>
             </div>
 
-            <!-- ===== NUEVO: INDICADOR DE AFLUENCIA EN TIEMPO REAL ===== -->
+            <!-- ===== INDICADOR DE AFLUENCIA CONECTADO A LA BASE DE DATOS ===== -->
             <div class="max-w-2xl mx-auto w-full">
                 <div class="kronox-card p-6 border border-cyan-500/30 shadow-xl flex flex-col sm:flex-row items-center justify-between gap-6">
                     <div class="flex items-center gap-4 text-center sm:text-left">
@@ -412,8 +412,8 @@
                         </div>
                         <div>
                             <p class="text-[10px] uppercase font-bold text-gray-400 tracking-wider">Estado de Ocupación</p>
-                            <h3 id="afluencia-titulo" class="text-lg font-black text-white uppercase italic">Calculando afluencia...</h3>
-                            <p id="afluencia-sub" class="text-xs text-gray-400">Basado en el horario actual del gimnasio.</p>
+                            <h3 id="afluencia-titulo" class="text-lg font-black text-white uppercase italic">Cargando afluencia...</h3>
+                            <p id="afluencia-sub" class="text-xs text-gray-400">Sincronizando en tiempo real...</p>
                         </div>
                     </div>
 
@@ -467,7 +467,8 @@
         document.addEventListener("DOMContentLoaded", () => {
             checkUserSession();
             loadAccessibilityPreferences();
-            actualizarAfluenciaGym(); // Inicializa el indicador de afluencia
+            actualizarAfluenciaGym(); // Carga la afluencia desde la BD al iniciar
+            setInterval(actualizarAfluenciaGym, 10000); // Sincroniza cada 10 segundos
 
             // Cerrar menús al hacer clic fuera
             document.addEventListener('click', (e) => {
@@ -500,66 +501,46 @@
             loadAccessibilityPreferences();
         });
 
-        // ================= AFLUENCIA DE GENTE EN TIEMPO REAL =================
-        function actualizarAfluenciaGym() {
-            const ahora = new Date();
-            const hora = ahora.getHours();
-            const dia = ahora.getDay(); // 0 = Domingo, 1-6 = Lunes a Sábado
+        // ================= AFLUENCIA DE GENTE DESDE EL SERVIDOR / BD =================
+        async function actualizarAfluenciaGym() {
+            try {
+                const response = await fetch('/api/afluencia');
+                if (!response.ok) return;
+                const data = await response.json();
 
-            let porcentaje = 35;
-            let estado = "Fluencia Baja / Tranquilo";
-            let colorClase = "bg-emerald-500/10 text-emerald-400 border-emerald-500/30";
-            let colorBarra = "bg-emerald-400";
+                const porcentaje = data.porcentaje;
+                const estado = data.estado;
 
-            // Lógica estimada según las horas pico habituales de un gimnasio
-            if (dia === 0) {
-                // Domingo (horario más relajado)
-                if (hora >= 9 && hora <= 13) {
-                    porcentaje = 50;
-                    estado = "Fluencia Moderada";
-                    colorClase = "bg-amber-500/10 text-amber-400 border-amber-500/30";
-                    colorBarra = "bg-amber-400";
-                } else {
-                    porcentaje = 20;
-                    estado = "Muy Tranquilo";
-                }
-            } else {
-                // Lunes a Sábado
-                if ((hora >= 7 && hora <= 10) || (hora >= 18 && hora <= 21)) {
-                    // Horas pico (mañana y tarde/noche)
-                    porcentaje = 85;
-                    estado = "¡Horario Pico / Alto!";
+                let colorClase = "bg-emerald-500/10 text-emerald-400 border-emerald-500/30";
+                let colorBarra = "bg-emerald-400";
+
+                if (porcentaje > 70) {
                     colorClase = "bg-red-500/10 text-red-400 border-red-500/30";
                     colorBarra = "bg-red-500 shadow-[0_0_10px_#ef4444]";
-                } else if ((hora >= 11 && hora <= 17) || (hora >= 15 && hora <= 17)) {
-                    // Horas intermedias
-                    porcentaje = 45;
-                    estado = "Fluencia Moderada";
+                } else if (porcentaje > 40) {
                     colorClase = "bg-amber-500/10 text-amber-400 border-amber-500/30";
                     colorBarra = "bg-amber-400";
-                } else {
-                    // Muy temprano o noche tarde
-                    porcentaje = 25;
-                    estado = "Espacio Disponible";
                 }
-            }
 
-            const tituloEl = document.getElementById('afluencia-titulo');
-            const subEl = document.getElementById('afluencia-sub');
-            const porcEl = document.getElementById('afluencia-porcentaje');
-            const barraEl = document.getElementById('afluencia-barra');
-            const badgeEl = document.getElementById('afluencia-badge');
+                const tituloEl = document.getElementById('afluencia-titulo');
+                const subEl = document.getElementById('afluencia-sub');
+                const porcEl = document.getElementById('afluencia-porcentaje');
+                const barraEl = document.getElementById('afluencia-barra');
+                const badgeEl = document.getElementById('afluencia-badge');
 
-            if (tituloEl) tituloEl.innerText = estado;
-            if (subEl) subEl.innerText = `Hora actual: ${ahora.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}`;
-            if (porcEl) porcEl.innerText = `${porcentaje}%`;
-            if (barraEl) {
-                barraEl.style.width = `${porcentaje}%`;
-                barraEl.className = `${colorBarra} h-full rounded-full transition-all duration-1000`;
-            }
-            if (badgeEl) {
-                badgeEl.className = `inline-block mt-2 px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider border ${colorClase}`;
-                badgeEl.innerText = porcentaje > 70 ? 'Alto' : (porcentaje > 40 ? 'Moderado' : 'Bajo');
+                if (tituloEl) tituloEl.innerText = estado;
+                if (subEl) subEl.innerText = "Actualizado en tiempo real";
+                if (porcEl) porcEl.innerText = `${porcentaje}%`;
+                if (barraEl) {
+                    barraEl.style.width = `${porcentaje}%`;
+                    barraEl.className = `${colorBarra} h-full rounded-full transition-all duration-1000`;
+                }
+                if (badgeEl) {
+                    badgeEl.className = `inline-block mt-2 px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider border ${colorClase}`;
+                    badgeEl.innerText = porcentaje > 70 ? 'Alto' : (porcentaje > 40 ? 'Moderado' : 'Bajo');
+                }
+            } catch (error) {
+                console.error("Error al obtener la afluencia:", error);
             }
         }
 
