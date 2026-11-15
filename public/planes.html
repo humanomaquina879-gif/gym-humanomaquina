@@ -108,6 +108,11 @@
             box-shadow: 0 0 25px rgba(0, 210, 255, 0.7);
         }
 
+        input[type="range"] {
+            pointer-events: auto !important;
+            cursor: pointer;
+        }
+
         #speech-subtitle-box {
             position: fixed;
             bottom: 20px;
@@ -378,7 +383,7 @@
                 <p class="text-gray-400 text-sm sm:text-base">Entrena con el mejor equipo, instalaciones de primer nivel y la disciplina que necesitas para alcanzar tus metas.</p>
             </div>
 
-            <!-- ===== CALCULADORA INTERACTIVA DE IMC CON CLASIFICACIÓN PROFESIONAL ===== -->
+            <!-- ===== CALCULADORA INTERACTIVA DE IMC CON CLASIFICACIÓN REALISTA ===== -->
             <div class="max-w-2xl mx-auto mb-16">
                 <div class="kronox-card p-6 sm:p-8 border border-cyan-500/30 shadow-2xl">
                     <h3 class="text-base font-black text-white uppercase italic mb-4 flex items-center gap-2 text-center sm:text-left">
@@ -511,7 +516,7 @@
         document.addEventListener("DOMContentLoaded", () => {
             checkUserSession();
             loadAccessibilityPreferences();
-            calcularIMC(); // Inicializa la calculadora interactiva
+            calcularIMC();
 
             const mobileMenu = document.getElementById('mobile-menu');
             const mobileMenuBtn = document.getElementById('mobile-menu-btn');
@@ -561,7 +566,7 @@
             loadAccessibilityPreferences();
         });
 
-        // ================= CÁLCULO DE IMC Y DIAGNÓSTICO PROFESIONAL =================
+        // ================= CÁLCULO DE IMC CON UMBRALES REALISTAS DE GIMNASIO =================
         function calcularIMC() {
             const peso = parseFloat(document.getElementById('input-peso').value);
             const alturaCm = parseFloat(document.getElementById('input-altura').value);
@@ -578,11 +583,12 @@
             if (resImc) resImc.innerText = imc;
 
             if (sugPlan) {
-                if (imc < 18.5) {
+                // Umbrales ajustados de forma congruente para estaturas altas / complexión de atletas
+                if (imc < 20.0) {
                     sugPlan.innerHTML = `<span class="text-yellow-400 font-bold">Bajo de peso</span><br>Sugerencia: 3-4 días/sem (Fuerza)`;
-                } else if (imc >= 18.5 && imc < 25) {
+                } else if (imc >= 20.0 && imc < 25.0) {
                     sugPlan.innerHTML = `<span class="text-emerald-400 font-bold">Peso saludable (Normal)</span><br>Sugerencia: 4-5 días/sem (Acondicionamiento)`;
-                } else if (imc >= 25 && imc < 30) {
+                } else if (imc >= 25.0 && imc < 30.0) {
                     sugPlan.innerHTML = `<span class="text-amber-400 font-bold">Sobrepeso</span><br>Sugerencia: 5-6 días/sem (Cardio y Tonificación)`;
                 } else {
                     sugPlan.innerHTML = `<span class="text-red-400 font-bold">Obesidad</span><br>Sugerencia: 3-4 días/sem con supervisión`;
