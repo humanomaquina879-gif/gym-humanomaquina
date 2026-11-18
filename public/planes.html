@@ -120,7 +120,7 @@ input[type="range"]{pointer-events:auto!important;cursor:pointer}
 
 <!-- ===== MODAL DE ADQUISICIÓN DE PLANES ===== -->
 <div id="modal-plan" class="hidden fixed inset-0 bg-black/80 flex items-center justify-center p-4 z-50 backdrop-blur-md">
-    <div class="kronox-card p-8 max-w-md w-full border border-kronox-accent/40 shadow-2xl relative">
+    <div class="kronox-card p-8 max-w-md w-full max-h-[90vh] overflow-y-auto border border-kronox-accent/40 shadow-2xl relative">
         <button onclick="closePlanModal()" class="absolute top-4 right-4 text-gray-400 hover:text-white font-bold text-lg"><i class="fas fa-times"></i></button>
         <h2 class="text-2xl font-black text-white uppercase italic mb-2 text-center">Adquirir <span id="modal-plan-title" class="text-kronox-accent">Plan</span></h2>
         <p class="text-gray-400 text-xs mb-6 text-center">Ingresa tus datos y selecciona tu método de pago para registrar tu solicitud.</p>
@@ -136,11 +136,52 @@ input[type="range"]{pointer-events:auto!important;cursor:pointer}
             </div>
             <div>
                 <label class="block text-xs font-bold text-kronox-accent uppercase mb-1">Método de Pago</label>
-                <select id="cliente-metodo-pago" class="w-full bg-[#050a14] border border-kronox-cardBorder rounded-lg px-4 py-2.5 text-white text-sm focus:border-kronox-accent focus:outline-none">
+                <select id="cliente-metodo-pago" onchange="mostrarCamposPago()" class="w-full bg-[#050a14] border border-kronox-cardBorder rounded-lg px-4 py-2.5 text-white text-sm focus:border-kronox-accent focus:outline-none">
                     <option value="Efectivo (en mostrador)">Efectivo (en mostrador)</option>
                     <option value="Transferencia Bancaria">Transferencia Bancaria</option>
                     <option value="Tarjeta de Crédito / Débito">Tarjeta de Crédito / Débito</option>
                 </select>
+            </div>
+
+            <!-- Datos para transferencia bancaria (solo si se elige Transferencia) -->
+            <div id="pago-transferencia" class="hidden p-4 bg-[#050a14] rounded-xl border border-cyan-500/30 space-y-2 text-xs">
+                <p class="font-black text-cyan-400 uppercase tracking-wider flex items-center gap-2"><i class="fas fa-building-columns"></i> Datos para tu transferencia</p>
+                <div class="flex justify-between gap-3"><span class="text-gray-400">Beneficiario</span><span class="text-white font-bold text-right">Kronox Gym</span></div>
+                <div class="flex justify-between gap-3"><span class="text-gray-400">Banco</span><span class="text-white font-bold text-right">Banco Ejemplo</span></div>
+                <div class="flex justify-between gap-3"><span class="text-gray-400">Tarjeta</span><span class="text-white font-bold text-right">4000 1234 5678 9010</span></div>
+                <div class="flex justify-between items-center gap-3">
+                    <span class="text-gray-400">CLABE</span>
+                    <span class="text-white font-bold text-right flex items-center gap-2">012345678901234567
+                        <button type="button" onclick="copiarClabe()" title="Copiar CLABE" class="text-cyan-400 hover:text-white"><i class="fas fa-copy"></i></button>
+                    </span>
+                </div>
+                <div class="flex justify-between gap-3"><span class="text-gray-400">Monto</span><span id="transferencia-monto" class="text-cyan-400 font-black text-right"></span></div>
+                <div class="flex justify-between gap-3"><span class="text-gray-400">Concepto</span><span id="transferencia-concepto" class="text-white font-bold text-right"></span></div>
+                <p class="text-gray-400 pt-2 border-t border-gray-800">Al terminar, envía tu comprobante por <a href="https://wa.me/527779393985?text=Hola%20Kronox%20Gym,%20te%20env%C3%ADo%20mi%20comprobante" target="_blank" class="text-emerald-400 font-bold hover:underline">WhatsApp</a>.</p>
+            </div>
+
+            <!-- Datos de tarjeta (solo si se elige Tarjeta de Crédito / Débito) -->
+            <div id="pago-tarjeta" class="hidden p-4 bg-[#050a14] rounded-xl border border-cyan-500/30 space-y-3">
+                <p class="font-black text-cyan-400 uppercase tracking-wider text-xs flex items-center gap-2"><i class="fas fa-credit-card"></i> Datos de tu tarjeta</p>
+                <div>
+                    <label class="block text-xs font-bold text-kronox-accent uppercase mb-1">Nombre en la Tarjeta</label>
+                    <input type="text" id="tarjeta-nombre" autocomplete="cc-name" placeholder="Como aparece en la tarjeta" class="w-full bg-[#091122] border border-kronox-cardBorder rounded-lg px-4 py-2.5 text-white text-sm focus:border-kronox-accent focus:outline-none">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-kronox-accent uppercase mb-1">Número de Tarjeta</label>
+                    <input type="text" id="tarjeta-numero" inputmode="numeric" autocomplete="cc-number" maxlength="19" pattern="[0-9 ]{19}" title="Ingresa los 16 dígitos de la tarjeta" oninput="formatearTarjeta(this)" placeholder="0000 0000 0000 0000" class="w-full bg-[#091122] border border-kronox-cardBorder rounded-lg px-4 py-2.5 text-white text-sm focus:border-kronox-accent focus:outline-none">
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-bold text-kronox-accent uppercase mb-1">Vence (MM/AA)</label>
+                        <input type="text" id="tarjeta-vence" inputmode="numeric" autocomplete="cc-exp" maxlength="5" pattern="(0[1-9]|1[0-2])\/[0-9]{2}" title="Formato MM/AA" oninput="formatearVence(this)" placeholder="MM/AA" class="w-full bg-[#091122] border border-kronox-cardBorder rounded-lg px-4 py-2.5 text-white text-sm focus:border-kronox-accent focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-kronox-accent uppercase mb-1">CVV</label>
+                        <input type="password" id="tarjeta-cvv" inputmode="numeric" autocomplete="cc-csc" maxlength="4" pattern="[0-9]{3,4}" title="3 o 4 dígitos" oninput="soloDigitos(this)" placeholder="•••" class="w-full bg-[#091122] border border-kronox-cardBorder rounded-lg px-4 py-2.5 text-white text-sm focus:border-kronox-accent focus:outline-none">
+                    </div>
+                </div>
+                <p class="text-[10px] text-gray-400"><i class="fas fa-lock mr-1"></i> Estos datos solo se validan en pantalla; no se envían ni se guardan en el servidor.</p>
             </div>
             <button type="submit" class="w-full btn-neon-solid py-3 rounded-lg font-black text-xs uppercase tracking-wider">Confirmar Solicitud</button>
         </form>
@@ -491,9 +532,39 @@ function openPlanModal(nombrePlan) {
     if (titleSpan) titleSpan.innerText = nombrePlan;
     if (planInput) planInput.value = nombrePlan;
     show($('modal-plan'), true);
+    mostrarCamposPago();
 }
 
-function closePlanModal() { show($('modal-plan'), false); }
+const CAMPOS_TARJETA = ['tarjeta-nombre', 'tarjeta-numero', 'tarjeta-vence', 'tarjeta-cvv'];
+
+function closePlanModal() {
+    show($('modal-plan'), false);
+    CAMPOS_TARJETA.forEach(id => { $(id).value = ''; }); // no dejamos datos de tarjeta en pantalla
+}
+
+// Muestra los datos de transferencia o el formulario de tarjeta según el método de pago elegido
+function mostrarCamposPago() {
+    const metodo = $('cliente-metodo-pago').value;
+    const transf = metodo === 'Transferencia Bancaria', tarjeta = metodo === 'Tarjeta de Crédito / Débito';
+    show($('pago-transferencia'), transf);
+    show($('pago-tarjeta'), tarjeta);
+    // "required" solo cuando el formulario de tarjeta está visible (si no, bloquearía el envío)
+    CAMPOS_TARJETA.forEach(id => { $(id).required = tarjeta; if (!tarjeta) $(id).value = ''; });
+    if (transf) {
+        const [plan, monto] = $('plan-seleccionado').value.split(' - ');
+        $('transferencia-monto').innerText = (monto || '') + ' MXN';
+        $('transferencia-concepto').innerText = 'Membresía ' + plan;
+    }
+}
+
+function copiarClabe() {
+    try { navigator.clipboard.writeText('012345678901234567'); mostrarNotificacionKronox('CLABE copiada'); } catch (e) {}
+}
+
+// Formato automático de los campos de tarjeta
+function formatearTarjeta(i) { i.value = i.value.replace(/\D/g, '').slice(0, 16).replace(/(.{4})/g, '$1 ').trim(); }
+function formatearVence(i) { const v = i.value.replace(/\D/g, '').slice(0, 4); i.value = v.length > 2 ? v.slice(0, 2) + '/' + v.slice(2) : v; }
+function soloDigitos(i) { i.value = i.value.replace(/\D/g, '').slice(0, 4); }
 
 async function submitPlanForm(e) {
     e.preventDefault();
@@ -513,6 +584,7 @@ async function submitPlanForm(e) {
             mostrarNotificacionKronox(`¡Solicitud enviada, ${nombre}! Te contactaremos vía ${metodoPago}.`);
             closePlanModal();
             e.target.reset();
+            mostrarCamposPago();
         } else {
             alert("Hubo un error al registrar tu solicitud en el servidor.");
         }
