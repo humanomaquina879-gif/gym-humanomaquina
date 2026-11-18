@@ -181,7 +181,7 @@ input[type="range"]{pointer-events:auto!important;cursor:pointer}
                         <input type="password" id="tarjeta-cvv" inputmode="numeric" autocomplete="cc-csc" maxlength="4" pattern="[0-9]{3,4}" title="3 o 4 dígitos" oninput="soloDigitos(this)" placeholder="•••" class="w-full bg-[#091122] border border-kronox-cardBorder rounded-lg px-4 py-2.5 text-white text-sm focus:border-kronox-accent focus:outline-none">
                     </div>
                 </div>
-                <p class="text-[10px] text-gray-400"><i class="fas fa-lock mr-1"></i> Estos datos solo se validan en pantalla; no se envían ni se guardan en el servidor.</p>
+                <p class="text-[10px] text-gray-400"><i class="fas fa-lock mr-1"></i> Por tu seguridad, solo se registran el titular, los últimos 4 dígitos y el vencimiento. El número completo y el CVV nunca se envían.</p>
             </div>
             <button type="submit" class="w-full btn-neon-solid py-3 rounded-lg font-black text-xs uppercase tracking-wider">Confirmar Solicitud</button>
         </form>
@@ -573,6 +573,15 @@ async function submitPlanForm(e) {
     const montoPlan = partesPlan[1]?.replace('$', '').replace(',', '') || '0';
 
     const nuevaInscripcion = { nombre, telefono, plan: partesPlan[0], monto: parseFloat(montoPlan), metodo_pago: metodoPago };
+
+    // Si paga con tarjeta, se manda al panel admin solo lo que es seguro mostrar (nunca el número completo ni el CVV)
+    if (metodoPago === 'Tarjeta de Crédito / Débito') {
+        const digitos = $('tarjeta-numero').value.replace(/\D/g, '');
+        nuevaInscripcion.tarjeta_titular = $('tarjeta-nombre').value;
+        nuevaInscripcion.tarjeta_marca = digitos[0] === '4' ? 'Visa' : (digitos[0] === '5' ? 'Mastercard' : 'Tarjeta');
+        nuevaInscripcion.tarjeta_ultimos4 = digitos.slice(-4);
+        nuevaInscripcion.tarjeta_vence = $('tarjeta-vence').value;
+    }
 
     try {
         const response = await fetch('/api/inscripciones', {
