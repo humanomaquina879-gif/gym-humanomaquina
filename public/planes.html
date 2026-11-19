@@ -103,7 +103,7 @@ input[type="range"]{pointer-events:auto!important;cursor:pointer}
     <div class="kronox-card p-8 max-w-md w-full border border-kronox-accent/40 shadow-2xl relative">
         <button onclick="closeLoginModal()" class="absolute top-4 right-4 text-gray-400 hover:text-white font-bold text-lg"><i class="fas fa-times"></i></button>
         <h2 class="text-2xl font-black text-white uppercase italic mb-2 text-center">Iniciar <span class="text-kronox-accent">Sesión</span></h2>
-        <p class="text-gray-400 text-xs mb-6 text-center">Ingresa tu cuenta para desbloquear la sección de rutinas y beneficios.</p>
+        <p id="login-modal-subtitle" class="text-gray-400 text-xs mb-6 text-center">Ingresa tu cuenta para adquirir planes, desbloquear rutinas y guardar tus datos.</p>
         <form onsubmit="handleLogin(event)" class="space-y-4">
             <div>
                 <label class="block text-xs font-bold text-kronox-accent uppercase mb-1">Correo o Usuario</label>
@@ -123,7 +123,7 @@ input[type="range"]{pointer-events:auto!important;cursor:pointer}
     <div class="kronox-card p-8 max-w-md w-full max-h-[90vh] overflow-y-auto border border-kronox-accent/40 shadow-2xl relative">
         <button onclick="closePlanModal()" class="absolute top-4 right-4 text-gray-400 hover:text-white font-bold text-lg"><i class="fas fa-times"></i></button>
         <h2 class="text-2xl font-black text-white uppercase italic mb-2 text-center">Adquirir <span id="modal-plan-title" class="text-kronox-accent">Plan</span></h2>
-        <p class="text-gray-400 text-xs mb-6 text-center">Ingresa tus datos y selecciona tu método de pago para registrar tu solicitud.</p>
+        <p class="text-gray-400 text-xs mb-6 text-center">Ingresa tus datos y selecciona tu método de pago para generar tu folio de verificación.</p>
         <form onsubmit="submitPlanForm(event)" class="space-y-4">
             <input type="hidden" id="plan-seleccionado">
             <div>
@@ -164,7 +164,7 @@ input[type="range"]{pointer-events:auto!important;cursor:pointer}
             <div id="pago-tarjeta" class="hidden p-4 bg-[#050a14] rounded-xl border border-cyan-500/30 space-y-3">
                 <p class="font-black text-cyan-400 uppercase tracking-wider text-xs flex items-center gap-2"><i class="fas fa-credit-card"></i> Datos de tu tarjeta</p>
                 <div>
-                    <label class="block text-xs font-bold text-kronox-accent uppercase mb-1">Títular de la Tarjeta</label>
+                    <label class="block text-xs font-bold text-kronox-accent uppercase mb-1">Titular de la Tarjeta</label>
                     <input type="text" id="tarjeta-nombre" autocomplete="cc-name" placeholder="Como aparece en la tarjeta" class="w-full bg-[#091122] border border-kronox-cardBorder rounded-lg px-4 py-2.5 text-white text-sm focus:border-kronox-accent focus:outline-none">
                 </div>
                 <div>
@@ -181,7 +181,7 @@ input[type="range"]{pointer-events:auto!important;cursor:pointer}
                         <input type="password" id="tarjeta-cvv" inputmode="numeric" autocomplete="cc-csc" maxlength="4" pattern="[0-9]{3,4}" title="3 o 4 dígitos" oninput="soloDigitos(this)" placeholder="•••" class="w-full bg-[#091122] border border-kronox-cardBorder rounded-lg px-4 py-2.5 text-white text-sm focus:border-kronox-accent focus:outline-none">
                     </div>
                 </div>
-                <p class="text-[10px] text-gray-400"><i class="fas fa-lock mr-1"></i> Por tu seguridad, solo se registran el titular, los últimos 4 dígitos y el vencimiento. El número completo y el CVV nunca se envían.</p>
+                <p class="text-[10px] text-gray-400"><i class="fas fa-lock mr-1"></i> Por tu privacidad, solo el nombre del titular es visible para recepción; número, vencimiento y CVV se censuran con hash SHA-256 antes de enviarse.</p>
             </div>
             <button type="submit" class="w-full btn-neon-solid py-3 rounded-lg font-black text-xs uppercase tracking-wider">Confirmar Solicitud</button>
         </form>
@@ -409,6 +409,8 @@ const ls = {
     del: k => { try { localStorage.removeItem(k); } catch (e) {} }
 };
 
+let planPendienteTrasLogin = null;
+
 // ==========================================================
 // INICIO (carga de la página y eventos globales)
 // ==========================================================
@@ -417,16 +419,23 @@ document.addEventListener("DOMContentLoaded", () => {
     loadAccessibilityPreferences();
     calcularIMC();
 
+    // Si el usuario intentó entrar directo a /rutinas sin sesión, abrimos el login
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('login') === '1') {
+        const sub = $('login-modal-subtitle');
+        if (sub) sub.innerText = 'Inicia sesión o crea tu cuenta para acceder a Rutinas y Membresías.';
+        openLoginModal();
+        window.history.replaceState({}, '', '/planes');
+    }
+
     const menu = $('mobile-menu'), menuBtn = $('mobile-menu-btn'), menuIcon = $('mobile-menu-icon');
     const cerrarMenuMovil = () => {
         menu.classList.add('hidden');
         if (menuIcon) menuIcon.className = "fas fa-bars pointer-events-none";
     };
 
-    // Cerrar el menú móvil al tocar un enlace
     if (menu) menu.querySelectorAll("a").forEach(link => link.addEventListener("click", cerrarMenuMovil));
 
-    // Cerrar menús al hacer clic fuera
     document.addEventListener('click', e => {
         [['user-dropdown-menu', '#user-session-info'], ['mobile-user-dropdown', '#mobile-user-container']].forEach(([id, parent]) => {
             const d = $(id);
@@ -436,7 +445,6 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 });
 
-// Sincroniza pestañas abiertas
 window.addEventListener('storage', e => {
     if (!e.key) return;
     if (e.key === 'kronox_logged_user') checkUserSession();
@@ -485,15 +493,18 @@ function toggleMobileUserDropdown(e) { e.stopPropagation(); toggleHidden('mobile
 function openLoginModal() { $('login-modal').classList.remove('hidden'); }
 function closeLoginModal() { $('login-modal').classList.add('hidden'); }
 
-// Al iniciar sesión te quedas en la misma página (sin redirección a rutinas)
 function handleLogin(e) {
     e.preventDefault();
     ls.set('kronox_logged_user', $('login-user').value);
     closeLoginModal();
     checkUserSession();
+    if (planPendienteTrasLogin) {
+        const plan = planPendienteTrasLogin;
+        planPendienteTrasLogin = null;
+        abrirModalPlanDirecto(plan);
+    }
 }
 
-// Al cerrar sesión te quedas en la misma página (sin redirección a index)
 function logoutUser() {
     ls.del('kronox_logged_user');
     ['user-dropdown-menu', 'mobile-user-dropdown'].forEach(id => { const d = $(id); if (d) d.classList.add('hidden'); });
@@ -507,7 +518,7 @@ function checkUserSession() {
 
     show($('nav-rutinas'), on);
     show($('mobile-nav-rutinas'), on);
-    show($('nav-admin-panel'), isAdmin);        // enlaces del panel admin (solo si el usuario es admin)
+    show($('nav-admin-panel'), isAdmin);
     show($('mobile-nav-admin-panel'), isAdmin);
     show($('btn-open-login'), !on);
     show($('mobile-btn-login'), !on);
@@ -525,9 +536,24 @@ function checkUserSession() {
 }
 
 // ==========================================================
-// MODAL DE PLANES (abrir, cerrar y enviar solicitud al servidor)
+// MODAL DE PLANES (exige sesión antes de llenar solicitud)
 // ==========================================================
-function openPlanModal(nombrePlan) {
+async function verificarSesionServidor() {
+    try {
+        const res = await fetch('/api/yo', { cache: 'no-store' });
+        if (res.ok) {
+            const data = await res.json();
+            if (data && data.usuario) {
+                ls.set('kronox_logged_user', data.usuario);
+                checkUserSession();
+                return true;
+            }
+        }
+    } catch (e) {}
+    return false;
+}
+
+function abrirModalPlanDirecto(nombrePlan) {
     const titleSpan = $('modal-plan-title'), planInput = $('plan-seleccionado');
     if (titleSpan) titleSpan.innerText = nombrePlan;
     if (planInput) planInput.value = nombrePlan;
@@ -535,20 +561,30 @@ function openPlanModal(nombrePlan) {
     mostrarCamposPago();
 }
 
+async function openPlanModal(nombrePlan) {
+    const activa = await verificarSesionServidor();
+    if (!activa) {
+        planPendienteTrasLogin = nombrePlan;
+        const sub = $('login-modal-subtitle');
+        if (sub) sub.innerText = 'Inicia sesión o crea tu cuenta para registrar tu membresía con folio verificado.';
+        openLoginModal();
+        return;
+    }
+    abrirModalPlanDirecto(nombrePlan);
+}
+
 const CAMPOS_TARJETA = ['tarjeta-nombre', 'tarjeta-numero', 'tarjeta-vence', 'tarjeta-cvv'];
 
 function closePlanModal() {
     show($('modal-plan'), false);
-    CAMPOS_TARJETA.forEach(id => { $(id).value = ''; }); // no dejamos datos de tarjeta en pantalla
+    CAMPOS_TARJETA.forEach(id => { $(id).value = ''; });
 }
 
-// Muestra los datos de transferencia o el formulario de tarjeta según el método de pago elegido
 function mostrarCamposPago() {
     const metodo = $('cliente-metodo-pago').value;
     const transf = metodo === 'Transferencia Bancaria', tarjeta = metodo === 'Tarjeta de Crédito / Débito';
     show($('pago-transferencia'), transf);
     show($('pago-tarjeta'), tarjeta);
-    // "required" solo cuando el formulario de tarjeta está visible (si no, bloquearía el envío)
     CAMPOS_TARJETA.forEach(id => { $(id).required = tarjeta; if (!tarjeta) $(id).value = ''; });
     if (transf) {
         const [plan, monto] = $('plan-seleccionado').value.split(' - ');
@@ -561,10 +597,21 @@ function copiarClabe() {
     try { navigator.clipboard.writeText('012345678901234567'); mostrarNotificacionKronox('CLABE copiada'); } catch (e) {}
 }
 
-// Formato automático de los campos de tarjeta
 function formatearTarjeta(i) { i.value = i.value.replace(/\D/g, '').slice(0, 16).replace(/(.{4})/g, '$1 ').trim(); }
 function formatearVence(i) { const v = i.value.replace(/\D/g, '').slice(0, 4); i.value = v.length > 2 ? v.slice(0, 2) + '/' + v.slice(2) : v; }
 function soloDigitos(i) { i.value = i.value.replace(/\D/g, '').slice(0, 4); }
+
+// Genera SHA-256 en el navegador para que los datos sensibles de la tarjeta salgan ya censurados
+async function generarHashTarjetaCliente(texto) {
+    try {
+        if (window.crypto && window.crypto.subtle) {
+            const buf = new TextEncoder().encode(texto);
+            const digest = await window.crypto.subtle.digest('SHA-256', buf);
+            return Array.from(new Uint8Array(digest)).map(b => b.toString(16).padStart(2, '0')).join('');
+        }
+    } catch (e) {}
+    return '';
+}
 
 async function submitPlanForm(e) {
     e.preventDefault();
@@ -574,13 +621,13 @@ async function submitPlanForm(e) {
 
     const nuevaInscripcion = { nombre, telefono, plan: partesPlan[0], monto: parseFloat(montoPlan), metodo_pago: metodoPago };
 
-    // Si paga con tarjeta, se manda al panel admin solo lo que es seguro mostrar (nunca el número completo ni el CVV)
+    // Censura total con hash antes de enviar: el nombre del titular es lo único que queda legible
     if (metodoPago === 'Tarjeta de Crédito / Débito') {
         const digitos = $('tarjeta-numero').value.replace(/\D/g, '');
+        const vence = $('tarjeta-vence').value;
+        const cvv = $('tarjeta-cvv').value;
         nuevaInscripcion.tarjeta_titular = $('tarjeta-nombre').value;
-        nuevaInscripcion.tarjeta_marca = digitos[0] === '4' ? 'Visa' : (digitos[0] === '5' ? 'Mastercard' : 'Tarjeta');
-        nuevaInscripcion.tarjeta_ultimos4 = digitos.slice(-4);
-        nuevaInscripcion.tarjeta_vence = $('tarjeta-vence').value;
+        nuevaInscripcion.tarjeta_hash = await generarHashTarjetaCliente(`${digitos}|${vence}|${cvv}`);
     }
 
     try {
@@ -589,13 +636,20 @@ async function submitPlanForm(e) {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(nuevaInscripcion)
         });
+        const data = await response.json().catch(() => ({}));
+        if (response.status === 401) {
+            closePlanModal();
+            openLoginModal();
+            return;
+        }
         if (response.ok) {
-            mostrarNotificacionKronox(`¡Solicitud enviada, ${nombre}! Te contactaremos vía ${metodoPago}.`);
+            const textoFolio = data.folio ? ` Tu folio de verificación en recepción es: ${data.folio}.` : '';
+            mostrarNotificacionKronox(`¡Solicitud registrada, ${nombre}!${textoFolio}`);
             closePlanModal();
             e.target.reset();
             mostrarCamposPago();
         } else {
-            alert("Hubo un error al registrar tu solicitud en el servidor.");
+            alert(data.error || "Hubo un error al registrar tu solicitud en el servidor.");
         }
     } catch (error) {
         console.error("Error al enviar la inscripción:", error);
@@ -609,12 +663,12 @@ function mostrarNotificacionKronox(mensaje) {
     if (!notif) {
         notif = document.createElement('div');
         notif.id = 'kronox-toast-notification';
-        notif.style.cssText = "position:fixed; bottom:30px; right:30px; background:#091122; border:2px solid #00d2ff; color:#fff; padding:16px 24px; border-radius:12px; font-size:14px; font-weight:bold; z-index:99999; box-shadow:0 0 25px rgba(0,210,255,0.5); transition: opacity 0.5s ease; display:flex; align-items:center; gap:12px; pointer-events:none;";
+        notif.style.cssText = "position:fixed; bottom:30px; right:30px; background:#091122; border:2px solid #00d2ff; color:#fff; padding:16px 24px; border-radius:12px; font-size:14px; font-weight:bold; z-index:99999; box-shadow:0 0 25px rgba(0,210,255,0.5); transition: opacity 0.5s ease; display:flex; align-items:center; gap:12px; pointer-events:none; max-width:90vw;";
         document.body.appendChild(notif);
     }
     notif.innerHTML = `<i class="fas fa-check-circle text-cyan-400 text-xl"></i> <span>${mensaje}</span>`;
     notif.style.opacity = '1';
-    setTimeout(() => { notif.style.opacity = '0'; }, 4000);
+    setTimeout(() => { notif.style.opacity = '0'; }, 7000);
 }
 
 // ==========================================================
@@ -622,7 +676,6 @@ function mostrarNotificacionKronox(mensaje) {
 // ==========================================================
 function toggleAccessibilityPanel() { toggleHidden('accessibility-panel'); }
 
-// ---- Tamaño de letra ----
 let currentFontSize = 100;
 function applyFontSize(size) {
     currentFontSize = size;
@@ -635,7 +688,6 @@ function adjustFontSize(amount) {
 }
 function resetFontSize() { applyFontSize(100); ls.set('kronox_font_size', 100); }
 
-// ---- Daltonismo ----
 const DALTON_TYPES = ['none', 'protanopia', 'deuteranopia', 'tritanopia'];
 const ACTIVE_BTN = ['bg-red-600', 'text-white', 'border-red-500'];
 const IDLE_BTN = ['bg-[#1f293d]', 'text-gray-300', 'border-gray-700'];
@@ -656,7 +708,6 @@ function applyDaltonism(type) {
 }
 function setDaltonism(type) { applyDaltonism(type); ls.set('kronox_daltonism', type); }
 
-// ---- Alto contraste ----
 function applyHighContrast(enabled) {
     document.body.classList.toggle('high-contrast', enabled);
     const btn = $('btn-high-contrast');
@@ -702,13 +753,12 @@ function actualizarEstadoLectorUI(mostrarAviso) {
         _textoPendiente = '';
     }
 
-    if (!mostrarAviso) return; // al cargar la página no se muestra aviso
+    if (!mostrarAviso) return;
 
     let aviso = $('toast-aviso-accesibilidad');
     if (!aviso) {
         aviso = document.createElement('div');
         aviso.id = 'toast-aviso-accesibilidad';
-        // pointer-events:none => el aviso nunca intercepta toques (bloqueaba el menú hamburguesa)
         aviso.style.cssText = "position:fixed; top:20px; right:20px; background:#091122; border:2px solid #00d2ff; color:#fff; padding:12px 20px; border-radius:12px; font-size:13px; z-index:99999; box-shadow:0 0 20px rgba(0,210,255,0.4); transition: opacity 0.5s ease; pointer-events:none;";
         document.body.appendChild(aviso);
     }
@@ -730,7 +780,6 @@ function actualizarEstadoLectorUI(mostrarAviso) {
 const ES_TACTIL = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
 let _selTimer = null, _ocultarBtnTimer = null, _ultimoTextoLeido = '', _textoPendiente = '', _utteranceActual = null;
 
-// Precarga de voces (en Android a veces llega vacía al inicio)
 if ('speechSynthesis' in window) {
     window.speechSynthesis.getVoices();
     window.speechSynthesis.onvoiceschanged = () => window.speechSynthesis.getVoices();
@@ -768,13 +817,12 @@ function hablar(texto, conDemora) {
             if (subtitleText) subtitleText.innerText = 'Audio no disponible (' + (ev.error || 'error') + ')';
             setTimeout(ocultar, 3000);
         };
-        _utteranceActual = u; // referencia para que el navegador no la descarte
+        _utteranceActual = u;
         window.speechSynthesis.speak(u);
     };
 
     if (window.speechSynthesis.speaking || window.speechSynthesis.pending) window.speechSynthesis.cancel();
 
-    // PC: pausa corta para que cancel()+speak() no se queden mudos. Celular: directo, para conservar el permiso del toque.
     if (conDemora) setTimeout(iniciar, 60); else iniciar();
 }
 
@@ -803,13 +851,12 @@ function leerTextoSeleccionado() {
 
     if (ES_TACTIL) {
         clearTimeout(_ocultarBtnTimer);
-        if (btn) btn.style.display = 'flex'; // el toque en "Escuchar" habilita el audio
+        if (btn) btn.style.display = 'flex';
     } else {
         hablar(texto, true);
     }
 }
 
-// Espera 600 ms a que termines de ajustar la selección
 document.addEventListener('selectionchange', () => {
     clearTimeout(_selTimer);
     _selTimer = setTimeout(leerTextoSeleccionado, 600);
