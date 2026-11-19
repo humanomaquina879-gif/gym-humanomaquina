@@ -1,681 +1,829 @@
-const express = require('express');
-const { createClient } = require('@libsql/client');
-const path = require('path');
-const crypto = require('crypto'); // viene incluido en Node, no se instala nada
-const app = express();
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Planes | Kronox Gym</title>
+<!-- ===== ICONOS (Font Awesome) ===== -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<!-- ===== FUENTE (Google Fonts: Inter) ===== -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,300;0,400;0,600;0,700;0,800;0,900;1,800;1,900&display=swap" rel="stylesheet">
+<!-- ===== TAILWIND CSS + COLORES DE MARCA ===== -->
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+tailwind.config={theme:{extend:{colors:{kronox:{bg:'#050a14',cardBg:'#091122',cardBorder:'#16284a',accent:'#00d2ff',accentDark:'#0077ff',blueDark:'#080e1a',glow:'rgba(0, 210, 255, 0.25)'}},fontFamily:{sans:['Inter','sans-serif']}}}}
+</script>
+<!-- ===== ESTILOS PERSONALIZADOS ===== -->
+<style>
+/* ===== BASE ===== */
+body{background-color:#050a14;color:#f8fafc;font-family:'Inter',sans-serif;min-height:100vh;overflow-x:hidden;transition:font-size .3s ease}
+/* ===== FILTROS DE DALTONISMO ===== */
+/* Van en #page-wrapper y no en body: en body rompen los elementos position:fixed */
+#page-wrapper.daltonism-protanopia{filter:url('#protanopia-filter')}
+#page-wrapper.daltonism-deuteranopia{filter:url('#deuteranopia-filter')}
+#page-wrapper.daltonism-tritanopia{filter:url('#tritanopia-filter')}
+/* ===== ALTO CONTRASTE ===== */
+body.high-contrast{background-color:#000!important;color:#ff0!important}
+body.high-contrast .kronox-card,body.high-contrast header,body.high-contrast footer,body.high-contrast .accessibility-panel{background-color:#111!important;border-color:#ff0!important;color:#ff0!important}
+/* ===== FONDO CUADRICULADO Y BRILLOS ===== */
+.bg-grid-pattern{background-size:36px 36px;background-image:linear-gradient(to right,rgba(0,210,255,.04) 1px,transparent 1px),linear-gradient(to bottom,rgba(0,210,255,.04) 1px,transparent 1px)}
+.glow-light{position:absolute;width:450px;height:450px;background:radial-gradient(circle,rgba(0,210,255,.12) 0%,rgba(5,10,20,0) 70%);border-radius:50%;pointer-events:none;z-index:0}
+/* ===== TARJETAS Y BOTONES NEÓN ===== */
+.kronox-card{background:linear-gradient(160deg,#0a1326 0%,#060c18 100%);border:1px solid #16284a;border-radius:1.25rem;transition:all .35s cubic-bezier(.4,0,.2,1);position:relative}
+.kronox-card:hover{border-color:#00d2ff;box-shadow:0 15px 35px rgba(0,210,255,.18)}
+.btn-neon-solid{background:#00d2ff;color:#050a14;border:2px solid #00d2ff;transition:all .3s ease;box-shadow:0 0 15px rgba(0,210,255,.4)}
+.btn-neon-solid:hover{background:transparent;color:#00d2ff;box-shadow:0 0 25px rgba(0,210,255,.7)}
+/* ===== SLIDERS (calculadora de IMC) ===== */
+input[type="range"]{pointer-events:auto!important;cursor:pointer}
+/* ===== LECTOR DE VOZ (subtítulos y botón "Escuchar", este último solo en celular) ===== */
+#speech-subtitle-box{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:rgba(5,10,20,.95);border:2px solid #00d2ff;color:#fff;padding:12px 24px;border-radius:12px;font-size:14px;z-index:9999;box-shadow:0 0 25px rgba(0,210,255,.5);max-width:90%;text-align:center;display:none;pointer-events:none}
+#btn-escuchar{position:fixed;bottom:20px;right:20px;z-index:9999;display:none;align-items:center;gap:8px;background:#00d2ff;color:#050a14;border:none;padding:12px 18px;border-radius:9999px;font-weight:800;font-size:13px;box-shadow:0 0 20px rgba(0,210,255,.6)}
+</style>
+</head>
+<body>
 
-app.set('trust proxy', 1); // Render usa un proxy HTTPS; sirve para detectar HTTPS y la IP real
-app.use(express.json());
-app.use(express.static('public')); // Los archivos están dentro de la carpeta 'public'
+<!-- ===== FILTROS SVG PARA DALTONISMO ===== -->
+<svg style="display:none;">
+<filter id="protanopia-filter"><feColorMatrix type="matrix" values="0.567, 0.433, 0, 0, 0  0.558, 0.442, 0, 0, 0  0, 0.242, 0.758, 0, 0  0, 0, 0, 1, 0"/></filter>
+<filter id="deuteranopia-filter"><feColorMatrix type="matrix" values="0.625, 0.375, 0, 0, 0  0.7, 0.3, 0, 0, 0  0, 0.3, 0.7, 0, 0  0, 0, 0, 1, 0"/></filter>
+<filter id="tritanopia-filter"><feColorMatrix type="matrix" values="0.95, 0.05, 0, 0, 0  0, 0.433, 0.567, 0, 0  0, 0.475, 0.525, 0, 0  0, 0, 0, 1, 0"/></filter>
+</svg>
 
-// 1. BASE DE DATOS PERSISTENTE (Turso = SQLite en la nube, no se borra al redesplegar)
-// Variables de entorno en Render: TURSO_URL y TURSO_TOKEN.
-// Si no existen (por ejemplo, en tu compu), usa un archivo local './kronox.db'.
-const client = createClient({
-    url: process.env.TURSO_URL || 'file:./kronox.db',
-    authToken: process.env.TURSO_TOKEN
-});
+<!-- ===== ELEMENTOS FIJOS (fuera del wrapper para que el filtro no los afecte) ===== -->
+<div id="speech-subtitle-box"><i class="fas fa-volume-high text-cyan-400 mr-2"></i><span id="subtitle-text">Reproduciendo audio...</span></div>
+<button id="btn-escuchar" type="button" onclick="hablarTextoPendiente()"><i class="fas fa-volume-high"></i> Escuchar</button>
 
-// Adaptador: mantiene la misma forma de uso que tenía sqlite3 (db.run / db.get / db.all)
-let cola = Promise.resolve(); // las consultas se ejecutan en orden
-function ejecutar(modo, sql, params, cb) {
-    if (typeof params === 'function') { cb = params; params = []; }
-    cola = cola.then(async () => {
-        let r = null, error = null;
-        try {
-            r = await client.execute({ sql, args: params || [] });
-        } catch (e) {
-            error = e;
-        }
-        if (!cb) {
-            if (error) console.error('Error de base de datos:', error.message);
-            return;
-        }
-        try {
-            if (error) return cb(error);
-            const filas = r.rows.map(f => Object.fromEntries(r.columns.map((c, i) => [c, f[i]])));
-            if (modo === 'run') {
-                cb.call({
-                    lastID: r.lastInsertRowid != null ? Number(r.lastInsertRowid) : 0,
-                    changes: r.rowsAffected
-                }, null);
-            } else if (modo === 'get') {
-                cb(null, filas[0]);
-            } else {
-                cb(null, filas);
-            }
-        } catch (e) {
-            console.error('Error en callback de base de datos:', e);
-        }
-    }).catch(() => {}); // un error nunca debe detener la cola
-}
-const db = {
-    serialize: (fn) => fn(),
-    run: (sql, p, cb) => ejecutar('run', sql, p, cb),
-    get: (sql, p, cb) => ejecutar('get', sql, p, cb),
-    all: (sql, p, cb) => ejecutar('all', sql, p, cb)
+<!-- ===== PANEL FLOTANTE DE ACCESIBILIDAD ===== -->
+<div class="fixed top-6 left-6 z-50">
+    <button onclick="toggleAccessibilityPanel()" title="Accesibilidad Universal" class="bg-[#111827] border border-red-600/60 text-red-500 hover:bg-red-600 hover:text-white p-3.5 rounded-full shadow-[0_0_20px_rgba(239,68,68,0.3)] transition-all flex items-center justify-center">
+        <i class="fas fa-universal-access text-xl"></i>
+    </button>
+    <div id="accessibility-panel" class="hidden absolute top-16 left-0 w-80 bg-[#141d2f] border border-red-600/40 rounded-2xl p-5 shadow-2xl backdrop-blur-xl space-y-5 text-gray-200 accessibility-panel">
+        <div class="flex justify-between items-center border-b border-red-600/50 pb-2">
+            <span class="text-sm font-bold uppercase text-red-500 tracking-wider">Accesibilidad Universal</span>
+            <button onclick="toggleAccessibilityPanel()" class="text-gray-400 hover:text-white font-bold"><i class="fas fa-times"></i></button>
+        </div>
+        <div>
+            <label class="block text-xs font-bold text-gray-300 uppercase mb-2">Tamaño de letra</label>
+            <div class="flex gap-2">
+                <button onclick="adjustFontSize(-2)" class="flex-1 bg-[#1f293d] hover:bg-red-600 hover:text-white border border-gray-700 py-2 rounded-lg font-bold text-sm transition-colors">A-</button>
+                <button onclick="resetFontSize()" class="flex-1 bg-red-600 text-white border border-red-500 py-2 rounded-lg font-bold text-sm transition-colors">A</button>
+                <button onclick="adjustFontSize(2)" class="flex-1 bg-[#1f293d] hover:bg-red-600 hover:text-white border border-gray-700 py-2 rounded-lg font-bold text-sm transition-colors">A+</button>
+            </div>
+        </div>
+        <div>
+            <label class="block text-xs font-bold text-gray-300 uppercase mb-2">Visión de Color</label>
+            <div class="grid grid-cols-2 gap-2 text-xs">
+                <button onclick="setDaltonism('none')" id="btn-dalton-none" class="bg-red-600 text-white font-semibold py-2 px-3 rounded-lg border border-red-500 transition-all text-center">Ninguno</button>
+                <button onclick="setDaltonism('protanopia')" id="btn-dalton-protanopia" class="bg-[#1f293d] hover:bg-red-600/50 text-gray-300 font-semibold py-2 px-3 rounded-lg border border-gray-700 transition-all text-center">Protanopía</button>
+                <button onclick="setDaltonism('deuteranopia')" id="btn-dalton-deuteranopia" class="bg-[#1f293d] hover:bg-red-600/50 text-gray-300 font-semibold py-2 px-3 rounded-lg border border-gray-700 transition-all text-center">Deuteranopía</button>
+                <button onclick="setDaltonism('tritanopia')" id="btn-dalton-tritanopia" class="bg-[#1f293d] hover:bg-red-600/50 text-gray-300 font-semibold py-2 px-3 rounded-lg border border-gray-700 transition-all text-center">Tritanopía</button>
+            </div>
+        </div>
+        <div>
+            <label class="block text-xs font-bold text-gray-300 uppercase mb-2">Contraste</label>
+            <button onclick="toggleHighContrast()" id="btn-high-contrast" class="w-full bg-[#1f293d] hover:bg-red-600/50 border border-gray-700 text-gray-200 py-2.5 rounded-lg text-xs font-semibold transition-colors text-center">Activar Alto Contraste</button>
+        </div>
+        <div>
+            <label class="block text-xs font-bold text-gray-300 uppercase mb-2">Lector de Voz</label>
+            <button onclick="toggleSpeechReader()" id="btn-speech-toggle" class="w-full bg-cyan-600 hover:bg-cyan-500 text-white py-2.5 rounded-lg text-xs font-bold transition-colors flex items-center justify-center gap-2">
+                <i class="fas fa-volume-high"></i> Activar Lector Interactivo
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- ===== MODAL DE INICIO DE SESIÓN ===== -->
+<div id="login-modal" class="hidden fixed inset-0 bg-black/80 flex items-center justify-center p-4 z-50 backdrop-blur-md">
+    <div class="kronox-card p-8 max-w-md w-full border border-kronox-accent/40 shadow-2xl relative">
+        <button onclick="closeLoginModal()" class="absolute top-4 right-4 text-gray-400 hover:text-white font-bold text-lg"><i class="fas fa-times"></i></button>
+        <h2 class="text-2xl font-black text-white uppercase italic mb-2 text-center">Iniciar <span class="text-kronox-accent">Sesión</span></h2>
+        <p id="login-modal-subtitle" class="text-gray-400 text-xs mb-6 text-center">Ingresa tu cuenta para adquirir planes, desbloquear rutinas y guardar tus datos.</p>
+        <form onsubmit="handleLogin(event)" class="space-y-4">
+            <div>
+                <label class="block text-xs font-bold text-kronox-accent uppercase mb-1">Correo o Usuario</label>
+                <input type="text" id="login-user" required placeholder="ej. socio@kronox.com" class="w-full bg-[#050a14] border border-kronox-cardBorder rounded-lg px-4 py-2.5 text-white text-sm focus:border-kronox-accent focus:outline-none">
+            </div>
+            <div>
+                <label class="block text-xs font-bold text-kronox-accent uppercase mb-1">Contraseña</label>
+                <input type="password" id="login-pass" required placeholder="••••••••" class="w-full bg-[#050a14] border border-kronox-cardBorder rounded-lg px-4 py-2.5 text-white text-sm focus:border-kronox-accent focus:outline-none">
+            </div>
+            <button type="submit" class="w-full btn-neon-solid py-3 rounded-lg font-black text-xs uppercase tracking-wider">Entrar al Sistema</button>
+        </form>
+    </div>
+</div>
+
+<!-- ===== MODAL DE ADQUISICIÓN DE PLANES ===== -->
+<div id="modal-plan" class="hidden fixed inset-0 bg-black/80 flex items-center justify-center p-4 z-50 backdrop-blur-md">
+    <div class="kronox-card p-8 max-w-md w-full max-h-[90vh] overflow-y-auto border border-kronox-accent/40 shadow-2xl relative">
+        <button onclick="closePlanModal()" class="absolute top-4 right-4 text-gray-400 hover:text-white font-bold text-lg"><i class="fas fa-times"></i></button>
+        <h2 class="text-2xl font-black text-white uppercase italic mb-2 text-center">Adquirir <span id="modal-plan-title" class="text-kronox-accent">Plan</span></h2>
+        <p class="text-gray-400 text-xs mb-6 text-center">Ingresa tus datos y selecciona tu método de pago para generar tu folio de verificación.</p>
+        <form onsubmit="submitPlanForm(event)" class="space-y-4">
+            <input type="hidden" id="plan-seleccionado">
+            <div>
+                <label class="block text-xs font-bold text-kronox-accent uppercase mb-1">Nombre Completo</label>
+                <input type="text" id="cliente-nombre" required placeholder="Tu nombre" class="w-full bg-[#050a14] border border-kronox-cardBorder rounded-lg px-4 py-2.5 text-white text-sm focus:border-kronox-accent focus:outline-none">
+            </div>
+            <div>
+                <label class="block text-xs font-bold text-kronox-accent uppercase mb-1">Número de Teléfono / WhatsApp</label>
+                <input type="tel" id="cliente-telefono" required placeholder="7770000000" class="w-full bg-[#050a14] border border-kronox-cardBorder rounded-lg px-4 py-2.5 text-white text-sm focus:border-kronox-accent focus:outline-none">
+            </div>
+            <div>
+                <label class="block text-xs font-bold text-kronox-accent uppercase mb-1">Método de Pago</label>
+                <select id="cliente-metodo-pago" onchange="mostrarCamposPago()" class="w-full bg-[#050a14] border border-kronox-cardBorder rounded-lg px-4 py-2.5 text-white text-sm focus:border-kronox-accent focus:outline-none">
+                    <option value="Efectivo (en mostrador)">Efectivo (en mostrador)</option>
+                    <option value="Transferencia Bancaria">Transferencia Bancaria</option>
+                </select>
+            </div>
+
+            <!-- Datos para transferencia bancaria (solo si se elige Transferencia) -->
+            <div id="pago-transferencia" class="hidden p-4 bg-[#050a14] rounded-xl border border-cyan-500/30 space-y-2 text-xs">
+                <p class="font-black text-cyan-400 uppercase tracking-wider flex items-center gap-2"><i class="fas fa-building-columns"></i> Datos para tu transferencia</p>
+                <div class="flex justify-between gap-3"><span class="text-gray-400">Beneficiario</span><span class="text-white font-bold text-right">Kronox Gym</span></div>
+                <div class="flex justify-between gap-3"><span class="text-gray-400">Banco</span><span class="text-white font-bold text-right">BBVA</span></div>
+                <div class="flex justify-between gap-3"><span class="text-gray-400">Tarjeta</span><span class="text-white font-bold text-right">4000 1234 5678 9010</span></div>
+                <div class="flex justify-between items-center gap-3">
+                    <span class="text-gray-400">CLABE</span>
+                    <span class="text-white font-bold text-right flex items-center gap-2">012345678901234567
+                        <button type="button" onclick="copiarClabe()" title="Copiar CLABE" class="text-cyan-400 hover:text-white"><i class="fas fa-copy"></i></button>
+                    </span>
+                </div>
+                <div class="flex justify-between gap-3"><span class="text-gray-400">Monto</span><span id="transferencia-monto" class="text-cyan-400 font-black text-right"></span></div>
+                <div class="flex justify-between gap-3"><span class="text-gray-400">Concepto</span><span id="transferencia-concepto" class="text-white font-bold text-right"></span></div>
+                <p class="text-gray-400 pt-2 border-t border-gray-800">Al terminar, envía tu comprobante por <a href="https://wa.me/527779393985?text=Hola%20Kronox%20Gym,%20te%20env%C3%ADo%20mi%20comprobante" target="_blank" class="text-emerald-400 font-bold hover:underline">WhatsApp</a>.</p>
+            </div>
+            <button type="submit" class="w-full btn-neon-solid py-3 rounded-lg font-black text-xs uppercase tracking-wider">Confirmar Solicitud</button>
+        </form>
+    </div>
+</div>
+
+<!-- ===== CONTENIDO DE LA PÁGINA (aquí se aplica el filtro de daltonismo) ===== -->
+<div id="page-wrapper" class="bg-grid-pattern relative min-h-screen flex flex-col justify-between">
+
+    <!-- ===== EFECTO DE LUZ DE FONDO ===== -->
+    <div class="glow-light top-0 left-1/2 -translate-x-1/2"></div>
+
+    <!-- ===== NAVBAR SUPERIOR ===== -->
+    <header class="sticky top-0 z-40 bg-kronox-bg/85 backdrop-blur-lg border-b border-kronox-cardBorder/60">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-24 flex items-center justify-between">
+            <!-- Logo -->
+            <a href="index" class="flex items-center gap-2 group py-2 ml-14 sm:ml-0">
+                <img src="https://res.cloudinary.com/bo5jzelh/image/upload/v1783041430/Logo_Kronox_Gym_lfg9tl.jpg" alt="Logo" class="h-16 md:h-20 w-auto rounded-xl border border-kronox-accent/40 object-contain shadow-[0_0_15px_rgba(0,210,255,0.2)]">
+            </a>
+
+            <!-- Navegación de escritorio (Mi Rutina y Panel Admin se muestran según la sesión) -->
+            <nav class="hidden md:flex items-center space-x-6 font-semibold text-sm">
+                <a href="index" class="text-gray-300 hover:text-kronox-accent transition-colors">Inicio</a>
+                <a href="informacion" class="text-gray-300 hover:text-kronox-accent transition-colors">Información</a>
+                <a href="planes" class="text-kronox-accent font-bold border-b-2 border-kronox-accent pb-1">Planes</a>
+                <a href="catalogo" class="text-gray-300 hover:text-kronox-accent transition-colors">Catálogo</a>
+                <a href="ubicacion" class="text-gray-300 hover:text-kronox-accent transition-colors">Ubicación</a>
+                <a href="rutinas" id="nav-rutinas" class="hidden text-emerald-400 font-bold hover:text-emerald-300 transition-colors flex items-center gap-1.5"><i class="fas fa-dumbbell"></i> Rutinas</a>
+                <a href="admin" id="nav-admin-panel" class="hidden text-cyan-400 font-bold hover:underline transition-colors flex items-center gap-1.5"><i class="fas fa-user-shield"></i> Panel Admin</a>
+            </nav>
+
+            <!-- Sesión y contacto (escritorio) -->
+            <div class="hidden md:flex items-center space-x-3">
+                <div id="user-session-info" class="hidden relative">
+                    <button onclick="toggleUserDropdown(event)" class="flex items-center gap-2 bg-[#091122] border border-kronox-accent/50 hover:border-kronox-accent px-3 py-1.5 rounded-full shadow-[0_0_15px_rgba(0,210,255,0.2)] transition-all">
+                        <div class="w-8 h-8 rounded-full bg-cyan-500/10 border border-cyan-400 text-cyan-400 flex items-center justify-center font-bold text-xs"><i class="fas fa-user text-sm"></i></div>
+                        <span id="welcome-user-name" class="text-xs font-bold text-cyan-400 pr-1"></span>
+                        <i class="fas fa-chevron-down text-[10px] text-cyan-400"></i>
+                    </button>
+                    <!-- Menú desplegable del perfil -->
+                    <div id="user-dropdown-menu" class="hidden absolute right-0 mt-2 w-64 bg-[#091122] border border-kronox-accent/40 rounded-2xl p-4 shadow-2xl backdrop-blur-xl z-50 text-gray-200 space-y-3">
+                        <div class="border-b border-gray-800 pb-3">
+                            <p class="text-[10px] uppercase font-bold text-gray-400 tracking-wider">¡HOLA DE NUEVO, ATLETA!</p>
+                            <p id="dropdown-user-email" class="text-sm font-black text-cyan-400 truncate"></p>
+                            <p class="text-[11px] text-emerald-400 mt-1">¡Qué gusto tenerte entrenando con nosotros hoy! 💪</p>
+                        </div>
+                        <div class="space-y-1.5">
+                            <a href="rutinas" class="flex items-center gap-2 text-xs font-bold text-gray-300 hover:text-cyan-400 p-2 rounded-lg hover:bg-white/5 transition-colors"><i class="fas fa-dumbbell text-emerald-400"></i> Mi Rutina</a>
+                        </div>
+                        <button onclick="logoutUser()" class="w-full mt-2 bg-red-500/10 hover:bg-red-500 text-red-400 hover:text-white border border-red-500/30 text-red-400 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-2"><i class="fas fa-sign-out-alt"></i> Cerrar Sesión</button>
+                    </div>
+                </div>
+                <button id="btn-open-login" onclick="openLoginModal()" class="btn-neon-solid px-4 py-2 rounded-lg font-bold text-xs uppercase tracking-wider"><i class="fas fa-user-lock mr-1"></i> Iniciar Sesión</button>
+                <a href="https://wa.me/527779393985?text=Hola%20Kronox%20Gym" target="_blank" class="btn-neon-solid px-4 py-2 rounded-lg font-bold text-xs uppercase tracking-wider flex items-center gap-2"><i class="fab fa-whatsapp text-base"></i> Contactar</a>
+            </div>
+
+            <!-- Botón de menú móvil -->
+            <button id="mobile-menu-btn" type="button" onclick="toggleMobileMenu()" title="Abrir menú" class="md:hidden text-gray-300 hover:text-white text-2xl focus:outline-none p-3 cursor-pointer z-50">
+                <i class="fas fa-bars pointer-events-none" id="mobile-menu-icon"></i>
+            </button>
+        </div>
+
+        <!-- ===== MENÚ MÓVIL ===== -->
+        <div id="mobile-menu" class="hidden md:hidden bg-kronox-blueDark border-b border-kronox-cardBorder px-6 pt-3 pb-6 space-y-3">
+            <a href="index" class="block py-2 text-gray-300 hover:text-kronox-accent font-medium">Inicio</a>
+            <a href="informacion" class="block py-2 text-gray-300 hover:text-kronox-accent font-medium">Información</a>
+            <a href="planes" class="block py-2 text-kronox-accent font-bold">Planes</a>
+            <a href="catalogo" class="block py-2 text-gray-300 hover:text-kronox-accent font-medium">Catálogo</a>
+            <a href="ubicacion" class="block py-2 text-gray-300 hover:text-kronox-accent font-medium">Ubicación</a>
+            <a href="rutinas" id="mobile-nav-rutinas" class="hidden py-2 text-emerald-400 font-bold"><i class="fas fa-dumbbell"></i> Mi Rutina</a>
+            <a href="admin" id="mobile-nav-admin-panel" class="hidden py-2 text-cyan-400 font-bold"><i class="fas fa-user-shield"></i> Panel Admin</a>
+
+            <!-- Sesión y perfil (móvil) -->
+            <div id="mobile-session-container" class="pt-2 border-t border-gray-800">
+                <button id="mobile-btn-login" type="button" onclick="openLoginModal()" class="w-full text-center btn-neon-solid py-2.5 rounded-lg font-bold text-xs uppercase">Iniciar Sesión</button>
+                <div id="mobile-user-container" class="hidden relative">
+                    <button type="button" onclick="toggleMobileUserDropdown(event)" class="w-full flex items-center justify-between bg-[#091122] border border-cyan-500/40 p-3 rounded-xl shadow-md transition-all cursor-pointer">
+                        <div class="flex items-center gap-3 pointer-events-none">
+                            <div class="w-9 h-9 rounded-full bg-cyan-500/10 border border-cyan-400 text-cyan-400 flex items-center justify-center font-bold text-xs"><i class="fas fa-user"></i></div>
+                            <div class="text-left">
+                                <span id="mobile-welcome-name" class="text-xs font-bold text-cyan-400 block truncate max-w-[160px]"></span>
+                                <span class="text-[10px] text-emerald-400">¡Qué gusto tenerte aquí! 💪</span>
+                            </div>
+                        </div>
+                        <i class="fas fa-chevron-down text-xs text-cyan-400 pr-1 pointer-events-none"></i>
+                    </button>
+                    <div id="mobile-user-dropdown" class="hidden mt-2 bg-[#050a14] border border-cyan-500/30 p-3 rounded-xl space-y-2">
+                        <a href="rutinas" class="flex items-center gap-2 text-xs font-bold text-gray-300 hover:text-kronox-accent p-2 rounded-lg hover:bg-white/5 transition-colors"><i class="fas fa-dumbbell text-emerald-400"></i> Mi Rutina</a>
+                        <button type="button" onclick="logoutUser()" class="w-full bg-red-500/10 hover:bg-red-500 text-red-400 hover:text-white border border-red-500/30 py-2 rounded-lg text-xs font-bold uppercase transition-all flex items-center justify-center gap-2"><i class="fas fa-sign-out-alt"></i> Cerrar Sesión</button>
+                    </div>
+                </div>
+            </div>
+            <a href="https://wa.me/527779393985?text=Hola%20Kronox%20Gym" target="_blank" class="inline-block mt-3 w-full text-center btn-neon-solid py-2.5 rounded-lg font-bold text-xs uppercase"><i class="fab fa-whatsapp"></i> Contactar por WhatsApp</a>
+        </div>
+    </header>
+
+    <!-- ===== SECCIÓN PRINCIPAL: PLANES ===== -->
+    <main class="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 flex-grow">
+        <!-- Encabezado -->
+        <div class="text-center max-w-3xl mx-auto mb-12">
+            <h1 class="text-3xl sm:text-4xl font-black uppercase italic tracking-wider text-white mb-3">Nuestras <span class="text-kronox-accent">Membresías</span></h1>
+            <p class="text-gray-400 text-sm sm:text-base">Entrena con el mejor equipo, instalaciones de primer nivel y la disciplina que necesitas para alcanzar tus metas.</p>
+        </div>
+
+        <!-- ===== CALCULADORA INTERACTIVA DE IMC ===== -->
+        <div class="max-w-2xl mx-auto mb-16">
+            <div class="kronox-card p-6 sm:p-8 border border-cyan-500/30 shadow-2xl">
+                <h3 class="text-base font-black text-white uppercase italic mb-4 flex items-center gap-2 text-center sm:text-left"><i class="fas fa-calculator text-cyan-400"></i> Calculadora Interactiva de IMC y Diagnóstico</h3>
+                <div class="space-y-4 mb-6">
+                    <div>
+                        <div class="flex justify-between text-xs font-bold text-gray-300 uppercase mb-1"><span>Peso: <span id="val-peso" class="text-cyan-400">70</span> kg</span></div>
+                        <input type="range" id="input-peso" min="40" max="150" value="70" class="w-full accent-cyan-400 cursor-pointer" oninput="calcularIMC()">
+                    </div>
+                    <div>
+                        <div class="flex justify-between text-xs font-bold text-gray-300 uppercase mb-1"><span>Altura: <span id="val-altura" class="text-cyan-400">170</span> cm</span></div>
+                        <input type="range" id="input-altura" min="140" max="210" value="170" class="w-full accent-cyan-400 cursor-pointer" oninput="calcularIMC()">
+                    </div>
+                </div>
+                <div class="p-4 bg-[#050a14] rounded-xl border border-gray-800 flex flex-col sm:flex-row items-center justify-between gap-4 text-center sm:text-left">
+                    <div>
+                        <p class="text-[10px] text-gray-400 uppercase font-bold">Tu IMC Estimado:</p>
+                        <p id="resultado-imc" class="text-2xl font-black text-cyan-400">--</p>
+                    </div>
+                    <div class="sm:text-right">
+                        <p class="text-[10px] text-gray-400 uppercase font-bold">Diagnóstico y Recomendación:</p>
+                        <p id="sugerencia-plan" class="text-xs font-semibold text-emerald-400">Desliza para calcular...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== TARJETAS DE PLANES ===== -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+            <!-- Visita -->
+            <div class="kronox-card p-8 flex flex-col justify-between">
+            <div>
+                <div class="flex items-center justify-between mb-4">
+                    <span class="bg-[#111c33] text-cyan-400 text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded border border-cyan-500/20">Día Individual</span>
+                    <i class="fas fa-bolt text-cyan-400 text-sm"></i>
+                </div>
+                <h3 class="text-2xl font-black text-white uppercase italic mb-2">Visita</h3>
+                <p class="text-gray-400 text-xs mb-6">Ideal para conocer nuestras instalaciones o entrenar de paso.</p>
+                <div class="text-3xl font-black text-white mb-6">$100 <span class="text-xs text-gray-400 font-normal">/ día</span></div>
+                <ul class="space-y-3 text-sm text-gray-300 mb-8 border-t border-kronox-cardBorder pt-4">
+                    <li class="flex items-center gap-2"><i class="fas fa-check-circle text-cyan-400 text-xs"></i> Acceso completo por 1 día</li>
+                    <li class="flex items-center gap-2"><i class="fas fa-check-circle text-cyan-400 text-xs"></i> Uso de área de pesas y cardio</li>
+                    <li class="flex items-center gap-2"><i class="fas fa-check-circle text-cyan-400 text-xs"></i> Acceso a vestidores, duchas y lockers</li>
+                </ul>
+            </div>
+            <button onclick="openPlanModal('Visita - $100')" class="w-full text-center btn-neon-solid py-3 rounded-xl font-black text-xs uppercase tracking-wider">Elegir Plan</button>
+        </div>
+
+            <!-- Mensualidad (más popular) -->
+            <div class="kronox-card p-8 flex flex-col justify-between border-2 border-kronox-accent/80 shadow-[0_0_30px_rgba(0,210,255,0.2)]">
+            <div class="absolute -top-3 left-1/2 -translate-x-1/2 bg-cyan-400 text-gray-950 font-black text-[10px] uppercase tracking-widest px-4 py-1 rounded-full flex items-center gap-1 shadow-md"><i class="fas fa-star text-[9px]"></i> Más Popular</div>
+            <div>
+                <div class="flex items-center justify-between mb-4">
+                    <span class="bg-[#111c33] text-cyan-400 text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded border border-cyan-500/20">Entrenamiento Continuo</span>
+                    <i class="fas fa-crown text-cyan-400 text-sm"></i>
+                </div>
+                <h3 class="text-2xl font-black text-white uppercase italic mb-2">Mensualidad</h3>
+                <p class="text-gray-400 text-xs mb-6">Tu compromiso mes a mes con los mejores resultados. 30 días por mensualidad.</p>
+                <div class="text-3xl font-black text-cyan-400 mb-6">$350 <span class="text-xs text-gray-400 font-normal">/ mes</span></div>
+                <ul class="space-y-3 text-sm text-gray-300 mb-8 border-t border-kronox-cardBorder pt-4">
+                    <li class="flex items-center gap-2"><i class="fas fa-check-circle text-cyan-400 text-xs"></i> Acceso total e ilimitado</li>
+                    <li class="flex items-center gap-2"><i class="fas fa-check-circle text-cyan-400 text-xs"></i> Área de pesas libres y máquinas</li>
+                    <li class="flex items-center gap-2"><i class="fas fa-check-circle text-cyan-400 text-xs"></i> Zona cardiovascular completa</li>
+                    <li class="flex items-center gap-2"><i class="fas fa-check-circle text-cyan-400 text-xs"></i> Acceso a vestidores, duchas y lockers</li>
+                </ul>
+            </div>
+            <button onclick="openPlanModal('Mensualidad - $350')" class="w-full text-center btn-neon-solid py-3 rounded-xl font-black text-xs uppercase tracking-wider">Elegir Plan</button>
+        </div>
+
+            <!-- Anualidad -->
+            <div class="kronox-card p-8 flex flex-col justify-between">
+            <div>
+                <div class="flex items-center justify-between mb-4">
+                    <span class="bg-[#111c33] text-cyan-400 text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded border border-cyan-500/20">Mayor Ahorro</span>
+                    <i class="fas fa-trophy text-cyan-400 text-sm"></i>
+                </div>
+                <h3 class="text-2xl font-black text-white uppercase italic mb-2">Anualidad</h3>
+                <p class="text-gray-400 text-xs mb-6">Ahorro máximo para atletas dedicados a largo plazo.</p>
+                <div class="text-3xl font-black text-white mb-6">$3,000 <span class="text-xs text-gray-400 font-normal">/ año</span></div>
+                <ul class="space-y-3 text-sm text-gray-300 mb-8 border-t border-kronox-cardBorder pt-4">
+                    <li class="flex items-center gap-2"><i class="fas fa-check-circle text-cyan-400 text-xs"></i> Acceso VIP ilimitado por 12 meses</li>
+                    <li class="flex items-center gap-2"><i class="fas fa-check-circle text-cyan-400 text-xs"></i> Ahorra más de $1,000 al año</li>
+                    <li class="flex items-center gap-2"><i class="fas fa-check-circle text-cyan-400 text-xs"></i> Evaluación y seguimiento físico</li>
+                    <li class="flex items-center gap-2"><i class="fas fa-check-circle text-cyan-400 text-xs"></i> Acceso a todas las áreas</li>
+                    <li class="flex items-center gap-2"><i class="fas fa-check-circle text-cyan-400 text-xs"></i> 1 invitado diferente por mes</li>
+                </ul>
+            </div>
+            <button onclick="openPlanModal('Anualidad - $3,000')" class="w-full text-center btn-neon-solid py-3 rounded-xl font-black text-xs uppercase tracking-wider">Elegir Plan</button>
+        </div>
+        </div>
+    </main>
+
+    <!-- ===== PIE DE PÁGINA (redes sociales) ===== -->
+    <footer class="relative z-10 bg-kronox-blueDark border-t border-kronox-cardBorder/80 py-10">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-6">
+            <div class="text-center md:text-left">
+                <img src="https://res.cloudinary.com/bo5jzelh/image/upload/v1783041430/Logo_Kronox_Gym_lfg9tl.jpg" alt="Logo" class="h-16 w-auto rounded-xl border border-kronox-cardBorder object-contain shadow-md">
+            </div>
+            <div class="flex items-center space-x-5">
+                <a href="https://www.instagram.com/kronoxgym" target="_blank" class="w-10 h-10 rounded-full text-white bg-gradient-to-tr from-yellow-500 via-pink-500 to-purple-600 flex items-center justify-center hover:scale-110 transition-all"><i class="fab fa-instagram text-lg"></i></a>
+                <a href="https://www.facebook.com/profile.php?id=61591217086184" target="_blank" class="w-10 h-10 rounded-full text-white bg-[#1877F2] flex items-center justify-center hover:scale-110 transition-all"><i class="fab fa-facebook-f text-lg"></i></a>
+                <a href="https://www.tiktok.com/@kronoxgym_" target="_blank" class="w-10 h-10 rounded-full text-white bg-black flex items-center justify-center hover:scale-110 transition-all"><i class="fab fa-tiktok text-lg"></i></a>
+                <a href="https://wa.me/527779393985?text=Hola" target="_blank" class="w-10 h-10 rounded-full text-white bg-[#25D366] flex items-center justify-center hover:scale-110 transition-all"><i class="fab fa-whatsapp text-lg"></i></a>
+            </div>
+        </div>
+    </footer>
+</div>
+
+<!-- ===== JAVASCRIPT ===== -->
+<script>
+// ==========================================================
+// UTILIDADES (atajos y localStorage seguro)
+// ==========================================================
+const $ = id => document.getElementById(id);
+const toggleHidden = id => { const e = $(id); if (e) e.classList.toggle('hidden'); };
+const show = (el, v) => { if (el) el.classList.toggle('hidden', !v); };
+
+const ls = {
+    get: k => { try { return localStorage.getItem(k); } catch (e) { return null; } },
+    set: (k, v) => { try { localStorage.setItem(k, v); } catch (e) {} },
+    del: k => { try { localStorage.removeItem(k); } catch (e) {} }
 };
-console.log('Base de datos Turso lista.');
 
-// 2. CREAR TABLAS SI NO EXISTEN
-db.serialize(() => {
-    // Tabla de inscripciones
-    db.run(`CREATE TABLE IF NOT EXISTS inscripciones (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        nombre TEXT,
-        telefono TEXT,
-        plan TEXT,
-        monto TEXT,
-        metodo_pago TEXT,
-        estado TEXT DEFAULT 'Pendiente',
-        fecha DATETIME DEFAULT CURRENT_TIMESTAMP
-    )`);
+let planPendienteTrasLogin = null;
 
-    // Columnas para mostrar la tarjeta censurada con hash, el folio de verificación y el usuario autenticado.
-    // Si la columna ya existe, se ignora el aviso; los registros anteriores no se tocan.
-    ['tarjeta_titular', 'tarjeta_marca', 'tarjeta_ultimos4', 'tarjeta_vence', 'tarjeta_hash', 'folio', 'usuario_cuenta'].forEach(col => {
-        db.run(`ALTER TABLE inscripciones ADD COLUMN ${col} TEXT`, () => {});
-    });
+// ==========================================================
+// INICIO (carga de la página y eventos globales)
+// ==========================================================
+document.addEventListener("DOMContentLoaded", () => {
+    checkUserSession();
+    loadAccessibilityPreferences();
+    calcularIMC();
 
-    // Tabla para el control persistente de la afluencia del gimnasio
-    db.run(`CREATE TABLE IF NOT EXISTS afluencia_config (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        porcentaje INTEGER,
-        estado TEXT,
-        modo_manual INTEGER DEFAULT 0
-    )`, () => {
-        // Inicializar con un registro por defecto si está vacía
-        db.get(`SELECT COUNT(*) as count FROM afluencia_config`, (err, row) => {
-            if (row && row.count === 0) {
-                db.run(`INSERT INTO afluencia_config (porcentaje, estado, modo_manual) VALUES (45, 'Fluencia Moderada', 0)`);
-            }
-        });
-    });
-});
-
-// Genera un hash seguro para censurar datos de tarjeta en Turso y Admin
-function hashearDatoTarjeta(valor) {
-    if (!valor) return null;
-    const salt = process.env.CARD_HASH_SALT || 'kronox-card-privacy-salt';
-    return crypto.createHmac('sha256', salt).update(String(valor)).digest('hex').slice(0, 16);
-}
-
-// Genera un folio único de verificación para recepción (ej. KRX-4829)
-function generarFolioSolicitud() {
-    const num = crypto.randomInt(1000, 9999);
-    const letra = String.fromCharCode(65 + crypto.randomInt(0, 26));
-    return `KRX-${num}${letra}`;
-}
-
-// 3. RUTA PARA RECIBIR INSCRIPCIONES (Desde planes.html)
-// Ahora exige sesión activa (requiereSesion) para darle veracidad y vincular el trámite a una cuenta real.
-app.post('/api/inscripciones', requiereSesion, (req, res) => {
-    const { nombre, telefono, plan, monto, metodo_pago } = req.body;
-
-    if (!String(nombre || '').trim() || !String(telefono || '').trim() || !String(plan || '').trim()) {
-        return res.status(400).json({ error: 'Faltan datos obligatorios en la solicitud.' });
+    // Si el usuario intentó entrar directo a /rutinas sin sesión, abrimos el login
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('login') === '1') {
+        const sub = $('login-modal-subtitle');
+        if (sub) sub.innerText = 'Inicia sesión o crea tu cuenta para acceder a Rutinas y Membresías.';
+        openLoginModal();
+        window.history.replaceState({}, '', '/planes');
     }
 
-    // Fecha y hora exacta en la zona horaria de México
-    const fechaMex = new Date().toLocaleString("sv-SE", { timeZone: "America/Mexico_City" });
-    const folio = generarFolioSolicitud();
-    const usuarioCuenta = req.usuario.usuario;
+    const menu = $('mobile-menu'), menuBtn = $('mobile-menu-btn'), menuIcon = $('mobile-menu-icon');
+    const cerrarMenuMovil = () => {
+        menu.classList.add('hidden');
+        if (menuIcon) menuIcon.className = "fas fa-bars pointer-events-none";
+    };
 
-    // Datos de tarjeta CENSURADOS CON HASH:
-    // El titular queda visible para recepción; el resto se guarda hasheado y enmascarado.
-    const esTarjeta = metodo_pago === 'Tarjeta de Crédito / Débito';
-    const titular = esTarjeta ? String(req.body.tarjeta_titular || '').trim().slice(0, 60) : null;
-    const marca = esTarjeta ? 'Tarjeta Censurada' : null;
-    const huellaCliente = esTarjeta ? String(req.body.tarjeta_hash || '').trim().slice(0, 64) : '';
-    const tarjetaHash = esTarjeta ? hashearDatoTarjeta(huellaCliente || `${titular}-${Date.now()}`) : null;
-    const ultimos4 = esTarjeta ? '••••' : null;
-    const vence = esTarjeta ? '••/••' : null;
+    if (menu) menu.querySelectorAll("a").forEach(link => link.addEventListener("click", cerrarMenuMovil));
 
-    db.run(
-        `INSERT INTO inscripciones (nombre, telefono, plan, monto, metodo_pago, estado, fecha, tarjeta_titular, tarjeta_marca, tarjeta_ultimos4, tarjeta_vence, tarjeta_hash, folio, usuario_cuenta) VALUES (?, ?, ?, ?, ?, 'Pendiente', ?, ?, ?, ?, ?, ?, ?, ?)`,
-        [String(nombre).trim().slice(0, 80), String(telefono).trim().slice(0, 25), String(plan).trim().slice(0, 40), monto, metodo_pago, fechaMex, titular, marca, ultimos4, vence, tarjetaHash, folio, usuarioCuenta],
-        function(err) {
-            if (err) {
-                return res.status(500).json({ error: err.message });
+    document.addEventListener('click', e => {
+        [['user-dropdown-menu', '#user-session-info'], ['mobile-user-dropdown', '#mobile-user-container']].forEach(([id, parent]) => {
+            const d = $(id);
+            if (d && !d.classList.contains('hidden') && !e.target.closest(parent)) d.classList.add('hidden');
+        });
+        if (menu && !menu.classList.contains('hidden') && !menu.contains(e.target) && !(menuBtn && menuBtn.contains(e.target))) cerrarMenuMovil();
+    });
+});
+
+window.addEventListener('storage', e => {
+    if (!e.key) return;
+    if (e.key === 'kronox_logged_user') checkUserSession();
+    if (e.key.startsWith('kronox_')) loadAccessibilityPreferences();
+});
+window.addEventListener('pageshow', () => { checkUserSession(); loadAccessibilityPreferences(); });
+
+// ==========================================================
+// CÁLCULO DE IMC (umbrales realistas de gimnasio)
+// ==========================================================
+function calcularIMC() {
+    const peso = parseFloat($('input-peso').value), alturaCm = parseFloat($('input-altura').value);
+    $('val-peso').innerText = peso;
+    $('val-altura').innerText = alturaCm;
+
+    const alturaM = alturaCm / 100;
+    const imc = (peso / (alturaM * alturaM)).toFixed(1);
+    const resImc = $('resultado-imc'), sugPlan = $('sugerencia-plan');
+
+    if (resImc) resImc.innerText = imc;
+    if (sugPlan) {
+        const [color, estado, sugerencia] =
+            imc < 20.0  ? ['text-yellow-400', 'Bajo de peso', '3-4 días/sem (Fuerza)'] :
+            imc < 25.0  ? ['text-emerald-400', 'Peso saludable (Normal)', '4-5 días/sem (Acondicionamiento)'] :
+            imc < 30.0  ? ['text-amber-400', 'Sobrepeso', '5-6 días/sem (Cardio y Tonificación)'] :
+                          ['text-red-400', 'Obesidad', '3-4 días/sem con supervisión'];
+        sugPlan.innerHTML = `<span class="${color} font-bold">${estado}</span><br>Sugerencia: ${sugerencia}`;
+    }
+}
+
+// ==========================================================
+// MENÚS (móvil y desplegables de usuario)
+// ==========================================================
+function toggleMobileMenu() {
+    const menu = $('mobile-menu'), icon = $('mobile-menu-icon');
+    if (!menu) return;
+    menu.classList.toggle('hidden');
+    if (icon) icon.className = menu.classList.contains('hidden') ? "fas fa-bars pointer-events-none" : "fas fa-times pointer-events-none";
+}
+function toggleUserDropdown(e) { e.stopPropagation(); toggleHidden('user-dropdown-menu'); }
+function toggleMobileUserDropdown(e) { e.stopPropagation(); toggleHidden('mobile-user-dropdown'); }
+
+// ==========================================================
+// SESIÓN, LOGIN Y ACCESO ADMIN
+// ==========================================================
+function openLoginModal() { $('login-modal').classList.remove('hidden'); }
+function closeLoginModal() { $('login-modal').classList.add('hidden'); }
+
+function handleLogin(e) {
+    e.preventDefault();
+    ls.set('kronox_logged_user', $('login-user').value);
+    closeLoginModal();
+    checkUserSession();
+    if (planPendienteTrasLogin) {
+        const plan = planPendienteTrasLogin;
+        planPendienteTrasLogin = null;
+        abrirModalPlanDirecto(plan);
+    }
+}
+
+function logoutUser() {
+    ls.del('kronox_logged_user');
+    ['user-dropdown-menu', 'mobile-user-dropdown'].forEach(id => { const d = $(id); if (d) d.classList.add('hidden'); });
+    checkUserSession();
+}
+
+function checkUserSession() {
+    const user = ls.get('kronox_logged_user'), on = !!user;
+    const isAdmin = on && user.toLowerCase() === 'admin';
+    const userInfo = $('user-session-info'), mobileUser = $('mobile-user-container');
+
+    show($('nav-rutinas'), on);
+    show($('mobile-nav-rutinas'), on);
+    show($('nav-admin-panel'), isAdmin);
+    show($('mobile-nav-admin-panel'), isAdmin);
+    show($('btn-open-login'), !on);
+    show($('mobile-btn-login'), !on);
+    show(userInfo, on);
+    if (userInfo) userInfo.classList.toggle('flex', on);
+    show(mobileUser, on);
+
+    if (on) {
+        if (userInfo) {
+            $('welcome-user-name').innerText = user.split('@')[0];
+            $('dropdown-user-email').innerText = user;
+        }
+        if (mobileUser) $('mobile-welcome-name').innerText = user;
+    }
+}
+
+// ==========================================================
+// MODAL DE PLANES (exige sesión antes de llenar solicitud)
+// ==========================================================
+async function verificarSesionServidor() {
+    try {
+        const res = await fetch('/api/yo', { cache: 'no-store' });
+        if (res.ok) {
+            const data = await res.json();
+            if (data && data.usuario) {
+                ls.set('kronox_logged_user', data.usuario);
+                checkUserSession();
+                return true;
             }
-            res.json({ success: true, id: this.lastID, folio, usuario: usuarioCuenta });
         }
-    );
-});
-
-// 4. API PARA QUE admin.html OBTENGA LAS INSCRIPCIONES EN JSON (SOLO ADMIN)
-app.get('/api/inscripciones', requiereAdmin, (req, res) => {
-    db.all(`SELECT * FROM inscripciones ORDER BY fecha DESC`, [], (err, rows) => {
-        if (err) {
-            return res.status(500).json({ error: err.message });
-        }
-        res.json(rows);
-    });
-});
-
-// 5. API PARA QUE admin.html CAMBIE EL ESTATUS (Vigente / Pendiente) (SOLO ADMIN)
-app.post('/api/inscripciones/:id/liberar', requiereAdmin, (req, res) => {
-    const id = req.params.id;
-    db.get(`SELECT estado FROM inscripciones WHERE id = ?`, [id], (err, row) => {
-        if (err || !row) return res.status(404).json({ error: "Inscripción no encontrada" });
-
-        const nuevoEstado = row.estado === 'Vigente' ? 'Pendiente' : 'Vigente';
-        db.run(`UPDATE inscripciones SET estado = ? WHERE id = ?`, [nuevoEstado, id], (err) => {
-            if (err) return res.status(500).json({ error: "Error al actualizar estatus" });
-            res.json({ success: true, nuevoEstado });
-        });
-    });
-});
-
-// 5.1. API PARA ELIMINAR UN REGISTRO (SOLO ADMIN)
-app.delete('/api/inscripciones/:id', requiereAdmin, (req, res) => {
-    const id = req.params.id;
-    db.run(`DELETE FROM inscripciones WHERE id = ?`, [id], function(err) {
-        if (err) {
-            return res.status(500).json({ error: "Error al eliminar el registro" });
-        }
-        if (this.changes === 0) {
-            return res.status(404).json({ error: "Inscripción no encontrada" });
-        }
-        res.json({ success: true });
-    });
-});
-
-// ================= APIS PARA LA AFLUENCIA EN TIEMPO REAL =================
-
-// Obtener estado actual de afluencia (PÚBLICA: la ven los clientes)
-app.get('/api/afluencia', (req, res) => {
-    db.get(`SELECT * FROM afluencia_config ORDER BY id DESC LIMIT 1`, [], (err, row) => {
-        if (err) return res.status(500).json({ error: err.message });
-        res.json(row || { porcentaje: 45, estado: "Fluencia Moderada", modo_manual: 0 });
-    });
-});
-
-// Actualizar estado de afluencia desde el panel de admin (SOLO ADMIN)
-app.post('/api/afluencia', requiereAdmin, (req, res) => {
-    const { porcentaje, estado } = req.body;
-    db.run(`UPDATE afluencia_config SET porcentaje = ?, estado = ?, modo_manual = 1 WHERE id = 1`, [porcentaje, estado], function(err) {
-        if (err) return res.status(500).json({ error: err.message });
-        res.json({ success: true, mensaje: "Afluencia actualizada correctamente" });
-    });
-});
-
-// =========================================================================
-
-// =========================================================================
-// ===== CUENTAS DE SOCIOS, SESIÓN Y MARCAS (PR) ===========================
-// =========================================================================
-
-// ---- Ayudantes para usar la base de datos con async/await ----
-const dbGet = (sql, params = []) => new Promise((resolve, reject) => {
-    db.get(sql, params, (err, row) => (err ? reject(err) : resolve(row)));
-});
-const dbAll = (sql, params = []) => new Promise((resolve, reject) => {
-    db.all(sql, params, (err, rows) => (err ? reject(err) : resolve(rows)));
-});
-const dbRun = (sql, params = []) => new Promise((resolve, reject) => {
-    db.run(sql, params, function (err) {
-        if (err) reject(err);
-        else resolve({ lastID: this.lastID, changes: this.changes });
-    });
-});
-
-const ahoraMex = () => new Date().toLocaleString('sv-SE', { timeZone: 'America/Mexico_City' });
-const sinCache = (req, res, next) => { res.set('Cache-Control', 'no-store'); next(); };
-const falloServidor = (res, e) => {
-    console.error(e);
-    res.status(500).json({ error: 'Error del servidor. Intenta de nuevo.' });
-};
-
-// ---- Tablas de cuentas ----
-db.serialize(() => {
-    db.run(`CREATE TABLE IF NOT EXISTS usuarios (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        usuario TEXT NOT NULL UNIQUE COLLATE NOCASE,
-        salt TEXT NOT NULL,
-        hash TEXT NOT NULL,
-        creado TEXT
-    )`, () => { prepararAdmin(); });
-
-    db.run(`CREATE TABLE IF NOT EXISTS sesiones (
-        token_hash TEXT PRIMARY KEY,
-        usuario_id INTEGER NOT NULL,
-        expira INTEGER NOT NULL
-    )`, () => { db.run('DELETE FROM sesiones WHERE expira < ?', [Date.now()]); });
-
-    // Ejercicios que cada socio eligió para "Mi rutina"
-    db.run(`CREATE TABLE IF NOT EXISTS rutina_usuario (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        usuario_id INTEGER NOT NULL,
-        ejercicio TEXT NOT NULL,
-        UNIQUE (usuario_id, ejercicio)
-    )`);
-
-    // Historial de marcas: una fila por cada vez que el socio registra un ejercicio
-    db.run(`CREATE TABLE IF NOT EXISTS marcas (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        usuario_id INTEGER NOT NULL,
-        ejercicio TEXT NOT NULL,
-        peso REAL NOT NULL,
-        reps INTEGER NOT NULL,
-        fecha TEXT
-    )`);
-    db.run(`CREATE INDEX IF NOT EXISTS idx_marcas_usuario_ejercicio ON marcas (usuario_id, ejercicio)`);
-});
-
-// ---- Contraseñas (scrypt viene incluido en Node) ----
-function hashPassword(password, saltHex) {
-    const salt = saltHex ? Buffer.from(saltHex, 'hex') : crypto.randomBytes(16);
-    return new Promise((resolve, reject) => {
-        crypto.scrypt(password, salt, 64, (err, key) => {
-            if (err) reject(err);
-            else resolve({ salt: salt.toString('hex'), hash: key.toString('hex') });
-        });
-    });
+    } catch (e) {}
+    return false;
 }
 
-async function verificarPassword(password, saltHex, hashHex) {
-    const { hash } = await hashPassword(password, saltHex);
-    const a = Buffer.from(hash, 'hex');
-    const b = Buffer.from(hashHex, 'hex');
-    return a.length === b.length && crypto.timingSafeEqual(a, b);
+function abrirModalPlanDirecto(nombrePlan) {
+    const titleSpan = $('modal-plan-title'), planInput = $('plan-seleccionado');
+    if (titleSpan) titleSpan.innerText = nombrePlan;
+    if (planInput) planInput.value = nombrePlan;
+    show($('modal-plan'), true);
+    mostrarCamposPago();
 }
 
-// ---- El usuario "admin" se define con la variable de entorno ADMIN_PASSWORD (en Render) ----
-async function prepararAdmin() {
-    const clave = process.env.ADMIN_PASSWORD;
-    if (!clave) {
-        console.warn('ADMIN_PASSWORD no está definida: el usuario "admin" NO podrá iniciar sesión.');
+async function openPlanModal(nombrePlan) {
+    const activa = await verificarSesionServidor();
+    if (!activa) {
+        planPendienteTrasLogin = nombrePlan;
+        const sub = $('login-modal-subtitle');
+        if (sub) sub.innerText = 'Inicia sesión o crea tu cuenta para registrar tu membresía con folio verificado.';
+        openLoginModal();
         return;
     }
+    abrirModalPlanDirecto(nombrePlan);
+}
+
+function closePlanModal() {
+    show($('modal-plan'), false);
+}
+
+function mostrarCamposPago() {
+    const metodo = $('cliente-metodo-pago').value;
+    const transf = metodo === 'Transferencia Bancaria';
+    show($('pago-transferencia'), transf);
+    if (transf) {
+        const [plan, monto] = $('plan-seleccionado').value.split(' - ');
+        $('transferencia-monto').innerText = (monto || '') + ' MXN';
+        $('transferencia-concepto').innerText = 'Membresía ' + plan;
+    }
+}
+
+function copiarClabe() {
+    try { navigator.clipboard.writeText('012345678901234567'); mostrarNotificacionKronox('CLABE copiada'); } catch (e) {}
+}
+
+async function submitPlanForm(e) {
+    e.preventDefault();
+    const nombre = $('cliente-nombre').value, telefono = $('cliente-telefono').value, metodoPago = $('cliente-metodo-pago').value;
+    const partesPlan = $('plan-seleccionado').value.split(' - ');
+    const montoPlan = partesPlan[1]?.replace('$', '').replace(',', '') || '0';
+
+    const nuevaInscripcion = {
+        nombre,
+        telefono,
+        plan: partesPlan[0],
+        monto: parseFloat(montoPlan),
+        metodo_pago: metodoPago
+    };
+
     try {
-        const { salt, hash } = await hashPassword(clave);
-        const existe = await dbGet('SELECT id FROM usuarios WHERE usuario = ?', ['admin']);
-        if (existe) {
-            await dbRun('UPDATE usuarios SET salt = ?, hash = ? WHERE id = ?', [salt, hash, existe.id]);
-        } else {
-            await dbRun('INSERT INTO usuarios (usuario, salt, hash, creado) VALUES (?, ?, ?, ?)', ['admin', salt, hash, ahoraMex()]);
-        }
-    } catch (e) {
-        console.error('No se pudo preparar el usuario admin:', e);
-    }
-}
-
-// ---- Sesiones con cookie (se envía sola a TODAS tus páginas) ----
-const SESION_MS = 30 * 24 * 60 * 60 * 1000; // 30 días
-const hashToken = (token) => crypto.createHash('sha256').update(token).digest('hex');
-
-function leerCookie(req, nombre) {
-    const raw = req.headers.cookie || '';
-    for (const parte of raw.split(';')) {
-        const i = parte.indexOf('=');
-        if (i === -1) continue;
-        if (parte.slice(0, i).trim() === nombre) {
-            try { return decodeURIComponent(parte.slice(i + 1).trim()); } catch (e) { return null; }
-        }
-    }
-    return null;
-}
-
-async function crearSesion(req, res, usuarioId) {
-    const token = crypto.randomBytes(32).toString('hex');
-    await dbRun('INSERT INTO sesiones (token_hash, usuario_id, expira) VALUES (?, ?, ?)',
-        [hashToken(token), usuarioId, Date.now() + SESION_MS]);
-    res.cookie('kronox_sid', token, {
-        httpOnly: true,       // JavaScript de la página no puede leerla
-        sameSite: 'lax',
-        secure: req.secure,   // true en Render (HTTPS)
-        maxAge: SESION_MS,
-        path: '/'
-    });
-}
-
-async function obtenerUsuarioSesion(req) {
-    const token = leerCookie(req, 'kronox_sid');
-    if (!token) return null;
-    return await dbGet(
-        `SELECT u.id, u.usuario FROM sesiones s
-         JOIN usuarios u ON u.id = s.usuario_id
-         WHERE s.token_hash = ? AND s.expira > ?`,
-        [hashToken(token), Date.now()]
-    );
-}
-
-async function requiereSesion(req, res, next) {
-    try {
-        const fila = await obtenerUsuarioSesion(req);
-        if (!fila) return res.status(401).json({ error: 'Sesión no iniciada' });
-        req.usuario = fila;
-        next();
-    } catch (e) {
-        falloServidor(res, e);
-    }
-}
-
-// Middleware para proteger páginas HTML que solo deben verse con sesión (ej. /rutinas)
-async function requiereSesionPagina(req, res, next) {
-    try {
-        const fila = await obtenerUsuarioSesion(req);
-        if (!fila) {
-            return res.redirect('/planes?login=1');
-        }
-        req.usuario = fila;
-        next();
-    } catch (e) {
-        res.redirect('/planes?login=1');
-    }
-}
-
-// Solo deja pasar al usuario "admin" (se usa en las rutas del panel)
-function requiereAdmin(req, res, next) {
-    requiereSesion(req, res, () => {
-        if (req.usuario.usuario.toLowerCase() !== 'admin') {
-            return res.status(403).json({ error: 'Sin permiso' });
-        }
-        next();
-    });
-}
-
-// ---- Límite de intentos fallidos (en el servidor): 5 intentos y bloqueo de 15 minutos ----
-const intentosFallidos = new Map();
-const BLOQUEO_MS = 15 * 60 * 1000;
-const MAX_FALLOS = 5;
-const claveIntento = (req, usuario) => usuario.toLowerCase();
-
-function estadoIntentos(req, usuario) {
-    const k = claveIntento(req, usuario);
-    const reg = intentosFallidos.get(k);
-    if (!reg) return { bloqueado: false, restantes: MAX_FALLOS };
-    if (reg.hasta) {
-        if (Date.now() < reg.hasta) {
-            return { bloqueado: true, minutos: Math.ceil((reg.hasta - Date.now()) / 60000) };
-        }
-        intentosFallidos.delete(k);
-        return { bloqueado: false, restantes: MAX_FALLOS };
-    }
-    return { bloqueado: false, restantes: MAX_FALLOS - reg.n };
-}
-
-function registrarFallo(req, usuario) {
-    const k = claveIntento(req, usuario);
-    const reg = intentosFallidos.get(k) || { n: 0, hasta: 0, ultimo: 0 };
-    reg.n += 1;
-    reg.ultimo = Date.now();
-    if (reg.n >= MAX_FALLOS) reg.hasta = Date.now() + BLOQUEO_MS;
-    intentosFallidos.set(k, reg);
-    return estadoIntentos(req, usuario);
-}
-
-setInterval(() => {
-    const ahora = Date.now();
-    for (const [k, reg] of intentosFallidos) {
-        const bloqueoVigente = reg.hasta && ahora < reg.hasta;
-        if (!bloqueoVigente && ahora - reg.ultimo > BLOQUEO_MS) intentosFallidos.delete(k);
-    }
-}, 10 * 60 * 1000);
-
-// ---- LOGIN: solo entra quien ya tiene cuenta y escribe su contraseña correcta ----
-const MSG_LOGIN_MAL = 'Usuario o contraseña incorrectos. Si aún no tienes cuenta, toca «Crear cuenta».';
-
-app.post('/api/login', async (req, res) => {
-    try {
-        const usuario = String(req.body.usuario || '').trim();
-        const password = String(req.body.password || '');
-
-        if (!usuario || !password) return res.status(400).json({ error: 'Escribe tu usuario y tu contraseña.' });
-        if (usuario.length > 60 || password.length > 100) return res.status(401).json({ error: MSG_LOGIN_MAL });
-
-        const antes = estadoIntentos(req, usuario);
-        if (antes.bloqueado) {
-            return res.status(429).json({ error: `Bloqueado por intentos fallidos. Espera ${antes.minutos} min.` });
-        }
-
-        const fila = await dbGet('SELECT id, usuario, salt, hash FROM usuarios WHERE usuario = ?', [usuario]);
-        const ok = fila ? await verificarPassword(password, fila.salt, fila.hash) : false;
-
-        if (!ok) {
-            const despues = registrarFallo(req, usuario);
-            if (despues.bloqueado) {
-                return res.status(429).json({ error: 'Límite de 5 intentos alcanzado. Bloqueado 15 minutos.' });
-            }
-            const q = despues.restantes;
-            return res.status(401).json({
-                error: `${MSG_LOGIN_MAL} Te quedan ${q} ${q === 1 ? 'intento' : 'intentos'}.`
-            });
-        }
-
-        intentosFallidos.delete(claveIntento(req, usuario));
-        await crearSesion(req, res, fila.id);
-        res.json({ success: true, usuario: fila.usuario });
-    } catch (e) {
-        falloServidor(res, e);
-    }
-});
-
-// ---- REGISTRO: crea una cuenta nueva (el usuario no debe existir todavía) ----
-const registrosPorIp = new Map();
-function registroBloqueado(req) {
-    const ahora = Date.now();
-    const reg = registrosPorIp.get(req.ip);
-    if (!reg || ahora - reg.desde > 60 * 60 * 1000) {
-        registrosPorIp.set(req.ip, { n: 1, desde: ahora });
-        return false;
-    }
-    reg.n += 1;
-    return reg.n > 10;
-}
-
-app.post('/api/registro', async (req, res) => {
-    try {
-        const usuario = String(req.body.usuario || '').trim();
-        const password = String(req.body.password || '');
-
-        if (usuario.length < 3 || usuario.length > 60) {
-            return res.status(400).json({ error: 'El usuario debe tener entre 3 y 60 caracteres.' });
-        }
-        if (usuario.toLowerCase() === 'admin') {
-            return res.status(400).json({ error: 'Ese usuario no está disponible. Elige otro.' });
-        }
-        if (password.length < 6 || password.length > 100) {
-            return res.status(400).json({ error: 'La contraseña debe tener entre 6 y 100 caracteres.' });
-        }
-        if (registroBloqueado(req)) {
-            return res.status(429).json({ error: 'Demasiados intentos de registro. Inténtalo más tarde.' });
-        }
-
-        const existe = await dbGet('SELECT id FROM usuarios WHERE usuario = ?', [usuario]);
-        if (existe) {
-            return res.status(409).json({ error: 'Ese usuario ya está en uso. Elige otro o inicia sesión.' });
-        }
-
-        const { salt, hash } = await hashPassword(password);
-        let r;
-        try {
-            r = await dbRun('INSERT INTO usuarios (usuario, salt, hash, creado) VALUES (?, ?, ?, ?)',
-                [usuario, salt, hash, ahoraMex()]);
-        } catch (e) {
-            const texto = String((e && (e.code || '')) + ' ' + (e && e.message || ''));
-            if (texto.includes('SQLITE_CONSTRAINT') || texto.includes('UNIQUE')) {
-                return res.status(409).json({ error: 'Ese usuario ya está en uso. Elige otro o inicia sesión.' });
-            }
-            throw e;
-        }
-
-        await crearSesion(req, res, r.lastID);
-        res.json({ success: true, usuario });
-    } catch (e) {
-        falloServidor(res, e);
-    }
-});
-
-app.post('/api/logout', async (req, res) => {
-    try {
-        const token = leerCookie(req, 'kronox_sid');
-        if (token) await dbRun('DELETE FROM sesiones WHERE token_hash = ?', [hashToken(token)]);
-        res.clearCookie('kronox_sid', { path: '/' });
-        res.json({ success: true });
-    } catch (e) {
-        falloServidor(res, e);
-    }
-});
-
-// Quién tiene sesión activa (las páginas lo usan para mantenerse sincronizadas)
-app.get('/api/yo', sinCache, requiereSesion, (req, res) => {
-    res.json({ usuario: req.usuario.usuario, esAdmin: req.usuario.usuario.toLowerCase() === 'admin' });
-});
-
-// ---- MI RUTINA Y MARCAS ----
-const EJERCICIO_OK = /^[a-z0-9_]{1,60}$/;
-
-app.get('/api/mi-rutina', sinCache, requiereSesion, async (req, res) => {
-    try {
-        const id = req.usuario.id;
-        const filasRutina = await dbAll('SELECT ejercicio FROM rutina_usuario WHERE usuario_id = ? ORDER BY id', [id]);
-
-        const filasPR = await dbAll(
-            `SELECT m.ejercicio, m.peso, m.reps, m.fecha FROM marcas m
-             WHERE m.usuario_id = ? AND NOT EXISTS (
-                 SELECT 1 FROM marcas x
-                 WHERE x.usuario_id = m.usuario_id AND x.ejercicio = m.ejercicio
-                   AND (x.peso > m.peso
-                        OR (x.peso = m.peso AND x.reps > m.reps)
-                        OR (x.peso = m.peso AND x.reps = m.reps AND x.id > m.id))
-             )`, [id]);
-
-        const filasUltima = await dbAll(
-            `SELECT m.ejercicio, m.peso, m.reps, m.fecha FROM marcas m
-             WHERE m.usuario_id = ? AND NOT EXISTS (
-                 SELECT 1 FROM marcas x
-                 WHERE x.usuario_id = m.usuario_id AND x.ejercicio = m.ejercicio AND x.id > m.id
-             )`, [id]);
-
-        const prs = {};
-        filasPR.forEach(f => { prs[f.ejercicio] = { peso: f.peso, reps: f.reps, fecha: f.fecha }; });
-        const ultimas = {};
-        filasUltima.forEach(f => { ultimas[f.ejercicio] = { peso: f.peso, reps: f.reps, fecha: f.fecha }; });
-
-        res.json({ ejercicios: filasRutina.map(f => f.ejercicio), prs, ultimas });
-    } catch (e) {
-        falloServidor(res, e);
-    }
-});
-
-app.put('/api/mi-rutina', requiereSesion, async (req, res) => {
-    try {
-        const lista = req.body.ejercicios;
-        if (!Array.isArray(lista) || lista.length > 200) {
-            return res.status(400).json({ error: 'Lista de ejercicios no válida.' });
-        }
-        const unicos = [...new Set(lista.map(String))];
-        if (!unicos.every(e => EJERCICIO_OK.test(e))) {
-            return res.status(400).json({ error: 'Hay un ejercicio no válido en la lista.' });
-        }
-
-        const id = req.usuario.id;
-        if (unicos.length === 0) {
-            await dbRun('DELETE FROM rutina_usuario WHERE usuario_id = ?', [id]);
-        } else {
-            const marcas = unicos.map(() => '?').join(',');
-            await dbRun(`DELETE FROM rutina_usuario WHERE usuario_id = ? AND ejercicio NOT IN (${marcas})`, [id, ...unicos]);
-            for (const ej of unicos) {
-                await dbRun('INSERT OR IGNORE INTO rutina_usuario (usuario_id, ejercicio) VALUES (?, ?)', [id, ej]);
-            }
-        }
-        res.json({ success: true });
-    } catch (e) {
-        falloServidor(res, e);
-    }
-});
-
-app.post('/api/marcas', requiereSesion, async (req, res) => {
-    try {
-        const ejercicio = String(req.body.ejercicio || '');
-        const peso = Math.round(Number(req.body.peso || 0) * 100) / 100;
-        const reps = Number(req.body.reps || 0);
-
-        if (!EJERCICIO_OK.test(ejercicio)) return res.status(400).json({ error: 'Ejercicio no válido.' });
-        if (!Number.isFinite(peso) || peso < 0 || peso > 1000) return res.status(400).json({ error: 'Peso no válido.' });
-        if (!Number.isInteger(reps) || reps < 0 || reps > 100) return res.status(400).json({ error: 'Repeticiones no válidas.' });
-        if (peso === 0 && reps === 0) return res.status(400).json({ error: 'Escribe el peso, las repeticiones o ambos.' });
-
-        const id = req.usuario.id;
-        const mejor = await dbGet(
-            'SELECT peso, reps FROM marcas WHERE usuario_id = ? AND ejercicio = ? ORDER BY peso DESC, reps DESC LIMIT 1',
-            [id, ejercicio]);
-
-        const r = await dbRun('INSERT INTO marcas (usuario_id, ejercicio, peso, reps, fecha) VALUES (?, ?, ?, ?, ?)',
-            [id, ejercicio, peso, reps, ahoraMex()]);
-        await dbRun('INSERT OR IGNORE INTO rutina_usuario (usuario_id, ejercicio) VALUES (?, ?)', [id, ejercicio]);
-
-        const supera = !!mejor && (peso > mejor.peso || (peso === mejor.peso && reps > mejor.reps));
-        res.json({
-            success: true,
-            id: r.lastID,
-            primera: !mejor,
-            esPR: supera,
-            prAnterior: mejor || null
+        const response = await fetch('/api/inscripciones', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(nuevaInscripcion)
         });
-    } catch (e) {
-        falloServidor(res, e);
+        const data = await response.json().catch(() => ({}));
+        if (response.status === 401) {
+            closePlanModal();
+            openLoginModal();
+            return;
+        }
+        if (response.ok) {
+            const textoFolio = data.folio ? ` Tu folio de verificación en recepción es: ${data.folio}.` : '';
+            mostrarNotificacionKronox(`¡Solicitud registrada, ${nombre}!${textoFolio}`);
+            closePlanModal();
+            e.target.reset();
+            mostrarCamposPago();
+        } else {
+            alert(data.error || "Hubo un error al registrar tu solicitud en el servidor.");
+        }
+    } catch (error) {
+        console.error("Error al enviar la inscripción:", error);
+        alert("Error de conexión con el servidor.");
     }
-});
+}
 
-app.get('/api/marcas/:ejercicio', sinCache, requiereSesion, async (req, res) => {
-    try {
-        if (!EJERCICIO_OK.test(req.params.ejercicio)) return res.status(400).json({ error: 'Ejercicio no válido.' });
-        const filas = await dbAll(
-            'SELECT id, peso, reps, fecha FROM marcas WHERE usuario_id = ? AND ejercicio = ? ORDER BY id DESC LIMIT 100',
-            [req.usuario.id, req.params.ejercicio]);
-        res.json(filas);
-    } catch (e) {
-        falloServidor(res, e);
+// Aviso flotante de confirmación
+function mostrarNotificacionKronox(mensaje) {
+    let notif = $('kronox-toast-notification');
+    if (!notif) {
+        notif = document.createElement('div');
+        notif.id = 'kronox-toast-notification';
+        notif.style.cssText = "position:fixed; bottom:30px; right:30px; background:#091122; border:2px solid #00d2ff; color:#fff; padding:16px 24px; border-radius:12px; font-size:14px; font-weight:bold; z-index:99999; box-shadow:0 0 25px rgba(0,210,255,0.5); transition: opacity 0.5s ease; display:flex; align-items:center; gap:12px; pointer-events:none; max-width:90vw;";
+        document.body.appendChild(notif);
     }
-});
+    notif.innerHTML = `<i class="fas fa-check-circle text-cyan-400 text-xl"></i> <span>${mensaje}</span>`;
+    notif.style.opacity = '1';
+    setTimeout(() => { notif.style.opacity = '0'; }, 7000);
+}
 
-app.delete('/api/marcas/:id', requiereSesion, async (req, res) => {
-    try {
-        const r = await dbRun('DELETE FROM marcas WHERE id = ? AND usuario_id = ?', [req.params.id, req.usuario.id]);
-        if (r.changes === 0) return res.status(404).json({ error: 'Marca no encontrada.' });
-        res.json({ success: true });
-    } catch (e) {
-        falloServidor(res, e);
+// ==========================================================
+// ACCESIBILIDAD (panel, tamaño, daltonismo, contraste)
+// ==========================================================
+function toggleAccessibilityPanel() { toggleHidden('accessibility-panel'); }
+
+let currentFontSize = 100;
+function applyFontSize(size) {
+    currentFontSize = size;
+    document.documentElement.style.fontSize = `${size}%`;
+}
+function adjustFontSize(amount) {
+    const size = Math.min(200, Math.max(70, currentFontSize + amount));
+    applyFontSize(size);
+    ls.set('kronox_font_size', size);
+}
+function resetFontSize() { applyFontSize(100); ls.set('kronox_font_size', 100); }
+
+const DALTON_TYPES = ['none', 'protanopia', 'deuteranopia', 'tritanopia'];
+const ACTIVE_BTN = ['bg-red-600', 'text-white', 'border-red-500'];
+const IDLE_BTN = ['bg-[#1f293d]', 'text-gray-300', 'border-gray-700'];
+
+function applyDaltonism(type) {
+    if (!DALTON_TYPES.includes(type)) type = 'none';
+    const wrapper = $('page-wrapper');
+    if (wrapper) {
+        wrapper.classList.remove('daltonism-protanopia', 'daltonism-deuteranopia', 'daltonism-tritanopia');
+        if (type !== 'none') wrapper.classList.add(`daltonism-${type}`);
     }
+    DALTON_TYPES.forEach(t => {
+        const btn = $(`btn-dalton-${t}`);
+        if (!btn) return;
+        btn.classList.remove(...(t === type ? IDLE_BTN : ACTIVE_BTN));
+        btn.classList.add(...(t === type ? ACTIVE_BTN : IDLE_BTN));
+    });
+}
+function setDaltonism(type) { applyDaltonism(type); ls.set('kronox_daltonism', type); }
+
+function applyHighContrast(enabled) {
+    document.body.classList.toggle('high-contrast', enabled);
+    const btn = $('btn-high-contrast');
+    if (btn) {
+        ACTIVE_BTN.forEach(c => btn.classList.toggle(c, enabled));
+        btn.textContent = enabled ? 'Desactivar Alto Contraste' : 'Activar Alto Contraste';
+    }
+}
+function toggleHighContrast() {
+    const enabled = !document.body.classList.contains('high-contrast');
+    applyHighContrast(enabled);
+    ls.set('kronox_high_contrast', enabled ? 'enabled' : 'disabled');
+}
+
+// ==========================================================
+// LECTOR DE VOZ (activar/desactivar y aviso)
+// ==========================================================
+let speechActive = false;
+
+function toggleSpeechReader() {
+    speechActive = !speechActive;
+    ls.set('kronox_speech_active', speechActive ? 'enabled' : 'disabled');
+    actualizarEstadoLectorUI(true);
+}
+
+function actualizarEstadoLectorUI(mostrarAviso) {
+    const btn = $('btn-speech-toggle');
+
+    if (speechActive) {
+        if (btn) {
+            btn.innerHTML = `<i class="fas fa-volume-xmark"></i> Desactivar Lector`;
+            btn.classList.replace('bg-cyan-600', 'bg-red-600');
+        }
+    } else {
+        if (btn) {
+            btn.innerHTML = `<i class="fas fa-volume-high"></i> Activar Lector Interactivo`;
+            btn.classList.replace('bg-red-600', 'bg-cyan-600');
+        }
+        if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+        $('speech-subtitle-box').style.display = 'none';
+        $('btn-escuchar').style.display = 'none';
+        _ultimoTextoLeido = '';
+        _textoPendiente = '';
+    }
+
+    if (!mostrarAviso) return;
+
+    let aviso = $('toast-aviso-accesibilidad');
+    if (!aviso) {
+        aviso = document.createElement('div');
+        aviso.id = 'toast-aviso-accesibilidad';
+        aviso.style.cssText = "position:fixed; top:20px; right:20px; background:#091122; border:2px solid #00d2ff; color:#fff; padding:12px 20px; border-radius:12px; font-size:13px; z-index:99999; box-shadow:0 0 20px rgba(0,210,255,0.4); transition: opacity 0.5s ease; pointer-events:none;";
+        document.body.appendChild(aviso);
+    }
+    aviso.innerHTML = speechActive
+        ? `<i class="fas fa-info-circle text-cyan-400 mr-2"></i> Lector interactivo activado.`
+        : `<i class="fas fa-info-circle text-red-400 mr-2"></i> Lector desactivado.`;
+    aviso.style.opacity = '1';
+
+    clearTimeout(aviso._t);
+    aviso._t = setTimeout(() => {
+        aviso.style.opacity = '0';
+        setTimeout(() => { if (aviso.style.opacity === '0') aviso.remove(); }, 500);
+    }, 3000);
+}
+
+// ==========================================================
+// LECTURA DEL TEXTO SELECCIONADO (PC y celular)
+// ==========================================================
+const ES_TACTIL = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
+let _selTimer = null, _ocultarBtnTimer = null, _ultimoTextoLeido = '', _textoPendiente = '', _utteranceActual = null;
+
+if ('speechSynthesis' in window) {
+    window.speechSynthesis.getVoices();
+    window.speechSynthesis.onvoiceschanged = () => window.speechSynthesis.getVoices();
+}
+
+function elementoExcluido(node) {
+    const el = node && (node.nodeType === 1 ? node : node.parentElement);
+    return !!(el && el.closest('header, #accessibility-panel, #speech-subtitle-box, #btn-escuchar, #login-modal, #modal-plan'));
+}
+
+function obtenerVozEspanol() {
+    const voces = window.speechSynthesis.getVoices();
+    return voces.find(v => v.lang === 'es-MX') || voces.find(v => v.lang && v.lang.toLowerCase().startsWith('es')) || null;
+}
+
+function hablar(texto, conDemora) {
+    if (!('speechSynthesis' in window) || !texto) return;
+
+    const box = $('speech-subtitle-box'), subtitleText = $('subtitle-text');
+    if (subtitleText && box) {
+        subtitleText.innerText = texto;
+        box.style.display = 'block';
+    }
+    const ocultar = () => { if (box) box.style.display = 'none'; };
+
+    const iniciar = () => {
+        const u = new SpeechSynthesisUtterance(texto);
+        u.lang = 'es-MX';
+        const voz = obtenerVozEspanol();
+        if (voz) { u.voice = voz; u.lang = voz.lang; }
+        u.rate = 1;
+        u.volume = 1;
+        u.onend = ocultar;
+        u.onerror = ev => {
+            if (subtitleText) subtitleText.innerText = 'Audio no disponible (' + (ev.error || 'error') + ')';
+            setTimeout(ocultar, 3000);
+        };
+        _utteranceActual = u;
+        window.speechSynthesis.speak(u);
+    };
+
+    if (window.speechSynthesis.speaking || window.speechSynthesis.pending) window.speechSynthesis.cancel();
+
+    if (conDemora) setTimeout(iniciar, 60); else iniciar();
+}
+
+function hablarTextoPendiente() { hablar(_textoPendiente, false); }
+
+function leerTextoSeleccionado() {
+    if (!speechActive || !('speechSynthesis' in window)) return;
+
+    const sel = window.getSelection();
+    const texto = sel ? sel.toString().trim() : '';
+    const btn = $('btn-escuchar');
+
+    if (texto.length < 2) {
+        _ultimoTextoLeido = '';
+        if (btn && ES_TACTIL) {
+            clearTimeout(_ocultarBtnTimer);
+            _ocultarBtnTimer = setTimeout(() => { btn.style.display = 'none'; }, 4000);
+        }
+        return;
+    }
+    if (elementoExcluido(sel.anchorNode)) return;
+    if (texto === _ultimoTextoLeido) return;
+
+    _ultimoTextoLeido = texto;
+    _textoPendiente = texto;
+
+    if (ES_TACTIL) {
+        clearTimeout(_ocultarBtnTimer);
+        if (btn) btn.style.display = 'flex';
+    } else {
+        hablar(texto, true);
+    }
+}
+
+document.addEventListener('selectionchange', () => {
+    clearTimeout(_selTimer);
+    _selTimer = setTimeout(leerTextoSeleccionado, 600);
 });
 
-// ===== FIN DEL BLOQUE DE CUENTAS =========================================
-
-// 6. RUTAS AMIGABLES PARA LAS PÁGINAS WEB
-app.get('/admin', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'admin.html'));
-});
-
-app.get('/planes', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'planes.html'));
-});
-
-app.get('/index', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'index.html'));
-});
-
-app.get('/informacion', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'informacion.html'));
-});
-
-app.get('/catalogo', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'catalogo.html'));
-});
-
-app.get('/ubicacion', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'ubicacion.html'));
-});
-
-// RUTA PARA RUTINAS EXCLUSIVAS (protegida con sesión en servidor)
-app.get('/rutinas', sinCache, requiereSesionPagina, (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'rutinas.html'));
-});
-
-// Puerto para Render
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-    console.log(`Servidor corriendo en el puerto ${PORT}`);
-});
+// ==========================================================
+// CARGAR PREFERENCIAS GUARDADAS
+// ==========================================================
+function loadAccessibilityPreferences() {
+    applyFontSize(parseInt(ls.get('kronox_font_size'), 10) || 100);
+    applyDaltonism(ls.get('kronox_daltonism') || 'none');
+    applyHighContrast(ls.get('kronox_high_contrast') === 'enabled');
+    speechActive = ls.get('kronox_speech_active') === 'enabled';
+    actualizarEstadoLectorUI(false);
+}
+</script>
+        <script src="/sesion.js"></script>
+</body>
+</html>
