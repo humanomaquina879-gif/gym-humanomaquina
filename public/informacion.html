@@ -7,12 +7,6 @@
 <meta http-equiv="Expires" content="0">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Información | Kronox Gym</title>
-<!-- ===== PWA / SERVICE WORKER ===== -->
-<link rel="manifest" href="/manifest.json">
-<meta name="theme-color" content="#050a14">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<link rel="apple-touch-icon" href="https://res.cloudinary.com/bo5jzelh/image/upload/v1783041430/Logo_Kronox_Gym_lfg9tl.jpg">
 <!-- ===== ICONOS (Font Awesome) ===== -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <!-- ===== FUENTE (Google Fonts: Inter) ===== -->
@@ -260,6 +254,28 @@ body.high-contrast .kronox-card,body.high-contrast header,body.high-contrast foo
 
 <!-- ===== JAVASCRIPT ===== -->
 <script>
+// ==========================================================
+// SERVICE WORKER (registro y actualización limpia)
+// ==========================================================
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js', { scope: '/' })
+            .then(reg => {
+                if (reg.waiting) reg.waiting.postMessage({ type: 'SKIP_WAITING' });
+                reg.addEventListener('updatefound', () => {
+                    const nuevoWorker = reg.installing;
+                    if (!nuevoWorker) return;
+                    nuevoWorker.addEventListener('statechange', () => {
+                        if (nuevoWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                            nuevoWorker.postMessage({ type: 'SKIP_WAITING' });
+                        }
+                    });
+                });
+            })
+            .catch(err => console.error('Error al registrar Service Worker:', err));
+    });
+}
+
 // ==========================================================
 // UTILIDADES (atajos y localStorage seguro)
 // ==========================================================
@@ -574,12 +590,5 @@ function loadAccessibilityPreferences() {
 }
 </script>
         <script src="/sesion.js"></script>
-    <script>
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('/sw.js').catch(err => console.error('SW error:', err));
-            });
-        }
-    </script>
 </body>
 </html>
