@@ -7,6 +7,12 @@
 <meta http-equiv="Expires" content="0">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Kronox Gym | Alto Rendimiento</title>
+<!-- ===== PWA / SERVICE WORKER ===== -->
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#050a14">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="apple-touch-icon" href="https://res.cloudinary.com/bo5jzelh/image/upload/v1783041430/Logo_Kronox_Gym_lfg9tl.jpg">
 <!-- ===== ICONOS (Font Awesome) ===== -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <!-- ===== FUENTE (Google Fonts: Inter) ===== -->
@@ -632,5 +638,12 @@ function loadAccessibilityPreferences() {
 }
 </script>
     <script src="/sesion.js"></script>
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js').catch(err => console.error('SW error:', err));
+            });
+        }
+    </script>
 </body>
 </html>
