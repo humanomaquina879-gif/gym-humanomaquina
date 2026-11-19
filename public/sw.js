@@ -1,20 +1,40 @@
-const CACHE_NAME = 'kronox-gym-v1';
+const CACHE_NAME = 'kronox-gym-v2';
+
+const RECURSOS_ESTATICOS = [
+  '/',
+  '/index',
+  '/informacion',
+  '/planes',
+  '/catalogo',
+  '/ubicacion',
+  '/rutinas',
+  '/comun.css',
+  '/comun.js',
+  '/sesion.js',
+  '/marcas.js',
+  '/manifest.json'
+];
 
 self.addEventListener('install', (event) => {
-  self.skipWaiting();
+  event.waitUntil(
+    caches.open(CACHE_NAME)
+      .then((cache) => cache.addAll(RECURSOS_ESTATICOS).catch(() => {}))
+      .then(() => self.skipWaiting())
+  );
 });
 
 self.addEventListener('activate', (event) => {
   event.waitUntil(
-    caches.keys().then((keys) =>
-      Promise.all(
-        keys
-          .filter((k) => k !== CACHE_NAME)
-          .map((k) => caches.delete(k))
+    caches.keys()
+      .then((keys) =>
+        Promise.all(
+          keys
+            .filter((k) => k !== CACHE_NAME)
+            .map((k) => caches.delete(k))
+        )
       )
-    )
+      .then(() => self.clients.claim())
   );
-  self.clients.claim();
 });
 
 self.addEventListener('fetch', (event) => {
