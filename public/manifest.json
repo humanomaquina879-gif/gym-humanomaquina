@@ -1,0 +1,25 @@
+{
+  "name": "Kronox Gym",
+  "short_name": "Kronox Gym",
+  "description": "Membresías, rutinas, afluencia en tiempo real y gestión de Kronox Gym.",
+  "start_url": "/index",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#050a14",
+  "theme_color": "#050a14",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "https://res.cloudinary.com/bo5jzelh/image/upload/v1783041430/Logo_Kronox_Gym_lfg9tl.jpg",
+      "sizes": "192x192",
+      "type": "image/jpeg",
+      "purpose": "any"
+    },
+    {
+      "src": "https://res.cloudinary.com/bo5jzelh/image/upload/v1783041430/Logo_Kronox_Gym_lfg9tl.jpg",
+      "sizes": "512x512",
+      "type": "image/jpeg",
+      "purpose": "any"
+    }
+  ]
+}
