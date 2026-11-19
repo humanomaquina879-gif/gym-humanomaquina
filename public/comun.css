@@ -1,0 +1,21 @@
+/* ===== BASE ===== */
+body{background-color:#050a14;color:#f8fafc;font-family:'Inter',sans-serif;min-height:100vh;overflow-x:hidden;transition:font-size .3s ease}
+/* ===== FILTROS DE DALTONISMO ===== */
+/* Van en #page-wrapper y no en body: en body rompen los elementos position:fixed */
+#page-wrapper.daltonism-protanopia{filter:url('#protanopia-filter')}
+#page-wrapper.daltonism-deuteranopia{filter:url('#deuteranopia-filter')}
+#page-wrapper.daltonism-tritanopia{filter:url('#tritanopia-filter')}
+/* ===== ALTO CONTRASTE ===== */
+body.high-contrast{background-color:#000!important;color:#ff0!important}
+body.high-contrast .kronox-card,body.high-contrast header,body.high-contrast footer,body.high-contrast .accessibility-panel{background-color:#111!important;border-color:#ff0!important;color:#ff0!important}
+/* ===== FONDO CUADRICULADO Y BRILLOS ===== */
+.bg-grid-pattern{background-size:36px 36px;background-image:linear-gradient(to right,rgba(0,210,255,.04) 1px,transparent 1px),linear-gradient(to bottom,rgba(0,210,255,.04) 1px,transparent 1px)}
+.glow-light{position:absolute;width:450px;height:450px;background:radial-gradient(circle,rgba(0,210,255,.12) 0%,rgba(5,10,20,0) 70%);border-radius:50%;pointer-events:none;z-index:0}
+/* ===== TARJETAS Y BOTONES NEÓN ===== */
+.kronox-card{background:linear-gradient(160deg,#0a1326 0%,#060c18 100%);border:1px solid #16284a;border-radius:1.25rem;transition:all .35s cubic-bezier(.4,0,.2,1);position:relative}
+.kronox-card:hover{border-color:#00d2ff;box-shadow:0 15px 35px rgba(0,210,255,.18)}
+.btn-neon-solid{background:#00d2ff;color:#050a14;border:2px solid #00d2ff;transition:all .3s ease;box-shadow:0 0 15px rgba(0,210,255,.4)}
+.btn-neon-solid:hover{background:transparent;color:#00d2ff;box-shadow:0 0 25px rgba(0,210,255,.7)}
+/* ===== LECTOR DE VOZ (subtítulos y botón "Escuchar", este último solo en celular) ===== */
+#speech-subtitle-box{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:rgba(5,10,20,.95);border:2px solid #00d2ff;color:#fff;padding:12px 24px;border-radius:12px;font-size:14px;z-index:9999;box-shadow:0 0 25px rgba(0,210,255,.5);max-width:90%;text-align:center;display:none;pointer-events:none}
+#btn-escuchar{position:fixed;bottom:20px;right:20px;z-index:9999;display:none;align-items:center;gap:8px;background:#00d2ff;color:#050a14;border:none;padding:12px 18px;border-radius:9999px;font-weight:800;font-size:13px;box-shadow:0 0 20px rgba(0,210,255,.6)}
