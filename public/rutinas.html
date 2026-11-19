@@ -298,13 +298,7 @@
     <script>
         let _redirigiendo = false;
 
-        // Esta página es solo para socios: al cerrar sesión te manda a index
-        function logoutUser() {
-            ls.del('kronox_logged_user');
-            window.location.href = "index";
-        }
-
-        function checkUserSession() {
+        function pintarMenuRutinas() {
             const user = ls.get('kronox_logged_user');
 
             // Sin sesión no se puede ver la página
@@ -318,7 +312,8 @@
             }
 
             const esAdmin = user.toLowerCase() === 'admin';
-            ['nav-admin-panel', 'mobile-nav-admin-panel'].forEach(id => ocultar(id, !esAdmin));
+            show($('nav-admin-panel'), esAdmin);
+            show($('mobile-nav-admin-panel'), esAdmin);
 
             const welcomeEl = $('welcome-user-name');
             const emailEl = $('dropdown-user-email');
@@ -327,6 +322,15 @@
             if (emailEl) emailEl.innerText = user;
             if (mobileNameEl) mobileNameEl.innerText = user;
         }
+
+        if (typeof window.registrarPintadoMenu === 'function') {
+            window.registrarPintadoMenu(pintarMenuRutinas);
+        }
+
+        // Esta página es solo para socios: al cerrar sesión te manda a index
+        window.onLogoutVista = function () {
+            window.location.href = "index";
+        };
 
         // Cada grupo tiene 4 variantes; cada ejercicio es [nombre, series x repeticiones]
         const variantesRutinas = {
