@@ -337,25 +337,45 @@ function requiereAdmin(req, res, next) {
     });
 }
 
-// ---- Límite de intentos fallidos (en memoria): 8 por cada 15 minutos ----
+// ---- Límite de intentos fallidos (en el servidor): 5 intentos y bloqueo de 15 minutos ----
 const intentosFallidos = new Map();
-const VENTANA_MS = 15 * 60 * 1000;
-const MAX_FALLOS = 8;
+const BLOQUEO_MS = 15 * 60 * 1000;
+const MAX_FALLOS = 5;
 const claveIntento = (req, usuario) => `${req.ip}|${usuario.toLowerCase()}`;
 
-function loginBloqueado(req, usuario) {
+// Devuelve { bloqueado, minutos } o { bloqueado:false, restantes }
+function estadoIntentos(req, usuario) {
     const k = claveIntento(req, usuario);
     const reg = intentosFallidos.get(k);
-    if (!reg) return false;
-    if (Date.now() - reg.desde > VENTANA_MS) { intentosFallidos.delete(k); return false; }
-    return reg.n >= MAX_FALLOS;
+    if (!reg) return { bloqueado: false, restantes: MAX_FALLOS };
+    if (reg.hasta) {
+        if (Date.now() < reg.hasta) {
+            return { bloqueado: true, minutos: Math.ceil((reg.hasta - Date.now()) / 60000) };
+        }
+        intentosFallidos.delete(k); // ya pasaron los 15 minutos
+        return { bloqueado: false, restantes: MAX_FALLOS };
+    }
+    return { bloqueado: false, restantes: MAX_FALLOS - reg.n };
 }
+
 function registrarFallo(req, usuario) {
     const k = claveIntento(req, usuario);
-    const reg = intentosFallidos.get(k);
-    if (!reg || Date.now() - reg.desde > VENTANA_MS) intentosFallidos.set(k, { n: 1, desde: Date.now() });
-    else reg.n += 1;
+    const reg = intentosFallidos.get(k) || { n: 0, hasta: 0, ultimo: 0 };
+    reg.n += 1;
+    reg.ultimo = Date.now();
+    if (reg.n >= MAX_FALLOS) reg.hasta = Date.now() + BLOQUEO_MS;
+    intentosFallidos.set(k, reg);
+    return estadoIntentos(req, usuario);
 }
+
+// Limpieza de la memoria cada 10 minutos
+setInterval(() => {
+    const ahora = Date.now();
+    for (const [k, reg] of intentosFallidos) {
+        const bloqueoVigente = reg.hasta && ahora < reg.hasta;
+        if (!bloqueoVigente && ahora - reg.ultimo > BLOQUEO_MS) intentosFallidos.delete(k);
+    }
+}, 10 * 60 * 1000);
 
 // ---- LOGIN: solo entra quien ya tiene cuenta y escribe su contraseña correcta ----
 const MSG_LOGIN_MAL = 'Usuario o contraseña incorrectos. Si aún no tienes cuenta, toca «Crear cuenta».';
@@ -367,16 +387,24 @@ app.post('/api/login', async (req, res) => {
 
         if (!usuario || !password) return res.status(400).json({ error: 'Escribe tu usuario y tu contraseña.' });
         if (usuario.length > 60 || password.length > 100) return res.status(401).json({ error: MSG_LOGIN_MAL });
-        if (loginBloqueado(req, usuario)) {
-            return res.status(429).json({ error: 'Demasiados intentos. Espera unos minutos e inténtalo de nuevo.' });
+
+        const antes = estadoIntentos(req, usuario);
+        if (antes.bloqueado) {
+            return res.status(429).json({ error: `Bloqueado por intentos fallidos. Espera ${antes.minutos} min.` });
         }
 
         const fila = await dbGet('SELECT id, usuario, salt, hash FROM usuarios WHERE usuario = ?', [usuario]);
         const ok = fila ? await verificarPassword(password, fila.salt, fila.hash) : false;
 
         if (!ok) {
-            registrarFallo(req, usuario);
-            return res.status(401).json({ error: MSG_LOGIN_MAL });
+            const despues = registrarFallo(req, usuario);
+            if (despues.bloqueado) {
+                return res.status(429).json({ error: 'Límite de 5 intentos alcanzado. Bloqueado 15 minutos.' });
+            }
+            const q = despues.restantes;
+            return res.status(401).json({
+                error: `${MSG_LOGIN_MAL} Te quedan ${q} ${q === 1 ? 'intento' : 'intentos'}.`
+            });
         }
 
         intentosFallidos.delete(claveIntento(req, usuario));
