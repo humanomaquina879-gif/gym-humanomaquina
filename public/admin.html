@@ -74,7 +74,7 @@
                 <table class="w-full text-left border-collapse text-sm">
                     <thead>
                         <tr class="border-b border-gray-800 text-cyan-400 text-xs uppercase bg-gray-900/50">
-                            <th class="p-4">ID</th>
+                            <th class="p-4">ID / Folio</th>
                             <th class="p-4">Cliente</th>
                             <th class="p-4">Teléfono</th>
                             <th class="p-4">Plan</th>
@@ -133,7 +133,6 @@
             document.getElementById("login-box").style.display = "none";
             cargarInscripciones();
             cargarAfluenciaAdmin();
-            // Auto-refresco cada 5 segundos (una sola vez)
             if (!intervaloRefresco) {
                 intervaloRefresco = setInterval(cargarInscripciones, 5000);
             }
@@ -151,7 +150,6 @@
             }
         }
 
-        // Al abrir la página: ¿ya hay sesión de administrador?
         document.addEventListener("DOMContentLoaded", async () => {
             try {
                 const res = await fetch('/api/yo', { cache: 'no-store' });
@@ -159,7 +157,7 @@
                     const data = await res.json();
                     if (data.esAdmin) { mostrarPanel(); return; }
                 }
-            } catch (e) { /* sin conexión: se queda el login */ }
+            } catch (e) {}
             mostrarLogin();
         });
 
@@ -184,7 +182,6 @@
                     return;
                 }
 
-                // Comprobar que la cuenta sea de administrador
                 const yo = await fetch('/api/yo', { cache: 'no-store' });
                 const info = yo.ok ? await yo.json() : {};
                 if (!info.esAdmin) {
@@ -209,7 +206,6 @@
             mostrarLogin();
         }
 
-        // Si el servidor dice "no autorizado", volvemos al login
         function sesionInvalida(res) {
             if (res.status === 401 || res.status === 403) {
                 mostrarLogin("Tu sesión expiró. Inicia sesión de nuevo.");
@@ -218,7 +214,6 @@
             return false;
         }
 
-        // Cambio entre pestañas (Secciones)
         function cambiarSeccion(seccion) {
             const btnSocios = document.getElementById("btn-tab-socios");
             const btnAfluencia = document.getElementById("btn-tab-afluencia");
@@ -242,12 +237,11 @@
             }
         }
 
-        // Función matemática para calcular días restantes exactos
         function calcularVigencia(fechaRegistro, plan) {
             let partes = String(fechaRegistro).split(/[- :]/);
             let inicio = new Date(partes[0], partes[1] - 1, partes[2]);
             
-            let diasValidez = 30; // Por defecto Mensualidad
+            let diasValidez = 30;
             const planLower = (plan || "").toLowerCase();
 
             if (planLower.includes('visita')) {
@@ -280,19 +274,18 @@
             }
         }
 
-        // Escapa texto antes de ponerlo en el HTML (para que nadie pueda inyectar código desde el formulario)
         function esc(texto) {
             return String(texto == null ? '' : texto).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
         }
 
-        // Detalle de la tarjeta (solo si pagó con tarjeta): marca, últimos 4 dígitos, titular y vencimiento
+        // Muestra el titular en claro y censura el resto de datos de la tarjeta con su hash SHA-256
         function detalleTarjeta(row) {
-            if (!row.tarjeta_ultimos4) return '';
-            return `<div class="text-xs text-cyan-400 mt-1 font-semibold"><i class="fas fa-credit-card mr-1"></i>${esc(row.tarjeta_marca || 'Tarjeta')} •••• ${esc(row.tarjeta_ultimos4)}</div>
-                    <div class="text-[11px] text-gray-500">${esc(row.tarjeta_titular)}${row.tarjeta_vence ? ' · vence ' + esc(row.tarjeta_vence) : ''}</div>`;
+            if (!row.tarjeta_titular && !row.tarjeta_hash && !row.tarjeta_ultimos4) return '';
+            const hashVisible = row.tarjeta_hash ? `#${esc(row.tarjeta_hash)}` : '••••';
+            return `<div class="text-xs text-cyan-400 mt-1 font-semibold"><i class="fas fa-lock mr-1"></i>Titular: ${esc(row.tarjeta_titular || 'Registrado')}</div>
+                    <div class="text-[11px] text-gray-500 font-mono">Hash: ${hashVisible} · Vence: ••/••</div>`;
         }
 
-        // Cargar registros persistentes desde la base de datos
         async function cargarInscripciones() {
             try {
                 const res = await fetch('/api/inscripciones', { cache: 'no-store' });
@@ -312,6 +305,8 @@
                 rows.forEach(row => {
                     const esVigente = row.estado === 'Vigente';
                     const id = Number(row.id);
+                    const folioBadge = row.folio ? `<span class="block text-[11px] font-mono text-emerald-400">${esc(row.folio)}</span>` : '';
+                    const cuentaBadge = row.usuario_cuenta ? `<span class="block text-[11px] text-gray-400"><i class="fas fa-user-check text-cyan-400 mr-1"></i>${esc(row.usuario_cuenta)}</span>` : '';
                     
                     let infoVigencia = esVigente 
                         ? calcularVigencia(row.fecha, row.plan) 
@@ -319,8 +314,8 @@
 
                     html += `
                         <tr class="hover:bg-white/5 transition-colors">
-                            <td class="p-4 font-bold text-cyan-400">#${id}</td>
-                            <td class="p-4 font-semibold text-white">${esc(row.nombre)}</td>
+                            <td class="p-4 font-bold text-cyan-400">#${id}${folioBadge}</td>
+                            <td class="p-4 font-semibold text-white">${esc(row.nombre)}${cuentaBadge}</td>
                             <td class="p-4">${esc(row.telefono)}</td>
                             <td class="p-4"><span class="bg-cyan-500/10 text-cyan-400 px-2 py-1 rounded text-xs font-bold">${esc(row.plan)}</span></td>
                             <td class="p-4 font-black text-emerald-400">$${esc(row.monto)}</td>
@@ -351,7 +346,6 @@
             }
         }
 
-        // Cargar datos actuales de afluencia en el panel de admin
         async function cargarAfluenciaAdmin() {
             try {
                 const res = await fetch('/api/afluencia');
@@ -365,7 +359,6 @@
             }
         }
 
-        // Guardar afluencia modificada por el admin
         async function guardarAfluenciaAdmin() {
             const porcentaje = parseInt(document.getElementById('admin-porcentaje').value);
             const estado = document.getElementById('admin-estado-txt').value;
@@ -394,7 +387,6 @@
             }
         }
 
-        // Refrescar manualmente con animación
         async function cargarInscripcionesConAnimacion() {
             const icono = document.getElementById('icono-refrescar');
             if (icono) icono.classList.add('fa-spin');
@@ -406,7 +398,6 @@
             }
         }
 
-        // Cambiar estatus de inscripción
         async function toggleLiberar(id) {
             try {
                 const res = await fetch(`/api/inscripciones/${id}/liberar`, { method: 'POST' });
@@ -419,7 +410,6 @@
             }
         }
 
-        // Eliminar registro
         async function eliminarInscripcion(id) {
             if (!confirm(`¿Estás seguro de eliminar el registro #${id}?`)) return;
             try {
