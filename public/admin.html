@@ -125,7 +125,7 @@
                         </select>
                     </div>
 
-                    <button onclick="guardarAfluenciaAdmin()" class="w-full btn-neon py-3.5 rounded-lg text-xs uppercase tracking-wider">
+                    <button onclick="guardarAfluenciaAdmin()" class="w-full btn-neon-solid py-3.5 rounded-lg text-xs uppercase tracking-wider">
                         Actualizar Afluencia en el Sistema
                     </button>
                 </div>
@@ -135,6 +135,26 @@
     </div>
 
     <script>
+        // ===== SERVICE WORKER =====
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js', { scope: '/' })
+                    .then(reg => {
+                        if (reg.waiting) reg.waiting.postMessage({ type: 'SKIP_WAITING' });
+                        reg.addEventListener('updatefound', () => {
+                            const nuevoWorker = reg.installing;
+                            if (!nuevoWorker) return;
+                            nuevoWorker.addEventListener('statechange', () => {
+                                if (nuevoWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                                    nuevoWorker.postMessage({ type: 'SKIP_WAITING' });
+                                }
+                            });
+                        });
+                    })
+                    .catch(err => console.error('Error al registrar Service Worker:', err));
+            });
+        }
+
         // ===== SESIÓN: la valida el SERVIDOR (cookie segura). Aquí ya no hay usuario ni contraseña. =====
         let intervaloRefresco = null;
         let inscripcionesCache = [];
