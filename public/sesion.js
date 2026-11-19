@@ -4,15 +4,15 @@
    las páginas con el servidor (/api/login, /api/registro,
    /api/yo y /api/logout).
 
-   Se carga al FINAL de cada página, después de su <script>:
+   Se carga al FINAL de cada página, después de comun.js y
+   del <script> de la página:
        <script src="/sesion.js"></script>
 
    - Reemplaza handleLogin, logoutUser, checkUserSession y
      openLoginModal por versiones que validan en el servidor.
-   - Cada página sigue pintando su propio menú (usa su
-     checkUserSession original); aquí solo se decide QUIÉN
-     tiene sesión de verdad.
-   - No redirige: te quedas en la misma pestaña.
+   - Cada página sigue pintando su propio menú (usa la función
+     de pintado registrada en cada vista); aquí solo se decide
+     QUIÉN tiene sesión de verdad.
    ============================================================ */
 (function () {
     'use strict';
@@ -29,9 +29,20 @@
         try { if (u) localStorage.setItem(CLAVE, u); else localStorage.removeItem(CLAVE); } catch (e) {}
     };
 
-    // Función original de cada página que pinta el menú según el usuario guardado
-    const pintarMenu = typeof window.checkUserSession === 'function' ? window.checkUserSession : function () {};
+    // Referencia original previa a sobrescribir funciones globales
+    const pintarMenuBase = typeof window.checkUserSession === 'function' ? window.checkUserSession : function () {};
     const abrirModalOriginal = typeof window.openLoginModal === 'function' ? window.openLoginModal : null;
+    const cerrarSesionVistaOriginal = typeof window.logoutUser === 'function' ? window.logoutUser : null;
+
+    // Permite que una vista (como rutinas.html) defina su propio pintado/candado sin bucles
+    let pintarMenuVista = pintarMenuBase;
+    window.registrarPintadoMenu = function (fn) {
+        if (typeof fn === 'function') pintarMenuVista = fn;
+    };
+
+    function ejecutarPintado() {
+        pintarMenuVista();
+    }
 
     // ---- Pregunta al servidor quién tiene sesión ----
     // Devuelve: nombre de usuario | null (sin sesión) | undefined (no se pudo consultar)
@@ -139,7 +150,13 @@
             $('login-pass').value = '';
             const modal = $('login-modal');
             if (modal) modal.classList.add('hidden');
-            pintarMenu(); // te quedas en la misma pestaña
+            ejecutarPintado();
+
+            if (typeof planPendienteTrasLogin !== 'undefined' && planPendienteTrasLogin && typeof abrirModalPlanDirecto === 'function') {
+                const plan = planPendienteTrasLogin;
+                planPendienteTrasLogin = null;
+                abrirModalPlanDirecto(plan);
+            }
         } catch (err) {
             mostrarError('No se pudo conectar con el servidor. Intenta de nuevo.');
         } finally {
@@ -155,17 +172,21 @@
             const d = $(id);
             if (d) d.classList.add('hidden');
         });
-        pintarMenu(); // te quedas en la misma pestaña
+        if (typeof window.onLogoutVista === 'function') {
+            window.onLogoutVista();
+            return;
+        }
+        ejecutarPintado();
     };
 
     // Pinta con lo guardado y luego confirma con el servidor
     window.checkUserSession = async function () {
-        pintarMenu();
+        ejecutarPintado();
         const usuario = await consultarSesion();
         if (usuario === undefined) return; // no se pudo consultar: no se cambia nada
         const antes = leerLocal() || null;
         guardarLocal(usuario);
-        if (antes !== usuario) pintarMenu();
+        if (antes !== usuario) ejecutarPintado();
     };
 
     // ---- Arranque ----
