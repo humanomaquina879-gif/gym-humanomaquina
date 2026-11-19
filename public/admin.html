@@ -54,7 +54,7 @@
                 <button onclick="cambiarSeccion('afluencia')" id="btn-tab-afluencia" class="px-4 py-2 rounded-lg text-xs font-bold uppercase transition-all bg-[#091122] text-gray-300 border border-gray-800 hover:border-cyan-500/50">
                     <i class="fas fa-users-viewfinder mr-1"></i> Afluencia Gym
                 </button>
-                <a href="planes" class="text-gray-400 hover:text-white text-xs font-bold uppercase border border-gray-800 px-3 py-2 rounded-lg transition-colors">Volver a Planes</a>
+                <a href="index" class="text-gray-400 hover:text-white text-xs font-bold uppercase border border-gray-800 px-3 py-2 rounded-lg transition-colors">Regresar a la página principal</a>
             </div>
         </div>
 
@@ -261,6 +261,18 @@
             }
         }
 
+        // Escapa texto antes de ponerlo en el HTML (para que nadie pueda inyectar código desde el formulario)
+        function esc(texto) {
+            return String(texto == null ? '' : texto).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+        }
+
+        // Detalle de la tarjeta (solo si pagó con tarjeta): marca, últimos 4 dígitos, titular y vencimiento
+        function detalleTarjeta(row) {
+            if (!row.tarjeta_ultimos4) return '';
+            return `<div class="text-xs text-cyan-400 mt-1 font-semibold"><i class="fas fa-credit-card mr-1"></i>${esc(row.tarjeta_marca || 'Tarjeta')} •••• ${esc(row.tarjeta_ultimos4)}</div>
+                    <div class="text-[11px] text-gray-500">${esc(row.tarjeta_titular)}${row.tarjeta_vence ? ' · vence ' + esc(row.tarjeta_vence) : ''}</div>`;
+        }
+
         // Cargar registros persistentes desde la base de datos
         async function cargarInscripciones() {
             try {
@@ -288,7 +300,7 @@
                             <td class="p-4">${row.telefono}</td>
                             <td class="p-4"><span class="bg-cyan-500/10 text-cyan-400 px-2 py-1 rounded text-xs font-bold">${row.plan}</span></td>
                             <td class="p-4 font-black text-emerald-400">$${row.monto}</td>
-                            <td class="p-4">${row.metodo_pago}</td>
+                            <td class="p-4">${row.metodo_pago}${detalleTarjeta(row)}</td>
                             <td class="p-4">
                                 <span class="px-2.5 py-1 rounded-full text-xs font-bold ${esVigente ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30' : 'bg-yellow-500/10 text-yellow-400 border border-yellow-500/30'}">
                                     ${row.estado || 'Pendiente'}
