@@ -341,7 +341,8 @@ function requiereAdmin(req, res, next) {
 const intentosFallidos = new Map();
 const BLOQUEO_MS = 15 * 60 * 1000;
 const MAX_FALLOS = 5;
-const claveIntento = (req, usuario) => `${req.ip}|${usuario.toLowerCase()}`;
+// Se cuenta por nombre de usuario (la IP cambia detrás del proxy de Render y no es confiable)
+const claveIntento = (req, usuario) => usuario.toLowerCase();
 
 // Devuelve { bloqueado, minutos } o { bloqueado:false, restantes }
 function estadoIntentos(req, usuario) {
