@@ -63,11 +63,20 @@
 
         <!-- ================= SECCIÓN 1: PANEL DE SOCIOS E INSCRIPCIONES ================= -->
         <div id="seccion-socios" class="space-y-4">
-            <div class="flex justify-between items-center">
+            <div class="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-3">
                 <h2 class="text-lg font-bold text-white uppercase italic">Listado de Inscripciones Persistentes</h2>
-                <button onclick="cargarInscripcionesConAnimacion()" class="text-cyan-400 text-xs font-bold uppercase border border-cyan-400/40 px-4 py-2 rounded-lg hover:bg-cyan-400 hover:text-gray-950 transition-colors flex items-center gap-2">
-                    <i class="fa-solid fa-sync-alt" id="icono-refrescar"></i> Actualizar
-                </button>
+                <div class="flex items-center gap-2 flex-wrap sm:flex-nowrap">
+                    <div class="relative flex-grow sm:w-72">
+                        <i class="fa-solid fa-magnifying-glass text-cyan-400 text-xs absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none"></i>
+                        <input type="search" id="buscador-cliente" oninput="renderizarInscripciones()" placeholder="Buscar por nombre o folio..." class="w-full bg-[#091122] border border-cyan-500/30 focus:border-cyan-400 rounded-lg pl-9 pr-8 py-2 text-xs text-white placeholder-gray-500 focus:outline-none">
+                        <button type="button" id="btn-limpiar-busqueda" onclick="limpiarBusqueda()" title="Limpiar búsqueda" class="hidden text-gray-400 hover:text-white text-xs absolute right-2.5 top-1/2 -translate-y-1/2">
+                            <i class="fa-solid fa-xmark"></i>
+                        </button>
+                    </div>
+                    <button onclick="cargarInscripcionesConAnimacion()" class="text-cyan-400 text-xs font-bold uppercase border border-cyan-400/40 px-4 py-2 rounded-lg hover:bg-cyan-400 hover:text-gray-950 transition-colors flex items-center gap-2 shrink-0">
+                        <i class="fa-solid fa-sync-alt" id="icono-refrescar"></i> Actualizar
+                    </button>
+                </div>
             </div>
 
             <div class="card overflow-x-auto shadow-2xl">
@@ -128,13 +137,17 @@
     <script>
         // ===== SESIÓN: la valida el SERVIDOR (cookie segura). Aquí ya no hay usuario ni contraseña. =====
         let intervaloRefresco = null;
+        let inscripcionesCache = [];
 
         function mostrarPanel() {
             document.getElementById("login-box").style.display = "none";
             cargarInscripciones();
             cargarAfluenciaAdmin();
             if (!intervaloRefresco) {
-                intervaloRefresco = setInterval(cargarInscripciones, 5000);
+                intervaloRefresco = setInterval(() => {
+                    const filtroActivo = (document.getElementById("buscador-cliente")?.value || "").trim();
+                    if (!filtroActivo) cargarInscripciones();
+                }, 5000);
             }
         }
 
@@ -202,6 +215,7 @@
 
         async function cerrarSesion() {
             try { await fetch('/api/logout', { method: 'POST' }); } catch (e) {}
+            inscripcionesCache = [];
             document.getElementById("tabla-inscripciones").innerHTML = '';
             mostrarLogin();
         }
@@ -278,6 +292,100 @@
             return String(texto == null ? '' : texto).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
         }
 
+        function normalizarTexto(texto) {
+            return String(texto || '')
+                .toLowerCase()
+                .normalize('NFD')
+                .replace(/[\u0300-\u036f]/g, '')
+                .trim();
+        }
+
+        function limpiarBusqueda() {
+            const input = document.getElementById('buscador-cliente');
+            if (input) {
+                input.value = '';
+                input.focus();
+            }
+            renderizarInscripciones();
+        }
+
+        function renderizarInscripciones() {
+            const tbody = document.getElementById('tabla-inscripciones');
+            const inputBuscador = document.getElementById('buscador-cliente');
+            const btnLimpiar = document.getElementById('btn-limpiar-busqueda');
+            const termino = normalizarTexto(inputBuscador ? inputBuscador.value : '');
+
+            if (btnLimpiar) {
+                btnLimpiar.classList.toggle('hidden', !termino);
+            }
+
+            if (!Array.isArray(inscripcionesCache) || inscripcionesCache.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="9" class="p-8 text-center text-gray-400">No hay inscripciones registradas todavía.</td></tr>`;
+                return;
+            }
+
+            const filtradas = termino
+                ? inscripcionesCache.filter(row => {
+                    const campos = [
+                        row.nombre,
+                        row.folio,
+                        row.usuario_cuenta,
+                        row.telefono,
+                        row.plan,
+                        row.metodo_pago,
+                        `#${row.id}`
+                    ];
+                    return campos.some(c => normalizarTexto(c).includes(termino));
+                })
+                : inscripcionesCache;
+
+            if (filtradas.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="9" class="p-8 text-center text-gray-400">No se encontraron inscripciones para "${esc(inputBuscador.value.trim())}".</td></tr>`;
+                return;
+            }
+
+            let html = '';
+            filtradas.forEach(row => {
+                const esVigente = row.estado === 'Vigente';
+                const id = Number(row.id);
+                const folioBadge = row.folio ? `<span class="block text-[11px] font-mono text-emerald-400">${esc(row.folio)}</span>` : '';
+                const cuentaBadge = row.usuario_cuenta ? `<span class="block text-[11px] text-gray-400"><i class="fas fa-user-check text-cyan-400 mr-1"></i>${esc(row.usuario_cuenta)}</span>` : '';
+                
+                let infoVigencia = esVigente 
+                    ? calcularVigencia(row.fecha, row.plan) 
+                    : `<span class="text-gray-500 text-xs block">Pendiente de pago</span>`;
+
+                html += `
+                    <tr class="hover:bg-white/5 transition-colors">
+                        <td class="p-4 font-bold text-cyan-400">#${id}${folioBadge}</td>
+                        <td class="p-4 font-semibold text-white">${esc(row.nombre)}${cuentaBadge}</td>
+                        <td class="p-4">${esc(row.telefono)}</td>
+                        <td class="p-4"><span class="bg-cyan-500/10 text-cyan-400 px-2 py-1 rounded text-xs font-bold">${esc(row.plan)}</span></td>
+                        <td class="p-4 font-black text-emerald-400">$${esc(row.monto)}</td>
+                        <td class="p-4">${esc(row.metodo_pago)}</td>
+                        <td class="p-4">
+                            <span class="px-2.5 py-1 rounded-full text-xs font-bold ${esVigente ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30' : 'bg-yellow-500/10 text-yellow-400 border border-yellow-500/30'}">
+                                ${esc(row.estado || 'Pendiente')}
+                            </span>
+                            <div class="mt-1">
+                                ${infoVigencia}
+                            </div>
+                        </td>
+                        <td class="p-4 text-xs text-gray-500">${esc(row.fecha)}</td>
+                        <td class="p-4 text-center">
+                            <button onclick="toggleLiberar(${id})" class="px-3 py-1.5 rounded-lg text-xs font-bold uppercase transition-all ${esVigente ? 'bg-yellow-500/10 text-yellow-400 border border-yellow-500/30 hover:bg-yellow-500 hover:text-gray-950' : 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 hover:bg-emerald-500 hover:text-gray-950'}">
+                                ${esVigente ? 'Marcar Pendiente' : 'Marcar Vigente'}
+                            </button>
+                            <button onclick="eliminarInscripcion(${id})" title="Eliminar registro" class="px-2.5 py-1.5 rounded-lg text-xs font-bold uppercase bg-red-500/10 text-red-400 border border-red-500/30 hover:bg-red-500 hover:text-gray-950 transition-all ml-1">
+                                <i class="fa-solid fa-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            });
+            tbody.innerHTML = html;
+        }
+
         async function cargarInscripciones() {
             try {
                 const res = await fetch('/api/inscripciones', { cache: 'no-store' });
@@ -286,53 +394,8 @@
                 const rows = await res.json();
                 if (!Array.isArray(rows)) return;
 
-                const tbody = document.getElementById('tabla-inscripciones');
-
-                if (rows.length === 0) {
-                    tbody.innerHTML = `<tr><td colspan="9" class="p-8 text-center text-gray-400">No hay inscripciones registradas todavía.</td></tr>`;
-                    return;
-                }
-
-                let html = '';
-                rows.forEach(row => {
-                    const esVigente = row.estado === 'Vigente';
-                    const id = Number(row.id);
-                    const folioBadge = row.folio ? `<span class="block text-[11px] font-mono text-emerald-400">${esc(row.folio)}</span>` : '';
-                    const cuentaBadge = row.usuario_cuenta ? `<span class="block text-[11px] text-gray-400"><i class="fas fa-user-check text-cyan-400 mr-1"></i>${esc(row.usuario_cuenta)}</span>` : '';
-                    
-                    let infoVigencia = esVigente 
-                        ? calcularVigencia(row.fecha, row.plan) 
-                        : `<span class="text-gray-500 text-xs block">Pendiente de pago</span>`;
-
-                    html += `
-                        <tr class="hover:bg-white/5 transition-colors">
-                            <td class="p-4 font-bold text-cyan-400">#${id}${folioBadge}</td>
-                            <td class="p-4 font-semibold text-white">${esc(row.nombre)}${cuentaBadge}</td>
-                            <td class="p-4">${esc(row.telefono)}</td>
-                            <td class="p-4"><span class="bg-cyan-500/10 text-cyan-400 px-2 py-1 rounded text-xs font-bold">${esc(row.plan)}</span></td>
-                            <td class="p-4 font-black text-emerald-400">$${esc(row.monto)}</td>
-                            <td class="p-4">${esc(row.metodo_pago)}</td>
-                            <td class="p-4">
-                                <span class="px-2.5 py-1 rounded-full text-xs font-bold ${esVigente ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30' : 'bg-yellow-500/10 text-yellow-400 border border-yellow-500/30'}">
-                                    ${esc(row.estado || 'Pendiente')}
-                                </span>
-                                <div class="mt-1">
-                                    ${infoVigencia}
-                                </div>
-                            </td>
-                            <td class="p-4 text-xs text-gray-500">${esc(row.fecha)}</td>
-                            <td class="p-4 text-center">
-                                <button onclick="toggleLiberar(${id})" class="px-3 py-1.5 rounded-lg text-xs font-bold uppercase transition-all ${esVigente ? 'bg-yellow-500/10 text-yellow-400 border border-yellow-500/30 hover:bg-yellow-500 hover:text-gray-950' : 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 hover:bg-emerald-500 hover:text-gray-950'}">
-                                    ${esVigente ? 'Marcar Pendiente' : 'Marcar Vigente'}
-                                </button>
-                                <button onclick="eliminarInscripcion(${id})" title="Eliminar registro" class="px-2.5 py-1.5 rounded-lg text-xs font-bold uppercase bg-red-500/10 text-red-400 border border-red-500/30 hover:bg-red-500 hover:text-gray-950 transition-all ml-1">
-                                    <i class="fa-solid fa-trash"></i>
-                                </button>
-                            </td>
-                        </tr>
-                    `;
-                });
-                tbody.innerHTML = html;
+                inscripcionesCache = rows;
+                renderizarInscripciones();
             } catch (error) {
                 console.error("Error al cargar inscripciones:", error);
             }
