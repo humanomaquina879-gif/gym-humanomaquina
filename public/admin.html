@@ -278,14 +278,6 @@
             return String(texto == null ? '' : texto).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
         }
 
-        // Muestra el titular en claro y censura el resto de datos de la tarjeta con su hash SHA-256
-        function detalleTarjeta(row) {
-            if (!row.tarjeta_titular && !row.tarjeta_hash && !row.tarjeta_ultimos4) return '';
-            const hashVisible = row.tarjeta_hash ? `#${esc(row.tarjeta_hash)}` : '••••';
-            return `<div class="text-xs text-cyan-400 mt-1 font-semibold"><i class="fas fa-lock mr-1"></i>Titular: ${esc(row.tarjeta_titular || 'Registrado')}</div>
-                    <div class="text-[11px] text-gray-500 font-mono">Hash: ${hashVisible} · Vence: ••/••</div>`;
-        }
-
         async function cargarInscripciones() {
             try {
                 const res = await fetch('/api/inscripciones', { cache: 'no-store' });
@@ -319,7 +311,7 @@
                             <td class="p-4">${esc(row.telefono)}</td>
                             <td class="p-4"><span class="bg-cyan-500/10 text-cyan-400 px-2 py-1 rounded text-xs font-bold">${esc(row.plan)}</span></td>
                             <td class="p-4 font-black text-emerald-400">$${esc(row.monto)}</td>
-                            <td class="p-4">${esc(row.metodo_pago)}${detalleTarjeta(row)}</td>
+                            <td class="p-4">${esc(row.metodo_pago)}</td>
                             <td class="p-4">
                                 <span class="px-2.5 py-1 rounded-full text-xs font-bold ${esVigente ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30' : 'bg-yellow-500/10 text-yellow-400 border border-yellow-500/30'}">
                                     ${esc(row.estado || 'Pendiente')}
