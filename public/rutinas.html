@@ -8,15 +8,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Rutinas Exclusivas | Kronox Gym</title>
 
-    <!-- Font Awesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
-    <!-- Google Fonts: Inter -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,300;0,400;0,600;0,700;0,800;0,900;1,800;1,900&display=swap" rel="stylesheet">
 
-    <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -29,171 +25,65 @@
                             cardBorder: '#16284a',
                             accent: '#00d2ff',
                             accentDark: '#0077ff',
-                            blueDark: '#080e1a',
-                            glow: 'rgba(0, 210, 255, 0.25)'
+                            blueDark: '#080e1a'
                         }
                     },
-                    fontFamily: {
-                        sans: ['Inter', 'sans-serif'],
-                    }
+                    fontFamily: { sans: ['Inter', 'sans-serif'] }
                 }
             }
         }
     </script>
 
     <style>
-        body {
-            background-color: #050a14;
-            color: #f8fafc;
-            font-family: 'Inter', sans-serif;
-            min-height: 100vh;
-            overflow-x: hidden;
-            transition: font-size 0.3s ease;
-        }
+        body { background-color: #050a14; color: #f8fafc; font-family: 'Inter', sans-serif; min-height: 100vh; overflow-x: hidden; transition: font-size 0.3s ease; }
 
-        /* Filtros de daltonismo: se aplican a #page-wrapper y NO al body,
-           porque un filter en el body rompe los elementos position:fixed */
+        /* Filtros de daltonismo en #page-wrapper (un filter en el body rompe los position:fixed) */
         #page-wrapper.daltonism-protanopia { filter: url('#protanopia-filter'); }
         #page-wrapper.daltonism-deuteranopia { filter: url('#deuteranopia-filter'); }
         #page-wrapper.daltonism-tritanopia { filter: url('#tritanopia-filter'); }
 
-        /* Alto Contraste */
-        body.high-contrast {
-            background-color: #000000 !important;
-            color: #ffff00 !important;
-        }
-        body.high-contrast .kronox-card, 
-        body.high-contrast header, 
-        body.high-contrast footer,
-        body.high-contrast .accessibility-panel {
-            background-color: #111111 !important;
-            border-color: #ffff00 !important;
-            color: #ffff00 !important;
+        /* Alto contraste */
+        body.high-contrast { background-color: #000000 !important; color: #ffff00 !important; }
+        body.high-contrast .kronox-card, body.high-contrast header, body.high-contrast footer, body.high-contrast .accessibility-panel {
+            background-color: #111111 !important; border-color: #ffff00 !important; color: #ffff00 !important;
         }
 
         .bg-grid-pattern {
             background-size: 36px 36px;
-            background-image: 
-                linear-gradient(to right, rgba(0, 210, 255, 0.04) 1px, transparent 1px),
-                linear-gradient(to bottom, rgba(0, 210, 255, 0.04) 1px, transparent 1px);
+            background-image: linear-gradient(to right, rgba(0, 210, 255, 0.04) 1px, transparent 1px), linear-gradient(to bottom, rgba(0, 210, 255, 0.04) 1px, transparent 1px);
         }
 
-        .glow-light {
-            position: absolute;
-            width: 400px;
-            height: 400px;
-            background: radial-gradient(circle, rgba(0, 210, 255, 0.1) 0%, rgba(5, 10, 20, 0) 70%);
-            border-radius: 50%;
-            pointer-events: none;
-            z-index: 0;
-        }
+        .glow-light { position: absolute; width: 400px; height: 400px; background: radial-gradient(circle, rgba(0, 210, 255, 0.1) 0%, rgba(5, 10, 20, 0) 70%); border-radius: 50%; pointer-events: none; z-index: 0; }
 
-        .kronox-card {
-            background: linear-gradient(160deg, #0a1326 0%, #060c18 100%);
-            border: 1px solid #16284a;
-            border-radius: 1rem;
-            overflow: hidden;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            position: relative;
-        }
+        .kronox-card { background: linear-gradient(160deg, #0a1326 0%, #060c18 100%); border: 1px solid #16284a; border-radius: 1rem; overflow: hidden; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); position: relative; }
+        .kronox-card:hover { border-color: #00d2ff; box-shadow: 0 10px 25px rgba(0, 210, 255, 0.15); transform: translateY(-4px); }
 
-        .kronox-card:hover {
-            border-color: #00d2ff;
-            box-shadow: 0 10px 25px rgba(0, 210, 255, 0.15);
-            transform: translateY(-4px);
-        }
+        .btn-neon-outline { background: transparent; color: #00d2ff; border: 2px solid #00d2ff; transition: all 0.3s ease; box-shadow: 0 0 10px rgba(0, 210, 255, 0.1); }
+        .btn-neon-outline:hover { background: #00d2ff; color: #050a14; box-shadow: 0 0 22px rgba(0, 210, 255, 0.6); }
+        .btn-neon-solid { background: #00d2ff; color: #050a14; border: 2px solid #00d2ff; transition: all 0.3s ease; box-shadow: 0 0 15px rgba(0, 210, 255, 0.4); }
+        .btn-neon-solid:hover { background: #2dd8ff; box-shadow: 0 0 25px rgba(0, 210, 255, 0.8); transform: scale(1.02); }
 
-        .btn-neon-outline {
-            background: transparent;
-            color: #00d2ff;
-            border: 2px solid #00d2ff;
-            transition: all 0.3s ease;
-            box-shadow: 0 0 10px rgba(0, 210, 255, 0.1);
-        }
+        /* Subtítulos flotantes del lector de voz */
+        #speech-subtitle-box { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: rgba(5, 10, 20, 0.95); border: 2px solid #00d2ff; color: #fff; padding: 12px 24px; border-radius: 12px; font-size: 14px; z-index: 9999; box-shadow: 0 0 25px rgba(0, 210, 255, 0.5); max-width: 90%; text-align: center; display: none; pointer-events: none; }
 
-        .btn-neon-outline:hover {
-            background: #00d2ff;
-            color: #050a14;
-            box-shadow: 0 0 22px rgba(0, 210, 255, 0.6);
-        }
-
-        .btn-neon-solid {
-            background: #00d2ff;
-            color: #050a14;
-            border: 2px solid #00d2ff;
-            transition: all 0.3s ease;
-            box-shadow: 0 0 15px rgba(0, 210, 255, 0.4);
-        }
-
-        .btn-neon-solid:hover {
-            background: #2dd8ff;
-            box-shadow: 0 0 25px rgba(0, 210, 255, 0.8);
-            transform: scale(1.02);
-        }
-
-        /* Subtítulos flotantes para lector de voz */
-        #speech-subtitle-box {
-            position: fixed;
-            bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: rgba(5, 10, 20, 0.95);
-            border: 2px solid #00d2ff;
-            color: #fff;
-            padding: 12px 24px;
-            border-radius: 12px;
-            font-size: 14px;
-            z-index: 9999;
-            box-shadow: 0 0 25px rgba(0, 210, 255, 0.5);
-            max-width: 90%;
-            text-align: center;
-            display: none;
-            pointer-events: none;
-        }
-
-        /* Botón "Escuchar" (solo aparece en celular al seleccionar texto) */
-        #btn-escuchar {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            z-index: 9999;
-            display: none;
-            align-items: center;
-            gap: 8px;
-            background: #00d2ff;
-            color: #050a14;
-            border: none;
-            padding: 12px 18px;
-            border-radius: 9999px;
-            font-weight: 800;
-            font-size: 13px;
-            box-shadow: 0 0 20px rgba(0, 210, 255, 0.6);
-        }
+        /* Botón "Escuchar" (solo celular) */
+        #btn-escuchar { position: fixed; bottom: 20px; right: 20px; z-index: 9999; display: none; align-items: center; gap: 8px; background: #00d2ff; color: #050a14; border: none; padding: 12px 18px; border-radius: 9999px; font-weight: 800; font-size: 13px; box-shadow: 0 0 20px rgba(0, 210, 255, 0.6); }
     </style>
 </head>
 <body>
 
     <!-- FILTROS SVG PARA DALTONISMO -->
     <svg style="display:none;">
-        <filter id="protanopia-filter">
-            <feColorMatrix type="matrix" values="0.567, 0.433, 0, 0, 0  0.558, 0.442, 0, 0, 0  0, 0.242, 0.758, 0, 0  0, 0, 0, 1, 0"/>
-        </filter>
-        <filter id="deuteranopia-filter">
-            <feColorMatrix type="matrix" values="0.625, 0.375, 0, 0, 0  0.7, 0.3, 0, 0, 0  0, 0.3, 0.7, 0, 0  0, 0, 0, 1, 0"/>
-        </filter>
-        <filter id="tritanopia-filter">
-            <feColorMatrix type="matrix" values="0.95, 0.05, 0, 0, 0  0, 0.433, 0.567, 0, 0  0, 0.475, 0.525, 0, 0  0, 0, 0, 1, 0"/>
-        </filter>
+        <filter id="protanopia-filter"><feColorMatrix type="matrix" values="0.567, 0.433, 0, 0, 0  0.558, 0.442, 0, 0, 0  0, 0.242, 0.758, 0, 0  0, 0, 0, 1, 0"/></filter>
+        <filter id="deuteranopia-filter"><feColorMatrix type="matrix" values="0.625, 0.375, 0, 0, 0  0.7, 0.3, 0, 0, 0  0, 0.3, 0.7, 0, 0  0, 0, 0, 1, 0"/></filter>
+        <filter id="tritanopia-filter"><feColorMatrix type="matrix" values="0.95, 0.05, 0, 0, 0  0, 0.433, 0.567, 0, 0  0, 0.475, 0.525, 0, 0  0, 0, 0, 1, 0"/></filter>
     </svg>
 
-    <!-- ===== ELEMENTOS FIJOS (fuera del wrapper para que el filtro no los afecte) ===== -->
-
-    <!-- CAJA DE SUBTÍTULOS PARA LECTOR DE VOZ -->
+    <!-- ELEMENTOS FIJOS (fuera del wrapper para que el filtro no los afecte) -->
     <div id="speech-subtitle-box">
         <i class="fas fa-volume-high text-cyan-400 mr-2"></i><span id="subtitle-text">Reproduciendo audio...</span>
     </div>
 
-    <!-- BOTÓN ESCUCHAR (celular) -->
     <button id="btn-escuchar" type="button" onclick="hablarTextoPendiente()">
         <i class="fas fa-volume-high"></i> Escuchar
     </button>
@@ -209,7 +99,7 @@
                 <span class="text-sm font-bold uppercase text-red-500 tracking-wider">Accesibilidad Universal</span>
                 <button onclick="toggleAccessibilityPanel()" class="text-gray-400 hover:text-white font-bold"><i class="fas fa-times"></i></button>
             </div>
-            
+
             <div>
                 <label class="block text-xs font-bold text-gray-300 uppercase mb-2">Tamaño de letra</label>
                 <div class="flex gap-2">
@@ -245,19 +135,18 @@
         </div>
     </div>
 
-    <!-- ===== CONTENIDO DE LA PÁGINA (aquí se aplica el filtro de daltonismo) ===== -->
+    <!-- CONTENIDO DE LA PÁGINA (aquí se aplica el filtro de daltonismo) -->
     <div id="page-wrapper" class="bg-grid-pattern relative min-h-screen flex flex-col justify-between">
 
-        <!-- Ambient Glow Effects -->
         <div class="glow-light top-0 left-1/2 -translate-x-1/2"></div>
 
         <!-- NAVBAR SUPERIOR -->
         <header class="sticky top-0 z-40 bg-kronox-bg/85 backdrop-blur-lg border-b border-kronox-cardBorder/60">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-24 flex items-center justify-between">
-                
+
                 <a href="index" title="Ir al inicio" class="flex items-center gap-2 group py-2 ml-14 sm:ml-0">
-                    <img src="https://res.cloudinary.com/bo5jzelh/image/upload/v1783041430/Logo_Kronox_Gym_lfg9tl.jpg" 
-                         alt="Kronox Gym Logo" 
+                    <img src="https://res.cloudinary.com/bo5jzelh/image/upload/v1783041430/Logo_Kronox_Gym_lfg9tl.jpg"
+                         alt="Kronox Gym Logo"
                          class="h-16 md:h-20 w-auto rounded-xl border border-kronox-accent/40 object-contain shadow-[0_0_15px_rgba(0,210,255,0.2)] group-hover:border-kronox-accent transition-all duration-300">
                 </a>
 
@@ -269,12 +158,11 @@
                     <a href="catalogo" class="text-gray-300 hover:text-kronox-accent transition-colors">Catálogo</a>
                     <a href="ubicacion" class="text-gray-300 hover:text-kronox-accent transition-colors">Ubicación</a>
                     <a href="rutinas" class="text-emerald-400 font-bold border-b-2 border-emerald-400 pb-1 flex items-center gap-1.5"><i class="fas fa-dumbbell"></i> Mi Rutina</a>
-                    <!-- ENLACE OCULTO PANEL ADMIN (DESKTOP) -->
                     <a href="admin" id="nav-admin-panel" class="hidden text-cyan-400 font-bold hover:underline transition-colors flex items-center gap-1.5"><i class="fas fa-user-shield"></i> Panel Admin</a>
                 </nav>
 
                 <div class="hidden md:flex items-center space-x-3">
-                    <!-- AVATAR DE USUARIO INTERACTIVO (DESKTOP) -->
+                    <!-- AVATAR DE USUARIO (DESKTOP) -->
                     <div id="user-session-info" class="relative">
                         <button onclick="toggleUserDropdown(event)" class="flex items-center gap-2 bg-[#091122] border border-kronox-accent/50 hover:border-kronox-accent px-3 py-1.5 rounded-full shadow-[0_0_15px_rgba(0,210,255,0.2)] transition-all">
                             <div class="w-8 h-8 rounded-full bg-cyan-500/10 border border-cyan-400 text-cyan-400 flex items-center justify-center font-bold text-xs">
@@ -284,7 +172,6 @@
                             <i class="fas fa-chevron-down text-[10px] text-cyan-400"></i>
                         </button>
 
-                        <!-- MENÚ DESPLEGABLE DEL PERFIL -->
                         <div id="user-dropdown-menu" class="hidden absolute right-0 mt-2 w-64 bg-[#091122] border border-kronox-accent/40 rounded-2xl p-4 shadow-2xl backdrop-blur-xl z-50 text-gray-200 space-y-3">
                             <div class="border-b border-gray-800 pb-3">
                                 <p class="text-[10px] uppercase font-bold text-gray-400 tracking-wider">¡HOLA DE NUEVO, ATLETA!</p>
@@ -321,9 +208,8 @@
                 <a href="catalogo" class="block py-2 text-gray-300 hover:text-kronox-accent font-medium">Catálogo</a>
                 <a href="ubicacion" class="block py-2 text-gray-300 hover:text-kronox-accent font-medium">Ubicación</a>
                 <a href="rutinas" class="block py-2 text-emerald-400 font-bold"><i class="fas fa-dumbbell"></i> Mi Rutina</a>
-                <!-- ENLACE OCULTO PANEL ADMIN (MÓVIL) -->
                 <a href="admin" id="mobile-nav-admin-panel" class="hidden py-2 text-cyan-400 font-bold"><i class="fas fa-user-shield"></i> Panel Admin</a>
-                
+
                 <div id="mobile-session-container" class="pt-2 border-t border-gray-800">
                     <!-- PERFIL MÓVIL -->
                     <div id="mobile-user-container" class="relative">
@@ -340,7 +226,6 @@
                             <i class="fas fa-chevron-down text-xs text-cyan-400 pr-1 pointer-events-none"></i>
                         </button>
 
-                        <!-- DESPLEGABLE MÓVIL -->
                         <div id="mobile-user-dropdown" class="hidden mt-2 bg-[#050a14] border border-cyan-500/30 p-3 rounded-xl space-y-2">
                             <a href="rutinas" class="flex items-center gap-2 text-xs font-bold text-gray-300 hover:text-kronox-accent p-2 rounded-lg hover:bg-white/5 transition-colors">
                                 <i class="fas fa-dumbbell text-emerald-400"></i> Mi Rutina
@@ -359,7 +244,7 @@
 
         <!-- SECCIÓN PRINCIPAL: RUTINAS RECOMENDADAS -->
         <main class="relative z-10 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10 flex-grow">
-            
+
             <div class="text-center mb-8">
                 <span class="inline-block bg-emerald-500/10 border border-emerald-500/40 text-emerald-400 text-[11px] font-black uppercase tracking-widest px-3 py-1 rounded-full mb-2">
                     Área Exclusiva de Miembros
@@ -368,7 +253,7 @@
                     RUTINAS <span class="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-cyan-400">RECOMENDADAS</span>
                 </h1>
                 <p class="text-gray-400 text-sm mt-2 max-w-xl mx-auto">Guías de entrenamiento optimizadas para hipertrofia y fuerza por grupos musculares.</p>
-                
+
                 <div class="mt-6">
                     <button onclick="generarNuevaRutina()" class="btn-neon-solid px-6 py-3 rounded-xl font-black text-xs uppercase tracking-wider inline-flex items-center gap-2">
                         <i class="fas fa-random"></i> Generar Rutina Alternativa
@@ -377,7 +262,7 @@
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                
+
                 <!-- TARJETA 1: PECHO -->
                 <div class="kronox-card flex flex-col justify-between">
                     <div>
@@ -494,17 +379,23 @@
         </footer>
     </div>
 
-    <!-- SCRIPT COMPLETO -->
     <script>
-        // ================= UTILIDADES SEGURAS DE localStorage =================
-        function lsGet(key) {
-            try { return localStorage.getItem(key); } catch (e) { return null; }
-        }
-        function lsSet(key, value) {
-            try { localStorage.setItem(key, value); } catch (e) {}
-        }
-        function lsRemove(key) {
-            try { localStorage.removeItem(key); } catch (e) {}
+        // ================= UTILIDADES =================
+        const $ = id => document.getElementById(id);
+        const ls = {
+            get: k => { try { return localStorage.getItem(k); } catch (e) { return null; } },
+            set: (k, v) => { try { localStorage.setItem(k, v); } catch (e) {} },
+            del: k => { try { localStorage.removeItem(k); } catch (e) {} }
+        };
+        const ocultar = (id, oculto) => { const el = $(id); if (el) el.classList.toggle('hidden', oculto); };
+        const poner = (id, texto) => { const el = $(id); if (el) el.innerText = texto; };
+        const ICONO_BARRAS = "fas fa-bars pointer-events-none";
+        const ICONO_CERRAR = "fas fa-times pointer-events-none";
+
+        function cerrarMenuMovil() {
+            const m = $('mobile-menu'), i = $('mobile-menu-icon');
+            if (m) m.classList.add('hidden');
+            if (i) i.className = ICONO_BARRAS;
         }
 
         // ================= INICIO =================
@@ -512,97 +403,65 @@
             checkUserSession();
             loadAccessibilityPreferences();
 
-            const mobileMenu = document.getElementById('mobile-menu');
-            const mobileMenuBtn = document.getElementById('mobile-menu-btn');
-            const mobileMenuIcon = document.getElementById('mobile-menu-icon');
+            const mobileMenu = $('mobile-menu'), mobileMenuBtn = $('mobile-menu-btn');
 
             // Cerrar el menú móvil al tocar un enlace
-            if (mobileMenu) {
-                mobileMenu.querySelectorAll("a").forEach(link => {
-                    link.addEventListener("click", () => {
-                        mobileMenu.classList.add('hidden');
-                        if (mobileMenuIcon) mobileMenuIcon.className = "fas fa-bars pointer-events-none";
-                    });
-                });
-            }
+            if (mobileMenu) mobileMenu.querySelectorAll("a").forEach(a => a.addEventListener("click", cerrarMenuMovil));
 
             // Cerrar menús al hacer clic fuera
             document.addEventListener('click', (e) => {
-                const desktopDropdown = document.getElementById('user-dropdown-menu');
-                if (desktopDropdown && !desktopDropdown.classList.contains('hidden')) {
-                    if (!e.target.closest('#user-session-info')) {
-                        desktopDropdown.classList.add('hidden');
-                    }
-                }
-
-                const mobileDropdown = document.getElementById('mobile-user-dropdown');
-                if (mobileDropdown && !mobileDropdown.classList.contains('hidden')) {
-                    if (!e.target.closest('#mobile-user-container')) {
-                        mobileDropdown.classList.add('hidden');
-                    }
-                }
-
-                if (mobileMenu && !mobileMenu.classList.contains('hidden')) {
-                    if (!mobileMenu.contains(e.target) && !(mobileMenuBtn && mobileMenuBtn.contains(e.target))) {
-                        mobileMenu.classList.add('hidden');
-                        if (mobileMenuIcon) mobileMenuIcon.className = "fas fa-bars pointer-events-none";
-                    }
+                [['user-dropdown-menu', '#user-session-info'], ['mobile-user-dropdown', '#mobile-user-container']].forEach(([id, contenedor]) => {
+                    const d = $(id);
+                    if (d && !d.classList.contains('hidden') && !e.target.closest(contenedor)) d.classList.add('hidden');
+                });
+                if (mobileMenu && !mobileMenu.classList.contains('hidden') && !mobileMenu.contains(e.target) && !(mobileMenuBtn && mobileMenuBtn.contains(e.target))) {
+                    cerrarMenuMovil();
                 }
             });
         });
 
-        // Si cambias algo en una pestaña, las demás pestañas abiertas se actualizan solas
+        // Sincroniza pestañas abiertas y al volver desde el caché
         window.addEventListener('storage', (e) => {
             if (!e.key) return;
             if (e.key === 'kronox_logged_user') checkUserSession();
             if (e.key.startsWith('kronox_')) loadAccessibilityPreferences();
         });
-
-        // Al volver a una pestaña (o desde el caché del navegador) se re-sincroniza todo
-        window.addEventListener('pageshow', () => {
-            checkUserSession();
-            loadAccessibilityPreferences();
-        });
+        window.addEventListener('pageshow', () => { checkUserSession(); loadAccessibilityPreferences(); });
 
         // ================= MENÚS =================
         function toggleMobileMenu() {
-            const mobileMenu = document.getElementById('mobile-menu');
-            const mobileMenuIcon = document.getElementById('mobile-menu-icon');
-
-            if (mobileMenu) {
-                mobileMenu.classList.toggle('hidden');
-                if (mobileMenuIcon) {
-                    mobileMenuIcon.className = mobileMenu.classList.contains('hidden')
-                        ? "fas fa-bars pointer-events-none"
-                        : "fas fa-times pointer-events-none";
-                }
-            }
+            const m = $('mobile-menu'), i = $('mobile-menu-icon');
+            if (!m) return;
+            m.classList.toggle('hidden');
+            if (i) i.className = m.classList.contains('hidden') ? ICONO_BARRAS : ICONO_CERRAR;
         }
 
         function toggleUserDropdown(e) {
             e.stopPropagation();
-            const dropdown = document.getElementById('user-dropdown-menu');
-            if (dropdown) dropdown.classList.toggle('hidden');
+            const d = $('user-dropdown-menu');
+            if (d) d.classList.toggle('hidden');
         }
 
         function toggleMobileUserDropdown(e) {
             e.stopPropagation();
-            const mobileDropdown = document.getElementById('mobile-user-dropdown');
-            if (mobileDropdown) mobileDropdown.classList.toggle('hidden');
+            const d = $('mobile-user-dropdown');
+            if (d) d.classList.toggle('hidden');
         }
 
-        // ================= SESIÓN Y ACCESO ADMIN =================
+        // ================= SESIÓN Y ACCESO ADMIN (el "candado" de la página) =================
         let _redirigiendo = false;
 
+        // Esta página es solo para socios: al cerrar sesión te manda a index
         function logoutUser() {
-            lsRemove('kronox_logged_user');
+            ls.del('kronox_logged_user');
             window.location.href = "index";
         }
 
         function checkUserSession() {
-            const loggedUser = lsGet('kronox_logged_user');
+            const user = ls.get('kronox_logged_user');
 
-            if (!loggedUser) {
+            // Sin sesión no se puede ver la página
+            if (!user) {
                 if (!_redirigiendo) {
                     _redirigiendo = true;
                     alert("Debes iniciar sesión para acceder al apartado de rutinas.");
@@ -611,142 +470,46 @@
                 return;
             }
 
-            // Validar acceso al panel admin si el usuario logueado es admin
-            const navAdmin = document.getElementById('nav-admin-panel');
-            const mobileNavAdmin = document.getElementById('mobile-nav-admin-panel');
+            const esAdmin = user.toLowerCase() === 'admin';
+            ['nav-admin-panel', 'mobile-nav-admin-panel'].forEach(id => ocultar(id, !esAdmin));
 
-            if (loggedUser.toLowerCase() === 'admin') {
-                if (navAdmin) navAdmin.classList.remove('hidden');
-                if (mobileNavAdmin) mobileNavAdmin.classList.remove('hidden');
-            } else {
-                if (navAdmin) navAdmin.classList.add('hidden');
-                if (mobileNavAdmin) mobileNavAdmin.classList.add('hidden');
-            }
-
-            const nameEl = document.getElementById('welcome-user-name');
-            const emailEl = document.getElementById('dropdown-user-email');
-            const mobileNameEl = document.getElementById('mobile-welcome-name');
-
-            if (nameEl) nameEl.innerText = loggedUser.split('@')[0];
-            if (emailEl) emailEl.innerText = loggedUser;
-            if (mobileNameEl) mobileNameEl.innerText = loggedUser;
+            poner('welcome-user-name', user.split('@')[0]);
+            poner('dropdown-user-email', user);
+            poner('mobile-welcome-name', user);
         }
 
         // ================= RUTINAS =================
+        // Cada grupo tiene 4 variantes; cada ejercicio es [nombre, series x repeticiones]
         const variantesRutinas = {
             pecho: [
-                [
-                    { nombre: "Press de Banca Plano", reps: "4 series x 8-10 reps" },
-                    { nombre: "Press Inclinado con Mancuernas", reps: "4 series x 10 reps" },
-                    { nombre: "Aperturas en Polea", reps: "3 series x 12 reps" }
-                ],
-                [
-                    { nombre: "Press Declinado con Barra", reps: "4 series x 8 reps" },
-                    { nombre: "Cruce de Poleas Alto", reps: "4 series x 12 reps" },
-                    { nombre: "Press Plano con Mancuernas", reps: "3 series x 10 reps" }
-                ],
-                [
-                    { nombre: "Press Inclinado con Barra", reps: "4 series x 8-10 reps" },
-                    { nombre: "Fondos para Pecho", reps: "3 series x 10 reps" },
-                    { nombre: "Peck Deck (Mariposa)", reps: "4 series x 12 reps" }
-                ],
-                [
-                    { nombre: "Press con Mancuernas Neutro", reps: "4 series x 10 reps" },
-                    { nombre: "Aperturas Inclinadas", reps: "3 series x 12 reps" },
-                    { nombre: "Cruce de Poleas Bajo", reps: "4 series x 15 reps" }
-                ]
+                [["Press de Banca Plano", "4 series x 8-10 reps"], ["Press Inclinado con Mancuernas", "4 series x 10 reps"], ["Aperturas en Polea", "3 series x 12 reps"]],
+                [["Press Declinado con Barra", "4 series x 8 reps"], ["Cruce de Poleas Alto", "4 series x 12 reps"], ["Press Plano con Mancuernas", "3 series x 10 reps"]],
+                [["Press Inclinado con Barra", "4 series x 8-10 reps"], ["Fondos para Pecho", "3 series x 10 reps"], ["Peck Deck (Mariposa)", "4 series x 12 reps"]],
+                [["Press con Mancuernas Neutro", "4 series x 10 reps"], ["Aperturas Inclinadas", "3 series x 12 reps"], ["Cruce de Poleas Bajo", "4 series x 15 reps"]]
             ],
             triceps: [
-                [
-                    { nombre: "Extensión de Tríceps en Polea", reps: "4 series x 12 reps" },
-                    { nombre: "Press Francés con Barra Z", reps: "4 series x 10 reps" },
-                    { nombre: "Patada de Tríceps con Mancuerna", reps: "3 series x 12 reps" }
-                ],
-                [
-                    { nombre: "Press Coctelera (Skull Crusher)", reps: "4 series x 10 reps" },
-                    { nombre: "Fondos en Máquina", reps: "3 series x 10 reps" },
-                    { nombre: "Extensión Trasnuca", reps: "3 series x 12 reps" }
-                ],
-                [
-                    { nombre: "Extensión con Cuerda en Polea", reps: "4 series x 12-15 reps" },
-                    { nombre: "Press de Banca Agarre Cerrado", reps: "4 series x 8 reps" },
-                    { nombre: "Copa a Dos Manos", reps: "3 series x 10 reps" }
-                ],
-                [
-                    { nombre: "Extensión Unilateral en Polea", reps: "3 series x 12 reps" },
-                    { nombre: "Fondos entre Bancos", reps: "4 series x 12 reps" },
-                    { nombre: "Press Francés Inclinado", reps: "3 series x 10 reps" }
-                ]
+                [["Extensión de Tríceps en Polea", "4 series x 12 reps"], ["Press Francés con Barra Z", "4 series x 10 reps"], ["Patada de Tríceps con Mancuerna", "3 series x 12 reps"]],
+                [["Press Coctelera (Skull Crusher)", "4 series x 10 reps"], ["Fondos en Máquina", "3 series x 10 reps"], ["Extensión Trasnuca", "3 series x 12 reps"]],
+                [["Extensión con Cuerda en Polea", "4 series x 12-15 reps"], ["Press de Banca Agarre Cerrado", "4 series x 8 reps"], ["Copa a Dos Manos", "3 series x 10 reps"]],
+                [["Extensión Unilateral en Polea", "3 series x 12 reps"], ["Fondos entre Bancos", "4 series x 12 reps"], ["Press Francés Inclinado", "3 series x 10 reps"]]
             ],
             pierna: [
-                [
-                    { nombre: "Sentadilla Libre o Multipress", reps: "4 series x 8 reps" },
-                    { nombre: "Prensa de Pierna (Peso Adaptado)", reps: "4 series x 10 reps" },
-                    { nombre: "Extensión de Cuádriceps", reps: "3 series x 12 reps" },
-                    { nombre: "Elevación de Pantorrilla", reps: "5 series x 15 reps" }
-                ],
-                [
-                    { nombre: "Zancadas con Mancuernas", reps: "3 series x 12 pasos" },
-                    { nombre: "Curl Femoral Acostado", reps: "4 series x 10 reps" },
-                    { nombre: "Sentadilla Hack o en Máquina", reps: "3 series x 10 reps" },
-                    { nombre: "Pantorrilla en Prensa", reps: "4 series x 15 reps" }
-                ],
-                [
-                    { nombre: "Prensa Horizontal", reps: "4 series x 12 reps" },
-                    { nombre: "Sentadilla Búlgara", reps: "3 series x 10 reps" },
-                    { nombre: "Peso Muerto Rumano", reps: "4 series x 10 reps" },
-                    { nombre: "Elevación de Talón Sentado", reps: "4 series x 15 reps" }
-                ],
-                [
-                    { nombre: "Sentadilla Goblet", reps: "4 series x 12 reps" },
-                    { nombre: "Prensa 45 Grados", reps: "4 series x 10 reps" },
-                    { nombre: "Curl Femoral Sentado", reps: "3 series x 12 reps" },
-                    { nombre: "Pantorrilla Libre", reps: "4 series x 20 reps" }
-                ]
+                [["Sentadilla Libre o Multipress", "4 series x 8 reps"], ["Prensa de Pierna (Peso Adaptado)", "4 series x 10 reps"], ["Extensión de Cuádriceps", "3 series x 12 reps"], ["Elevación de Pantorrilla", "5 series x 15 reps"]],
+                [["Zancadas con Mancuernas", "3 series x 12 pasos"], ["Curl Femoral Acostado", "4 series x 10 reps"], ["Sentadilla Hack o en Máquina", "3 series x 10 reps"], ["Pantorrilla en Prensa", "4 series x 15 reps"]],
+                [["Prensa Horizontal", "4 series x 12 reps"], ["Sentadilla Búlgara", "3 series x 10 reps"], ["Peso Muerto Rumano", "4 series x 10 reps"], ["Elevación de Talón Sentado", "4 series x 15 reps"]],
+                [["Sentadilla Goblet", "4 series x 12 reps"], ["Prensa 45 Grados", "4 series x 10 reps"], ["Curl Femoral Sentado", "3 series x 12 reps"], ["Pantorrilla Libre", "4 series x 20 reps"]]
             ],
             espalda: [
-                [
-                    { nombre: "Dominadas o Jalón al Pecho", reps: "4 series x 10 reps" },
-                    { nombre: "Remo con Barra o Mancuerna", reps: "4 series x 8-10 reps" },
-                    { nombre: "Remo en Polea Baja", reps: "3 series x 12 reps" }
-                ],
-                [
-                    { nombre: "Jalón con Agarre Neutro", reps: "4 series x 10 reps" },
-                    { nombre: "Remo en T con Barra", reps: "4 series x 8 reps" },
-                    { nombre: "Pullover en Polea Alta", reps: "3 series x 12 reps" }
-                ],
-                [
-                    { nombre: "Remo Unilateral con Mancuerna", reps: "4 series x 10 reps" },
-                    { nombre: "Jalón al Pecho Agarre Ancho", reps: "4 series x 10 reps" },
-                    { nombre: "Hiperextensiones", reps: "3 series x 15 reps" }
-                ],
-                [
-                    { nombre: "Remo en Máquina Giros", reps: "4 series x 10 reps" },
-                    { nombre: "Jalón con Cuerda al Pecho", reps: "3 series x 12 reps" },
-                    { nombre: "Remo Gironda", reps: "4 series x 10 reps" }
-                ]
+                [["Dominadas o Jalón al Pecho", "4 series x 10 reps"], ["Remo con Barra o Mancuerna", "4 series x 8-10 reps"], ["Remo en Polea Baja", "3 series x 12 reps"]],
+                [["Jalón con Agarre Neutro", "4 series x 10 reps"], ["Remo en T con Barra", "4 series x 8 reps"], ["Pullover en Polea Alta", "3 series x 12 reps"]],
+                [["Remo Unilateral con Mancuerna", "4 series x 10 reps"], ["Jalón al Pecho Agarre Ancho", "4 series x 10 reps"], ["Hiperextensiones", "3 series x 15 reps"]],
+                [["Remo en Máquina Giros", "4 series x 10 reps"], ["Jalón con Cuerda al Pecho", "3 series x 12 reps"], ["Remo Gironda", "4 series x 10 reps"]]
             ],
             biceps: [
-                [
-                    { nombre: "Curl de Bíceps con Barra Z", reps: "4 series x 10 reps" },
-                    { nombre: "Curl Alterno con Mancuernas", reps: "4 series x 12 reps" },
-                    { nombre: "Curl Tipo Martillo en Polea", reps: "3 series x 12 reps" }
-                ],
-                [
-                    { nombre: "Curl Concentrado", reps: "3 series x 12 reps" },
-                    { nombre: "Curl en Banco Inclinado", reps: "4 series x 10 reps" },
-                    { nombre: "Curl con Barra Inversa", reps: "3 series x 12 reps" }
-                ],
-                [
-                    { nombre: "Curl Predicador en Banco Scott", reps: "4 series x 10 reps" },
-                    { nombre: "Curl Martillo Cruzado", reps: "3 series x 12 reps" },
-                    { nombre: "Curl en Polea Alta (Bíceps Doble)", reps: "3 series x 12 reps" }
-                ],
-                [
-                    { nombre: "Curl 21 con Barra", reps: "3 series x 21 reps" },
-                    { nombre: "Curl Araña en Banco Inclinado", reps: "4 series x 10 reps" },
-                    { nombre: "Curl Martillo con Barra Z", reps: "3 series x 12 reps" }
-                ]
+                [["Curl de Bíceps con Barra Z", "4 series x 10 reps"], ["Curl Alterno con Mancuernas", "4 series x 12 reps"], ["Curl Tipo Martillo en Polea", "3 series x 12 reps"]],
+                [["Curl Concentrado", "3 series x 12 reps"], ["Curl en Banco Inclinado", "4 series x 10 reps"], ["Curl con Barra Inversa", "3 series x 12 reps"]],
+                [["Curl Predicador en Banco Scott", "4 series x 10 reps"], ["Curl Martillo Cruzado", "3 series x 12 reps"], ["Curl en Polea Alta (Bíceps Doble)", "3 series x 12 reps"]],
+                [["Curl 21 con Barra", "3 series x 21 reps"], ["Curl Araña en Banco Inclinado", "4 series x 10 reps"], ["Curl Martillo con Barra Z", "3 series x 12 reps"]]
             ]
         };
 
@@ -755,32 +518,25 @@
         function generarNuevaRutina() {
             indiceVarianteActual = (indiceVarianteActual + 1) % 4;
 
-            ['pecho', 'triceps', 'pierna', 'espalda', 'biceps'].forEach(grupo => {
-                const listaOpciones = variantesRutinas[grupo];
-                const varianteSeleccionada = listaOpciones[indiceVarianteActual];
-                const contenedor = document.getElementById(`lista-${grupo}`);
-                
+            Object.entries(variantesRutinas).forEach(([grupo, variantes]) => {
+                const contenedor = $(`lista-${grupo}`);
                 if (contenedor) {
-                    contenedor.innerHTML = varianteSeleccionada.map(item => `
-                        <li class="flex justify-between items-center border-b border-gray-800 pb-2">
-                            <span class="truncate pr-2">${item.nombre}</span> 
-                            <span class="text-cyan-400 font-bold whitespace-nowrap">${item.reps}</span>
-                        </li>
-                    `).join('');
+                    contenedor.innerHTML = variantes[indiceVarianteActual].map(([nombre, reps]) =>
+                        `<li class="flex justify-between items-center border-b border-gray-800 pb-2"><span class="truncate pr-2">${nombre}</span> <span class="text-cyan-400 font-bold whitespace-nowrap">${reps}</span></li>`
+                    ).join('');
                 }
             });
 
-            if (speechActive) {
-                hablar("Se ha generado una nueva rutina.", false);
-            }
+            if (speechActive) hablar("Se ha generado una nueva rutina.", false);
         }
 
         // ================= ACCESIBILIDAD =================
         function toggleAccessibilityPanel() {
-            const panel = document.getElementById('accessibility-panel');
+            const panel = $('accessibility-panel');
             if (panel) panel.classList.toggle('hidden');
         }
 
+        // ---- Tamaño de letra ----
         let currentFontSize = 100;
 
         function applyFontSize(size) {
@@ -789,23 +545,24 @@
         }
 
         function adjustFontSize(amount) {
-            let size = currentFontSize + amount;
-            if (size < 70) size = 70;
-            if (size > 200) size = 200;
+            const size = Math.min(200, Math.max(70, currentFontSize + amount));
             applyFontSize(size);
-            lsSet('kronox_font_size', size);
+            ls.set('kronox_font_size', size);
         }
 
         function resetFontSize() {
             applyFontSize(100);
-            lsSet('kronox_font_size', 100);
+            ls.set('kronox_font_size', 100);
         }
 
+        // ---- Daltonismo ----
         const DALTON_TYPES = ['none', 'protanopia', 'deuteranopia', 'tritanopia'];
+        const BTN_ON = ['bg-red-600', 'text-white', 'border-red-500'];
+        const BTN_OFF = ['bg-[#1f293d]', 'text-gray-300', 'border-gray-700'];
 
         function applyDaltonism(type) {
             if (!DALTON_TYPES.includes(type)) type = 'none';
-            const wrapper = document.getElementById('page-wrapper');
+            const wrapper = $('page-wrapper');
 
             if (wrapper) {
                 wrapper.classList.remove('daltonism-protanopia', 'daltonism-deuteranopia', 'daltonism-tritanopia');
@@ -813,30 +570,24 @@
             }
 
             DALTON_TYPES.forEach(t => {
-                const btn = document.getElementById(`btn-dalton-${t}`);
+                const btn = $(`btn-dalton-${t}`);
                 if (!btn) return;
-                if (t === type) {
-                    btn.classList.add('bg-red-600', 'text-white', 'border-red-500');
-                    btn.classList.remove('bg-[#1f293d]', 'text-gray-300', 'border-gray-700');
-                } else {
-                    btn.classList.remove('bg-red-600', 'text-white', 'border-red-500');
-                    btn.classList.add('bg-[#1f293d]', 'text-gray-300', 'border-gray-700');
-                }
+                btn.classList.remove(...(t === type ? BTN_OFF : BTN_ON));
+                btn.classList.add(...(t === type ? BTN_ON : BTN_OFF));
             });
         }
 
         function setDaltonism(type) {
             applyDaltonism(type);
-            lsSet('kronox_daltonism', type);
+            ls.set('kronox_daltonism', type);
         }
 
+        // ---- Alto contraste ----
         function applyHighContrast(enabled) {
             document.body.classList.toggle('high-contrast', enabled);
-            const btn = document.getElementById('btn-high-contrast');
+            const btn = $('btn-high-contrast');
             if (btn) {
-                btn.classList.toggle('bg-red-600', enabled);
-                btn.classList.toggle('text-white', enabled);
-                btn.classList.toggle('border-red-500', enabled);
+                BTN_ON.forEach(c => btn.classList.toggle(c, enabled));
                 btn.textContent = enabled ? 'Desactivar Alto Contraste' : 'Activar Alto Contraste';
             }
         }
@@ -844,47 +595,46 @@
         function toggleHighContrast() {
             const enabled = !document.body.classList.contains('high-contrast');
             applyHighContrast(enabled);
-            lsSet('kronox_high_contrast', enabled ? 'enabled' : 'disabled');
+            ls.set('kronox_high_contrast', enabled ? 'enabled' : 'disabled');
         }
 
+        // ---- Lector de voz ----
         let speechActive = false;
 
         function toggleSpeechReader() {
             speechActive = !speechActive;
-            lsSet('kronox_speech_active', speechActive ? 'enabled' : 'disabled');
-            actualizarEstadoLectorUI(true);
+            ls.set('kronox_speech_active', speechActive ? 'enabled' : 'disabled');
+            actualizarEstadoLectorUI(true); // con aviso, porque lo cambió el usuario
         }
 
         function actualizarEstadoLectorUI(mostrarAviso) {
-            const btn = document.getElementById('btn-speech-toggle');
-            const subtitleBox = document.getElementById('speech-subtitle-box');
+            const btn = $('btn-speech-toggle');
 
-            if (speechActive) {
-                if (btn) {
-                    btn.innerHTML = `<i class="fas fa-volume-xmark"></i> Desactivar Lector`;
-                    btn.classList.remove('bg-cyan-600');
-                    btn.classList.add('bg-red-600');
-                }
-            } else {
-                if (btn) {
-                    btn.innerHTML = `<i class="fas fa-volume-high"></i> Activar Lector Interactivo`;
-                    btn.classList.remove('bg-red-600');
-                    btn.classList.add('bg-cyan-600');
-                }
+            if (btn) {
+                btn.innerHTML = speechActive
+                    ? `<i class="fas fa-volume-xmark"></i> Desactivar Lector`
+                    : `<i class="fas fa-volume-high"></i> Activar Lector Interactivo`;
+                btn.classList.toggle('bg-red-600', speechActive);
+                btn.classList.toggle('bg-cyan-600', !speechActive);
+            }
+
+            if (!speechActive) {
                 if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+                const subtitleBox = $('speech-subtitle-box'), btnEscuchar = $('btn-escuchar');
                 if (subtitleBox) subtitleBox.style.display = 'none';
-                const btnEscuchar = document.getElementById('btn-escuchar');
                 if (btnEscuchar) btnEscuchar.style.display = 'none';
                 _ultimoTextoLeido = '';
                 _textoPendiente = '';
             }
 
+            // Al cargar la página NO se muestra aviso; solo cuando el usuario lo activa/desactiva
             if (!mostrarAviso) return;
 
-            let aviso = document.getElementById('toast-aviso-accesibilidad');
+            let aviso = $('toast-aviso-accesibilidad');
             if (!aviso) {
                 aviso = document.createElement('div');
                 aviso.id = 'toast-aviso-accesibilidad';
+                // pointer-events:none => el aviso nunca intercepta toques (bloqueaba el menú hamburguesa)
                 aviso.style.cssText = "position:fixed; top:20px; right:20px; background:#091122; border:2px solid #00d2ff; color:#fff; padding:12px 20px; border-radius:12px; font-size:13px; z-index:99999; box-shadow:0 0 20px rgba(0,210,255,0.4); transition: opacity 0.5s ease; pointer-events:none;";
                 document.body.appendChild(aviso);
             }
@@ -901,13 +651,15 @@
             }, 3000);
         }
 
+        // ---- Lectura del texto seleccionado (PC y celular) ----
         const ES_TACTIL = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
         let _selTimer = null;
         let _ocultarBtnTimer = null;
         let _ultimoTextoLeido = '';
         let _textoPendiente = '';
-        let _utteranceActual = null;
+        let _utteranceActual = null; // referencia para que el navegador no la descarte
 
+        // Precargar voces (en Android a veces llega vacía al inicio)
         if ('speechSynthesis' in window) {
             window.speechSynthesis.getVoices();
             window.speechSynthesis.onvoiceschanged = () => window.speechSynthesis.getVoices();
@@ -928,14 +680,13 @@
         function hablar(texto, conDemora) {
             if (!('speechSynthesis' in window) || !texto) return;
 
-            const subtitleBox = document.getElementById('speech-subtitle-box');
-            const subtitleText = document.getElementById('subtitle-text');
-            if (subtitleText && subtitleBox) {
+            const box = $('speech-subtitle-box'), subtitleText = $('subtitle-text');
+            if (subtitleText && box) {
                 subtitleText.innerText = texto;
-                subtitleBox.style.display = 'block';
+                box.style.display = 'block';
             }
 
-            const ocultar = () => { if (subtitleBox) subtitleBox.style.display = 'none'; };
+            const ocultarCaja = () => { if (box) box.style.display = 'none'; };
 
             const iniciar = () => {
                 const utterance = new SpeechSynthesisUtterance(texto);
@@ -945,33 +696,31 @@
                 utterance.rate = 1;
                 utterance.volume = 1;
 
-                utterance.onend = ocultar;
+                utterance.onend = ocultarCaja;
                 utterance.onerror = (ev) => {
                     if (subtitleText) subtitleText.innerText = 'Audio no disponible (' + (ev.error || 'error') + ')';
-                    setTimeout(ocultar, 3000);
+                    setTimeout(ocultarCaja, 3000);
                 };
 
                 _utteranceActual = utterance;
                 window.speechSynthesis.speak(utterance);
             };
 
-            if (window.speechSynthesis.speaking || window.speechSynthesis.pending) {
-                window.speechSynthesis.cancel();
-            }
+            if (window.speechSynthesis.speaking || window.speechSynthesis.pending) window.speechSynthesis.cancel();
 
+            // PC: pausa corta para que cancel()+speak() no se queden mudos.
+            // Celular: directo, para no perder el permiso que da el toque.
             if (conDemora) setTimeout(iniciar, 60); else iniciar();
         }
 
-        function hablarTextoPendiente() {
-            hablar(_textoPendiente, false);
-        }
+        function hablarTextoPendiente() { hablar(_textoPendiente, false); }
 
         function leerTextoSeleccionado() {
             if (!speechActive || !('speechSynthesis' in window)) return;
 
             const sel = window.getSelection();
             const texto = sel ? sel.toString().trim() : '';
-            const btn = document.getElementById('btn-escuchar');
+            const btn = $('btn-escuchar');
 
             if (texto.length < 2) {
                 _ultimoTextoLeido = '';
@@ -988,26 +737,26 @@
             _textoPendiente = texto;
 
             if (ES_TACTIL) {
+                // Celular: aparece el botón "Escuchar" (el toque habilita el audio)
                 clearTimeout(_ocultarBtnTimer);
                 if (btn) btn.style.display = 'flex';
             } else {
-                hablar(texto, true);
+                hablar(texto, true); // PC: lectura automática
             }
         }
 
+        // Espera 600 ms a que termines de ajustar la selección
         document.addEventListener('selectionchange', () => {
             clearTimeout(_selTimer);
             _selTimer = setTimeout(leerTextoSeleccionado, 600);
         });
 
+        // ---- Cargar TODAS las preferencias guardadas ----
         function loadAccessibilityPreferences() {
-            const size = parseInt(lsGet('kronox_font_size'), 10);
-            applyFontSize(size || 100);
-
-            applyDaltonism(lsGet('kronox_daltonism') || 'none');
-            applyHighContrast(lsGet('kronox_high_contrast') === 'enabled');
-
-            speechActive = lsGet('kronox_speech_active') === 'enabled';
+            applyFontSize(parseInt(ls.get('kronox_font_size'), 10) || 100);
+            applyDaltonism(ls.get('kronox_daltonism') || 'none');
+            applyHighContrast(ls.get('kronox_high_contrast') === 'enabled');
+            speechActive = ls.get('kronox_speech_active') === 'enabled';
             actualizarEstadoLectorUI(false);
         }
     </script>
