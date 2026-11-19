@@ -1,26 +1,65 @@
 const express = require('express');
-const sqlite3 = require('sqlite3').verbose();
+const { createClient } = require('@libsql/client');
 const path = require('path');
-const crypto = require('crypto'); // NUEVO: viene incluido en Node, no se instala nada
+const crypto = require('crypto'); // viene incluido en Node, no se instala nada
 const app = express();
 
-app.set('trust proxy', 1); // NUEVO: Render usa un proxy HTTPS; sirve para detectar HTTPS y la IP real
+app.set('trust proxy', 1); // Render usa un proxy HTTPS; sirve para detectar HTTPS y la IP real
 app.use(express.json());
-app.use(express.static('public')); // Asegúrate de que los archivos estén dentro de la carpeta 'public'
+app.use(express.static('public')); // Los archivos están dentro de la carpeta 'public'
 
-// 1. BASE DE DATOS PERSISTENTE
-// CAMBIO MÍNIMO: la ruta puede venir de la variable DB_PATH (si no existe, usa './kronox.db' como siempre)
-const db = new sqlite3.Database(process.env.DB_PATH || './kronox.db', (err) => {
-    if (err) {
-        console.error('Error al abrir la base de datos', err.message);
-    } else {
-        console.log('Conectado a la base de datos SQLite persistente.');
-    }
+// 1. BASE DE DATOS PERSISTENTE (Turso = SQLite en la nube, no se borra al redesplegar)
+// Variables de entorno en Render: TURSO_URL y TURSO_TOKEN.
+// Si no existen (por ejemplo, en tu compu), usa un archivo local './kronox.db'.
+const client = createClient({
+    url: process.env.TURSO_URL || 'file:./kronox.db',
+    authToken: process.env.TURSO_TOKEN
 });
+
+// Adaptador: mantiene la misma forma de uso que tenía sqlite3 (db.run / db.get / db.all)
+let cola = Promise.resolve(); // las consultas se ejecutan en orden
+function ejecutar(modo, sql, params, cb) {
+    if (typeof params === 'function') { cb = params; params = []; }
+    cola = cola.then(async () => {
+        let r = null, error = null;
+        try {
+            r = await client.execute({ sql, args: params || [] });
+        } catch (e) {
+            error = e;
+        }
+        if (!cb) {
+            if (error) console.error('Error de base de datos:', error.message);
+            return;
+        }
+        try {
+            if (error) return cb(error);
+            const filas = r.rows.map(f => Object.fromEntries(r.columns.map((c, i) => [c, f[i]])));
+            if (modo === 'run') {
+                cb.call({
+                    lastID: r.lastInsertRowid != null ? Number(r.lastInsertRowid) : 0,
+                    changes: r.rowsAffected
+                }, null);
+            } else if (modo === 'get') {
+                cb(null, filas[0]);
+            } else {
+                cb(null, filas);
+            }
+        } catch (e) {
+            console.error('Error en callback de base de datos:', e);
+        }
+    }).catch(() => {}); // un error nunca debe detener la cola
+}
+const db = {
+    serialize: (fn) => fn(),
+    run: (sql, p, cb) => ejecutar('run', sql, p, cb),
+    get: (sql, p, cb) => ejecutar('get', sql, p, cb),
+    all: (sql, p, cb) => ejecutar('all', sql, p, cb)
+};
+console.log('Base de datos Turso lista.');
 
 // 2. CREAR TABLAS SI NO EXISTEN
 db.serialize(() => {
-    // Tabla de inscripciones (se mantiene intacta para que los planes/inscripciones no se borren nunca)
+    // Tabla de inscripciones
     db.run(`CREATE TABLE IF NOT EXISTS inscripciones (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         nombre TEXT,
@@ -32,14 +71,14 @@ db.serialize(() => {
         fecha DATETIME DEFAULT CURRENT_TIMESTAMP
     )`);
 
-    // NUEVO: columnas para mostrar la tarjeta en el panel admin.
+    // Columnas para mostrar la tarjeta en el panel admin.
     // Solo datos seguros: titular, marca, últimos 4 dígitos y vencimiento (NUNCA el número completo ni el CVV).
-    // Si la columna ya existe, SQLite avisa y se ignora el aviso; los registros anteriores no se tocan.
+    // Si la columna ya existe, se ignora el aviso; los registros anteriores no se tocan.
     ['tarjeta_titular', 'tarjeta_marca', 'tarjeta_ultimos4', 'tarjeta_vence'].forEach(col => {
         db.run(`ALTER TABLE inscripciones ADD COLUMN ${col} TEXT`, () => {});
     });
 
-    // NUEVA: Tabla para el control persistente de la afluencia del gimnasio
+    // Tabla para el control persistente de la afluencia del gimnasio
     db.run(`CREATE TABLE IF NOT EXISTS afluencia_config (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         porcentaje INTEGER,
@@ -56,13 +95,14 @@ db.serialize(() => {
 });
 
 // 3. RUTA PARA RECIBIR INSCRIPCIONES (Desde planes.html) con hora local de México
+// Se queda PÚBLICA a propósito: así se inscriben los clientes.
 app.post('/api/inscripciones', (req, res) => {
     const { nombre, telefono, plan, monto, metodo_pago } = req.body;
-    
-    // Obtenemos la fecha y hora exacta en la zona horaria de México
+
+    // Fecha y hora exacta en la zona horaria de México
     const fechaMex = new Date().toLocaleString("sv-SE", { timeZone: "America/Mexico_City" });
 
-    // NUEVO: datos de tarjeta SEGUROS (solo si pagó con tarjeta). Se validan aquí también,
+    // Datos de tarjeta SEGUROS (solo si pagó con tarjeta). Se validan aquí también,
     // por si alguien manda datos de más: lo que no cumpla el formato se guarda vacío.
     const esTarjeta = metodo_pago === 'Tarjeta de Crédito / Débito';
     const titular = esTarjeta ? String(req.body.tarjeta_titular || '').trim().slice(0, 60) : null;
@@ -82,8 +122,8 @@ app.post('/api/inscripciones', (req, res) => {
     );
 });
 
-// 4. API PARA QUE admin.html OBTENGA LAS INSCRIPCIONES EN JSON
-app.get('/api/inscripciones', (req, res) => {
+// 4. API PARA QUE admin.html OBTENGA LAS INSCRIPCIONES EN JSON (SOLO ADMIN)
+app.get('/api/inscripciones', requiereAdmin, (req, res) => {
     db.all(`SELECT * FROM inscripciones ORDER BY fecha DESC`, [], (err, rows) => {
         if (err) {
             return res.status(500).json({ error: err.message });
@@ -92,12 +132,12 @@ app.get('/api/inscripciones', (req, res) => {
     });
 });
 
-// 5. API PARA QUE admin.html CAMBIE EL ESTATUS (Vigente / Pendiente)
-app.post('/api/inscripciones/:id/liberar', (req, res) => {
+// 5. API PARA QUE admin.html CAMBIE EL ESTATUS (Vigente / Pendiente) (SOLO ADMIN)
+app.post('/api/inscripciones/:id/liberar', requiereAdmin, (req, res) => {
     const id = req.params.id;
     db.get(`SELECT estado FROM inscripciones WHERE id = ?`, [id], (err, row) => {
         if (err || !row) return res.status(404).json({ error: "Inscripción no encontrada" });
-        
+
         const nuevoEstado = row.estado === 'Vigente' ? 'Pendiente' : 'Vigente';
         db.run(`UPDATE inscripciones SET estado = ? WHERE id = ?`, [nuevoEstado, id], (err) => {
             if (err) return res.status(500).json({ error: "Error al actualizar estatus" });
@@ -106,8 +146,8 @@ app.post('/api/inscripciones/:id/liberar', (req, res) => {
     });
 });
 
-// 5.1. API PARA ELIMINAR UN REGISTRO
-app.delete('/api/inscripciones/:id', (req, res) => {
+// 5.1. API PARA ELIMINAR UN REGISTRO (SOLO ADMIN)
+app.delete('/api/inscripciones/:id', requiereAdmin, (req, res) => {
     const id = req.params.id;
     db.run(`DELETE FROM inscripciones WHERE id = ?`, [id], function(err) {
         if (err) {
@@ -122,7 +162,7 @@ app.delete('/api/inscripciones/:id', (req, res) => {
 
 // ================= APIS PARA LA AFLUENCIA EN TIEMPO REAL =================
 
-// Obtener estado actual de afluencia
+// Obtener estado actual de afluencia (PÚBLICA: la ven los clientes)
 app.get('/api/afluencia', (req, res) => {
     db.get(`SELECT * FROM afluencia_config ORDER BY id DESC LIMIT 1`, [], (err, row) => {
         if (err) return res.status(500).json({ error: err.message });
@@ -130,8 +170,8 @@ app.get('/api/afluencia', (req, res) => {
     });
 });
 
-// Actualizar estado de afluencia desde el panel de admin
-app.post('/api/afluencia', (req, res) => {
+// Actualizar estado de afluencia desde el panel de admin (SOLO ADMIN)
+app.post('/api/afluencia', requiereAdmin, (req, res) => {
     const { porcentaje, estado } = req.body;
     db.run(`UPDATE afluencia_config SET porcentaje = ?, estado = ?, modo_manual = 1 WHERE id = 1`, [porcentaje, estado], function(err) {
         if (err) return res.status(500).json({ error: err.message });
@@ -142,7 +182,7 @@ app.post('/api/afluencia', (req, res) => {
 // =========================================================================
 
 // =========================================================================
-// ===== NUEVO: CUENTAS DE SOCIOS, SESIÓN Y MARCAS (PR) ====================
+// ===== CUENTAS DE SOCIOS, SESIÓN Y MARCAS (PR) ===========================
 // =========================================================================
 
 // ---- Ayudantes para usar la base de datos con async/await ----
@@ -166,7 +206,7 @@ const falloServidor = (res, e) => {
     res.status(500).json({ error: 'Error del servidor. Intenta de nuevo.' });
 };
 
-// ---- Tablas nuevas (no tocan las que ya tienes) ----
+// ---- Tablas de cuentas ----
 db.serialize(() => {
     db.run(`CREATE TABLE IF NOT EXISTS usuarios (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -287,6 +327,16 @@ async function requiereSesion(req, res, next) {
     }
 }
 
+// Solo deja pasar al usuario "admin" (se usa en las rutas del panel)
+function requiereAdmin(req, res, next) {
+    requiereSesion(req, res, () => {
+        if (req.usuario.usuario.toLowerCase() !== 'admin') {
+            return res.status(403).json({ error: 'Sin permiso' });
+        }
+        next();
+    });
+}
+
 // ---- Límite de intentos fallidos (en memoria): 8 por cada 15 minutos ----
 const intentosFallidos = new Map();
 const VENTANA_MS = 15 * 60 * 1000;
@@ -379,7 +429,8 @@ app.post('/api/registro', async (req, res) => {
             r = await dbRun('INSERT INTO usuarios (usuario, salt, hash, creado) VALUES (?, ?, ?, ?)',
                 [usuario, salt, hash, ahoraMex()]);
         } catch (e) {
-            if (e && e.code === 'SQLITE_CONSTRAINT') {
+            const texto = String((e && (e.code || '')) + ' ' + (e && e.message || ''));
+            if (texto.includes('SQLITE_CONSTRAINT') || texto.includes('UNIQUE')) {
                 return res.status(409).json({ error: 'Ese usuario ya está en uso. Elige otro o inicia sesión.' });
             }
             throw e;
@@ -530,7 +581,7 @@ app.delete('/api/marcas/:id', requiereSesion, async (req, res) => {
     }
 });
 
-// ===== FIN DEL BLOQUE NUEVO ==============================================
+// ===== FIN DEL BLOQUE DE CUENTAS =========================================
 
 // 6. RUTAS AMIGABLES PARA LAS PÁGINAS WEB
 app.get('/admin', (req, res) => {
@@ -557,7 +608,7 @@ app.get('/ubicacion', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'ubicacion.html'));
 });
 
-// NUEVA RUTA PARA RUTINAS EXCLUSIVAS
+// RUTA PARA RUTINAS EXCLUSIVAS
 app.get('/rutinas', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'rutinas.html'));
 });
