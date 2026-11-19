@@ -2,7 +2,7 @@
   "name": "Kronox Gym",
   "short_name": "Kronox Gym",
   "description": "Membresías, rutinas, afluencia en tiempo real y gestión de Kronox Gym.",
-  "start_url": "/index",
+  "start_url": "/",
   "scope": "/",
   "display": "standalone",
   "background_color": "#050a14",
