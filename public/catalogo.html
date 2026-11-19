@@ -415,9 +415,11 @@
             checkUserSession();
         }
 
+        // Al cerrar sesión te quedas en la misma página (sin redirección a index)
         function logoutUser() {
             ls.del('kronox_logged_user');
-            window.location.href = "index";
+            ['user-dropdown-menu', 'mobile-user-dropdown'].forEach(id => { const d = $(id); if (d) d.classList.add('hidden'); });
+            checkUserSession();
         }
 
         function checkUserSession() {
