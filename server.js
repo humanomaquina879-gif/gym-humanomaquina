@@ -554,15 +554,17 @@ app.put('/api/mi-rutina', requiereSesion, async (req, res) => {
 });
 
 // Registra una marca y avisa si fue récord personal
+// (el peso y las repeticiones son opcionales, pero debe venir al menos uno)
 app.post('/api/marcas', requiereSesion, async (req, res) => {
     try {
         const ejercicio = String(req.body.ejercicio || '');
-        const peso = Math.round(Number(req.body.peso) * 100) / 100;
-        const reps = Number(req.body.reps);
+        const peso = Math.round(Number(req.body.peso || 0) * 100) / 100;   // CAMBIO: antes Number(req.body.peso)
+        const reps = Number(req.body.reps || 0);                           // CAMBIO: antes Number(req.body.reps)
 
         if (!EJERCICIO_OK.test(ejercicio)) return res.status(400).json({ error: 'Ejercicio no válido.' });
-        if (!Number.isFinite(peso) || peso <= 0 || peso > 1000) return res.status(400).json({ error: 'Peso no válido.' });
-        if (!Number.isInteger(reps) || reps < 1 || reps > 100) return res.status(400).json({ error: 'Repeticiones no válidas.' });
+        if (!Number.isFinite(peso) || peso < 0 || peso > 1000) return res.status(400).json({ error: 'Peso no válido.' });             // CAMBIO: antes peso <= 0
+        if (!Number.isInteger(reps) || reps < 0 || reps > 100) return res.status(400).json({ error: 'Repeticiones no válidas.' });    // CAMBIO: antes reps < 1
+        if (peso === 0 && reps === 0) return res.status(400).json({ error: 'Escribe el peso, las repeticiones o ambos.' });          // CAMBIO: línea nueva
 
         const id = req.usuario.id;
         const mejor = await dbGet(
