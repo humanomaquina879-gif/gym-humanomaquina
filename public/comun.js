@@ -1,6 +1,3 @@
-// ==========================================================
-// SERVICE WORKER (registro y actualización limpia)
-// ==========================================================
 if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
         navigator.serviceWorker.register('/sw.js', { scope: '/' })
@@ -25,7 +22,11 @@ if ('serviceWorker' in navigator) {
 // ==========================================================
 const $ = id => document.getElementById(id);
 const toggleHidden = id => { const e = $(id); if (e) e.classList.toggle('hidden'); };
-const show = (el, v) => { if (el) el.classList.toggle('hidden', !v); };
+const show = (el, v) => {
+    if (!el) return;
+    if (v) el.classList.remove('hidden');
+    else el.classList.add('hidden');
+};
 
 const ls = {
     get: k => { try { return localStorage.getItem(k); } catch (e) { return null; } },
@@ -149,7 +150,7 @@ function logoutUser() {
 
 function checkUserSession() {
     const user = ls.get('kronox_logged_user'), on = !!user;
-    const isAdmin = on && user.toLowerCase() === 'admin';
+    const isAdmin = on && user.trim().toLowerCase() === 'admin';
     const userInfo = $('user-session-info'), mobileUser = $('mobile-user-container');
 
     show($('nav-rutinas'), on);
