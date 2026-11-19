@@ -100,7 +100,7 @@
         fila.innerHTML =
             '<div class="flex items-center justify-between gap-2" style="font-size:12px;">' +
                 '<span data-pr-info></span>' +
-                '<button type="button" data-pr-toggle class="font-bold whitespace-nowrap" style="color:#00d2ff;background:none;border:none;cursor:pointer;padding:2px 0;">+ Registrar marca</button>' +
+               '<button type="button" data-pr-toggle class="font-bold whitespace-nowrap" style="color:#00d2ff;background:rgba(0,210,255,0.1);border:1px solid #00d2ff;border-radius:8px;cursor:pointer;padding:4px 10px;font-size:11px;">+ Registrar marca</button>' +
             '</div>' +
             '<div data-pr-form style="display:none;margin-top:8px;gap:8px;align-items:center;flex-wrap:wrap;">' +
                 '<input data-pr-peso type="number" inputmode="decimal" step="0.5" min="0.5" max="1000" placeholder="kg" ' +
