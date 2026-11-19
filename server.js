@@ -71,10 +71,9 @@ db.serialize(() => {
         fecha DATETIME DEFAULT CURRENT_TIMESTAMP
     )`);
 
-    // Columnas para mostrar la tarjeta en el panel admin.
-    // Solo datos seguros: titular, marca, últimos 4 dígitos y vencimiento (NUNCA el número completo ni el CVV).
+    // Columnas para mostrar la tarjeta censurada con hash, el folio de verificación y el usuario autenticado.
     // Si la columna ya existe, se ignora el aviso; los registros anteriores no se tocan.
-    ['tarjeta_titular', 'tarjeta_marca', 'tarjeta_ultimos4', 'tarjeta_vence'].forEach(col => {
+    ['tarjeta_titular', 'tarjeta_marca', 'tarjeta_ultimos4', 'tarjeta_vence', 'tarjeta_hash', 'folio', 'usuario_cuenta'].forEach(col => {
         db.run(`ALTER TABLE inscripciones ADD COLUMN ${col} TEXT`, () => {});
     });
 
@@ -94,30 +93,52 @@ db.serialize(() => {
     });
 });
 
-// 3. RUTA PARA RECIBIR INSCRIPCIONES (Desde planes.html) con hora local de México
-// Se queda PÚBLICA a propósito: así se inscriben los clientes.
-app.post('/api/inscripciones', (req, res) => {
+// Genera un hash seguro para censurar datos de tarjeta en Turso y Admin
+function hashearDatoTarjeta(valor) {
+    if (!valor) return null;
+    const salt = process.env.CARD_HASH_SALT || 'kronox-card-privacy-salt';
+    return crypto.createHmac('sha256', salt).update(String(valor)).digest('hex').slice(0, 16);
+}
+
+// Genera un folio único de verificación para recepción (ej. KRX-4829)
+function generarFolioSolicitud() {
+    const num = crypto.randomInt(1000, 9999);
+    const letra = String.fromCharCode(65 + crypto.randomInt(0, 26));
+    return `KRX-${num}${letra}`;
+}
+
+// 3. RUTA PARA RECIBIR INSCRIPCIONES (Desde planes.html)
+// Ahora exige sesión activa (requiereSesion) para darle veracidad y vincular el trámite a una cuenta real.
+app.post('/api/inscripciones', requiereSesion, (req, res) => {
     const { nombre, telefono, plan, monto, metodo_pago } = req.body;
+
+    if (!String(nombre || '').trim() || !String(telefono || '').trim() || !String(plan || '').trim()) {
+        return res.status(400).json({ error: 'Faltan datos obligatorios en la solicitud.' });
+    }
 
     // Fecha y hora exacta en la zona horaria de México
     const fechaMex = new Date().toLocaleString("sv-SE", { timeZone: "America/Mexico_City" });
+    const folio = generarFolioSolicitud();
+    const usuarioCuenta = req.usuario.usuario;
 
-    // Datos de tarjeta SEGUROS (solo si pagó con tarjeta). Se validan aquí también,
-    // por si alguien manda datos de más: lo que no cumpla el formato se guarda vacío.
+    // Datos de tarjeta CENSURADOS CON HASH:
+    // El titular queda visible para recepción; el resto se guarda hasheado y enmascarado.
     const esTarjeta = metodo_pago === 'Tarjeta de Crédito / Débito';
     const titular = esTarjeta ? String(req.body.tarjeta_titular || '').trim().slice(0, 60) : null;
-    const marca = esTarjeta ? (['Visa', 'Mastercard'].includes(req.body.tarjeta_marca) ? req.body.tarjeta_marca : 'Tarjeta') : null;
-    const ultimos4 = esTarjeta && /^\d{4}$/.test(String(req.body.tarjeta_ultimos4)) ? String(req.body.tarjeta_ultimos4) : null;
-    const vence = esTarjeta && /^\d{2}\/\d{2}$/.test(String(req.body.tarjeta_vence)) ? String(req.body.tarjeta_vence) : null;
+    const marca = esTarjeta ? 'Tarjeta Censurada' : null;
+    const huellaCliente = esTarjeta ? String(req.body.tarjeta_hash || '').trim().slice(0, 64) : '';
+    const tarjetaHash = esTarjeta ? hashearDatoTarjeta(huellaCliente || `${titular}-${Date.now()}`) : null;
+    const ultimos4 = esTarjeta ? '••••' : null;
+    const vence = esTarjeta ? '••/••' : null;
 
     db.run(
-        `INSERT INTO inscripciones (nombre, telefono, plan, monto, metodo_pago, estado, fecha, tarjeta_titular, tarjeta_marca, tarjeta_ultimos4, tarjeta_vence) VALUES (?, ?, ?, ?, ?, 'Pendiente', ?, ?, ?, ?, ?)`,
-        [nombre, telefono, plan, monto, metodo_pago, fechaMex, titular, marca, ultimos4, vence],
+        `INSERT INTO inscripciones (nombre, telefono, plan, monto, metodo_pago, estado, fecha, tarjeta_titular, tarjeta_marca, tarjeta_ultimos4, tarjeta_vence, tarjeta_hash, folio, usuario_cuenta) VALUES (?, ?, ?, ?, ?, 'Pendiente', ?, ?, ?, ?, ?, ?, ?, ?)`,
+        [String(nombre).trim().slice(0, 80), String(telefono).trim().slice(0, 25), String(plan).trim().slice(0, 40), monto, metodo_pago, fechaMex, titular, marca, ultimos4, vence, tarjetaHash, folio, usuarioCuenta],
         function(err) {
             if (err) {
                 return res.status(500).json({ error: err.message });
             }
-            res.json({ success: true, id: this.lastID });
+            res.json({ success: true, id: this.lastID, folio, usuario: usuarioCuenta });
         }
     );
 });
@@ -309,21 +330,39 @@ async function crearSesion(req, res, usuarioId) {
     });
 }
 
+async function obtenerUsuarioSesion(req) {
+    const token = leerCookie(req, 'kronox_sid');
+    if (!token) return null;
+    return await dbGet(
+        `SELECT u.id, u.usuario FROM sesiones s
+         JOIN usuarios u ON u.id = s.usuario_id
+         WHERE s.token_hash = ? AND s.expira > ?`,
+        [hashToken(token), Date.now()]
+    );
+}
+
 async function requiereSesion(req, res, next) {
     try {
-        const token = leerCookie(req, 'kronox_sid');
-        if (!token) return res.status(401).json({ error: 'Sesión no iniciada' });
-        const fila = await dbGet(
-            `SELECT u.id, u.usuario FROM sesiones s
-             JOIN usuarios u ON u.id = s.usuario_id
-             WHERE s.token_hash = ? AND s.expira > ?`,
-            [hashToken(token), Date.now()]
-        );
+        const fila = await obtenerUsuarioSesion(req);
         if (!fila) return res.status(401).json({ error: 'Sesión no iniciada' });
         req.usuario = fila;
         next();
     } catch (e) {
         falloServidor(res, e);
+    }
+}
+
+// Middleware para proteger páginas HTML que solo deben verse con sesión (ej. /rutinas)
+async function requiereSesionPagina(req, res, next) {
+    try {
+        const fila = await obtenerUsuarioSesion(req);
+        if (!fila) {
+            return res.redirect('/planes?login=1');
+        }
+        req.usuario = fila;
+        next();
+    } catch (e) {
+        res.redirect('/planes?login=1');
     }
 }
 
@@ -341,10 +380,8 @@ function requiereAdmin(req, res, next) {
 const intentosFallidos = new Map();
 const BLOQUEO_MS = 15 * 60 * 1000;
 const MAX_FALLOS = 5;
-// Se cuenta por nombre de usuario (la IP cambia detrás del proxy de Render y no es confiable)
 const claveIntento = (req, usuario) => usuario.toLowerCase();
 
-// Devuelve { bloqueado, minutos } o { bloqueado:false, restantes }
 function estadoIntentos(req, usuario) {
     const k = claveIntento(req, usuario);
     const reg = intentosFallidos.get(k);
@@ -353,7 +390,7 @@ function estadoIntentos(req, usuario) {
         if (Date.now() < reg.hasta) {
             return { bloqueado: true, minutos: Math.ceil((reg.hasta - Date.now()) / 60000) };
         }
-        intentosFallidos.delete(k); // ya pasaron los 15 minutos
+        intentosFallidos.delete(k);
         return { bloqueado: false, restantes: MAX_FALLOS };
     }
     return { bloqueado: false, restantes: MAX_FALLOS - reg.n };
@@ -369,7 +406,6 @@ function registrarFallo(req, usuario) {
     return estadoIntentos(req, usuario);
 }
 
-// Limpieza de la memoria cada 10 minutos
 setInterval(() => {
     const ahora = Date.now();
     for (const [k, reg] of intentosFallidos) {
@@ -426,7 +462,7 @@ function registroBloqueado(req) {
         return false;
     }
     reg.n += 1;
-    return reg.n > 10; // máximo 10 intentos de registro por hora desde la misma IP
+    return reg.n > 10;
 }
 
 app.post('/api/registro', async (req, res) => {
@@ -491,7 +527,6 @@ app.get('/api/yo', sinCache, requiereSesion, (req, res) => {
 // ---- MI RUTINA Y MARCAS ----
 const EJERCICIO_OK = /^[a-z0-9_]{1,60}$/;
 
-// Devuelve: ejercicios elegidos, mejor marca (PR) y última marca de cada uno
 app.get('/api/mi-rutina', sinCache, requiereSesion, async (req, res) => {
     try {
         const id = req.usuario.id;
@@ -525,7 +560,6 @@ app.get('/api/mi-rutina', sinCache, requiereSesion, async (req, res) => {
     }
 });
 
-// Guarda la lista de ejercicios elegidos (el historial de marcas NO se borra al quitar uno)
 app.put('/api/mi-rutina', requiereSesion, async (req, res) => {
     try {
         const lista = req.body.ejercicios;
@@ -553,18 +587,16 @@ app.put('/api/mi-rutina', requiereSesion, async (req, res) => {
     }
 });
 
-// Registra una marca y avisa si fue récord personal
-// (el peso y las repeticiones son opcionales, pero debe venir al menos uno)
 app.post('/api/marcas', requiereSesion, async (req, res) => {
     try {
         const ejercicio = String(req.body.ejercicio || '');
-        const peso = Math.round(Number(req.body.peso || 0) * 100) / 100;   // CAMBIO: antes Number(req.body.peso)
-        const reps = Number(req.body.reps || 0);                           // CAMBIO: antes Number(req.body.reps)
+        const peso = Math.round(Number(req.body.peso || 0) * 100) / 100;
+        const reps = Number(req.body.reps || 0);
 
         if (!EJERCICIO_OK.test(ejercicio)) return res.status(400).json({ error: 'Ejercicio no válido.' });
-        if (!Number.isFinite(peso) || peso < 0 || peso > 1000) return res.status(400).json({ error: 'Peso no válido.' });             // CAMBIO: antes peso <= 0
-        if (!Number.isInteger(reps) || reps < 0 || reps > 100) return res.status(400).json({ error: 'Repeticiones no válidas.' });    // CAMBIO: antes reps < 1
-        if (peso === 0 && reps === 0) return res.status(400).json({ error: 'Escribe el peso, las repeticiones o ambos.' });          // CAMBIO: línea nueva
+        if (!Number.isFinite(peso) || peso < 0 || peso > 1000) return res.status(400).json({ error: 'Peso no válido.' });
+        if (!Number.isInteger(reps) || reps < 0 || reps > 100) return res.status(400).json({ error: 'Repeticiones no válidas.' });
+        if (peso === 0 && reps === 0) return res.status(400).json({ error: 'Escribe el peso, las repeticiones o ambos.' });
 
         const id = req.usuario.id;
         const mejor = await dbGet(
@@ -579,8 +611,8 @@ app.post('/api/marcas', requiereSesion, async (req, res) => {
         res.json({
             success: true,
             id: r.lastID,
-            primera: !mejor,   // primer registro de ese ejercicio
-            esPR: supera,      // superó su mejor marca anterior
+            primera: !mejor,
+            esPR: supera,
             prAnterior: mejor || null
         });
     } catch (e) {
@@ -588,7 +620,6 @@ app.post('/api/marcas', requiereSesion, async (req, res) => {
     }
 });
 
-// Historial de un ejercicio (para la gráfica y la lista)
 app.get('/api/marcas/:ejercicio', sinCache, requiereSesion, async (req, res) => {
     try {
         if (!EJERCICIO_OK.test(req.params.ejercicio)) return res.status(400).json({ error: 'Ejercicio no válido.' });
@@ -601,7 +632,6 @@ app.get('/api/marcas/:ejercicio', sinCache, requiereSesion, async (req, res) => 
     }
 });
 
-// Borrar una marca propia (por si se equivocó al capturar)
 app.delete('/api/marcas/:id', requiereSesion, async (req, res) => {
     try {
         const r = await dbRun('DELETE FROM marcas WHERE id = ? AND usuario_id = ?', [req.params.id, req.usuario.id]);
@@ -639,8 +669,8 @@ app.get('/ubicacion', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'ubicacion.html'));
 });
 
-// RUTA PARA RUTINAS EXCLUSIVAS
-app.get('/rutinas', (req, res) => {
+// RUTA PARA RUTINAS EXCLUSIVAS (protegida con sesión en servidor)
+app.get('/rutinas', sinCache, requiereSesionPagina, (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'rutinas.html'));
 });
 
