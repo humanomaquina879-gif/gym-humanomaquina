@@ -32,6 +32,13 @@ db.serialize(() => {
         fecha DATETIME DEFAULT CURRENT_TIMESTAMP
     )`);
 
+    // NUEVO: columnas para mostrar la tarjeta en el panel admin.
+    // Solo datos seguros: titular, marca, últimos 4 dígitos y vencimiento (NUNCA el número completo ni el CVV).
+    // Si la columna ya existe, SQLite avisa y se ignora el aviso; los registros anteriores no se tocan.
+    ['tarjeta_titular', 'tarjeta_marca', 'tarjeta_ultimos4', 'tarjeta_vence'].forEach(col => {
+        db.run(`ALTER TABLE inscripciones ADD COLUMN ${col} TEXT`, () => {});
+    });
+
     // NUEVA: Tabla para el control persistente de la afluencia del gimnasio
     db.run(`CREATE TABLE IF NOT EXISTS afluencia_config (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -55,9 +62,17 @@ app.post('/api/inscripciones', (req, res) => {
     // Obtenemos la fecha y hora exacta en la zona horaria de México
     const fechaMex = new Date().toLocaleString("sv-SE", { timeZone: "America/Mexico_City" });
 
+    // NUEVO: datos de tarjeta SEGUROS (solo si pagó con tarjeta). Se validan aquí también,
+    // por si alguien manda datos de más: lo que no cumpla el formato se guarda vacío.
+    const esTarjeta = metodo_pago === 'Tarjeta de Crédito / Débito';
+    const titular = esTarjeta ? String(req.body.tarjeta_titular || '').trim().slice(0, 60) : null;
+    const marca = esTarjeta ? (['Visa', 'Mastercard'].includes(req.body.tarjeta_marca) ? req.body.tarjeta_marca : 'Tarjeta') : null;
+    const ultimos4 = esTarjeta && /^\d{4}$/.test(String(req.body.tarjeta_ultimos4)) ? String(req.body.tarjeta_ultimos4) : null;
+    const vence = esTarjeta && /^\d{2}\/\d{2}$/.test(String(req.body.tarjeta_vence)) ? String(req.body.tarjeta_vence) : null;
+
     db.run(
-        `INSERT INTO inscripciones (nombre, telefono, plan, monto, metodo_pago, estado, fecha) VALUES (?, ?, ?, ?, ?, 'Pendiente', ?)`,
-        [nombre, telefono, plan, monto, metodo_pago, fechaMex],
+        `INSERT INTO inscripciones (nombre, telefono, plan, monto, metodo_pago, estado, fecha, tarjeta_titular, tarjeta_marca, tarjeta_ultimos4, tarjeta_vence) VALUES (?, ?, ?, ?, ?, 'Pendiente', ?, ?, ?, ?, ?)`,
+        [nombre, telefono, plan, monto, metodo_pago, fechaMex, titular, marca, ultimos4, vence],
         function(err) {
             if (err) {
                 return res.status(500).json({ error: err.message });
