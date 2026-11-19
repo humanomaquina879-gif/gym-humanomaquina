@@ -650,7 +650,7 @@ function guardarComprobanteFolio() {
         `Folio de verificación: ${folio}`,
         `Cliente: ${nombre}`,
         `Teléfono: ${telefono}`,
-        cuentaCuenta ? `Cuenta: ${usuarioCuenta}` : null,
+        usuarioCuenta ? `Cuenta: ${usuarioCuenta}` : null,
         `Plan: ${plan}`,
         `Monto: $${monto}`,
         `Método de pago: ${metodoPago}`,
@@ -666,12 +666,23 @@ function guardarComprobanteFolio() {
         const enlace = document.createElement('a');
         enlace.href = url;
         enlace.download = `folio-${folio}.txt`;
+        enlace.style.display = 'none';
         document.body.appendChild(enlace);
-        enlace.click();
-        document.body.removeChild(enlace);
-        setTimeout(() => URL.revokeObjectURL(url), 1000);
-        mostrarNotificacionKronox(`Comprobante folio-${folio}.txt guardado.`);
+
+        enlace.dispatchEvent(new MouseEvent('click', {
+            bubbles: true,
+            cancelable: true,
+            view: window
+        }));
+
+        setTimeout(() => {
+            if (enlace.parentNode) enlace.parentNode.removeChild(enlace);
+            URL.revokeObjectURL(url);
+        }, 1500);
+
+        mostrarNotificacionKronox(`Descarga iniciada: folio-${folio}.txt`);
     } catch (e) {
+        console.error('Error al descargar comprobante:', e);
         copiarFolio();
     }
 }
