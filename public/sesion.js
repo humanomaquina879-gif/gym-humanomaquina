@@ -22,6 +22,7 @@
 
     let modoRegistro = false;
     let enviando = false;
+    let ultimoUsuarioServidor = undefined;
 
     // ---- Copia local del usuario (solo para que cada página pinte su menú) ----
     const leerLocal = () => { try { return localStorage.getItem(CLAVE); } catch (e) { return null; } };
@@ -32,12 +33,13 @@
     // Referencia original previa a sobrescribir funciones globales
     const pintarMenuBase = typeof window.checkUserSession === 'function' ? window.checkUserSession : function () {};
     const abrirModalOriginal = typeof window.openLoginModal === 'function' ? window.openLoginModal : null;
-    const cerrarSesionVistaOriginal = typeof window.logoutUser === 'function' ? window.logoutUser : null;
 
     // Permite que una vista (como rutinas.html) defina su propio pintado/candado sin bucles
     let pintarMenuVista = pintarMenuBase;
     window.registrarPintadoMenu = function (fn) {
-        if (typeof fn === 'function') pintarMenuVista = fn;
+        if (typeof fn !== 'function') return;
+        pintarMenuVista = fn;
+        ejecutarPintado();
     };
 
     function ejecutarPintado() {
@@ -146,7 +148,9 @@
                 return;
             }
 
-            guardarLocal(data.usuario || usuario);
+            const usuarioFinal = data.usuario || usuario;
+            guardarLocal(usuarioFinal);
+            ultimoUsuarioServidor = usuarioFinal;
             $('login-pass').value = '';
             const modal = $('login-modal');
             if (modal) modal.classList.add('hidden');
@@ -168,6 +172,7 @@
     window.logoutUser = async function () {
         try { await fetch('/api/logout', { method: 'POST' }); } catch (e) {}
         guardarLocal(null);
+        ultimoUsuarioServidor = null;
         ['user-dropdown-menu', 'mobile-user-dropdown'].forEach(id => {
             const d = $(id);
             if (d) d.classList.add('hidden');
@@ -186,7 +191,10 @@
         if (usuario === undefined) return; // no se pudo consultar: no se cambia nada
         const antes = leerLocal() || null;
         guardarLocal(usuario);
-        if (antes !== usuario) ejecutarPintado();
+        if (antes !== usuario || ultimoUsuarioServidor !== usuario) {
+            ultimoUsuarioServidor = usuario;
+            ejecutarPintado();
+        }
     };
 
     // ---- Arranque ----
