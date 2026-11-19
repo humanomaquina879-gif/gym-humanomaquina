@@ -163,6 +163,46 @@ input[type="range"]{pointer-events:auto!important;cursor:pointer}
     </div>
 </div>
 
+<!-- ===== MODAL DE FOLIO REGISTRADO (GUARDAR / COPIAR) ===== -->
+<div id="modal-folio" class="hidden fixed inset-0 bg-black/80 flex items-center justify-center p-4 z-50 backdrop-blur-md">
+    <div class="kronox-card p-6 sm:p-8 max-w-md w-full max-h-[90vh] overflow-y-auto border border-emerald-400/50 shadow-2xl relative space-y-5">
+        <button onclick="closeFolioModal()" aria-label="Cerrar" class="absolute top-4 right-4 text-gray-400 hover:text-white font-bold text-lg"><i class="fas fa-times"></i></button>
+        <div class="text-center space-y-1">
+            <div class="w-12 h-12 mx-auto rounded-full bg-emerald-500/15 border border-emerald-400/40 text-emerald-400 flex items-center justify-center text-xl mb-2">
+                <i class="fas fa-ticket"></i>
+            </div>
+            <h2 class="text-xl sm:text-2xl font-black text-white uppercase italic">Solicitud <span class="text-emerald-400">Registrada</span></h2>
+            <p class="text-gray-400 text-xs">Guarda este folio para presentarlo en recepción o al enviar tu comprobante.</p>
+        </div>
+
+        <div class="p-4 bg-[#050a14] rounded-xl border border-cyan-500/30 text-center space-y-1">
+            <p class="text-[10px] font-bold uppercase tracking-widest text-gray-400">Tu Folio de Verificación</p>
+            <p id="folio-codigo-texto" class="text-2xl sm:text-3xl font-black font-mono text-cyan-400 tracking-wider select-all">KRX-0000A</p>
+        </div>
+
+        <div class="p-4 bg-[#050a14]/80 rounded-xl border border-gray-800 space-y-2 text-xs">
+            <div class="flex justify-between gap-3"><span class="text-gray-400">Cliente</span><span id="folio-detalle-nombre" class="text-white font-bold text-right"></span></div>
+            <div class="flex justify-between gap-3"><span class="text-gray-400">Plan</span><span id="folio-detalle-plan" class="text-cyan-400 font-bold text-right"></span></div>
+            <div class="flex justify-between gap-3"><span class="text-gray-400">Monto</span><span id="folio-detalle-monto" class="text-emerald-400 font-black text-right"></span></div>
+            <div class="flex justify-between gap-3"><span class="text-gray-400">Método de pago</span><span id="folio-detalle-metodo" class="text-white font-bold text-right"></span></div>
+            <div class="flex justify-between gap-3"><span class="text-gray-400">Estatus</span><span class="text-amber-400 font-bold text-right">Pendiente de validación</span></div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <button type="button" onclick="guardarComprobanteFolio()" class="w-full btn-neon-solid py-3 px-4 rounded-xl font-black text-xs uppercase tracking-wider flex items-center justify-center gap-2">
+                <i class="fas fa-download"></i> Guardar Folio
+            </button>
+            <button type="button" onclick="copiarFolio()" class="w-full bg-[#050a14] hover:bg-cyan-500/10 text-cyan-400 border border-cyan-500/40 py-3 px-4 rounded-xl font-bold text-xs uppercase tracking-wider transition-colors flex items-center justify-center gap-2">
+                <i class="fas fa-copy"></i> Copiar Folio
+            </button>
+        </div>
+
+        <button type="button" onclick="closeFolioModal()" class="w-full text-gray-400 hover:text-white text-xs font-bold uppercase tracking-wider py-2 transition-colors">
+            Listo, ya lo guardé
+        </button>
+    </div>
+</div>
+
 <!-- ===== CONTENIDO DE LA PÁGINA (aquí se aplica el filtro de daltonismo) ===== -->
 <div id="page-wrapper" class="bg-grid-pattern relative min-h-screen flex flex-col justify-between">
 
@@ -385,6 +425,7 @@ const ls = {
 };
 
 let planPendienteTrasLogin = null;
+let ultimoFolioRegistrado = null;
 
 // ==========================================================
 // INICIO (carga de la página y eventos globales)
@@ -511,7 +552,7 @@ function checkUserSession() {
 }
 
 // ==========================================================
-// MODAL DE PLANES (exige sesión antes de llenar solicitud)
+// MODAL DE PLANES Y FOLIO (exige sesión antes de llenar solicitud)
 // ==========================================================
 async function verificarSesionServidor() {
     try {
@@ -552,6 +593,89 @@ function closePlanModal() {
     show($('modal-plan'), false);
 }
 
+function openFolioModal(info) {
+    ultimoFolioRegistrado = info;
+    if ($('folio-codigo-texto')) $('folio-codigo-texto').innerText = info.folio;
+    if ($('folio-detalle-nombre')) $('folio-detalle-nombre').innerText = info.nombre;
+    if ($('folio-detalle-plan')) $('folio-detalle-plan').innerText = info.plan;
+    if ($('folio-detalle-monto')) $('folio-detalle-monto').innerText = `$${info.monto}`;
+    if ($('folio-detalle-metodo')) $('folio-detalle-metodo').innerText = info.metodoPago;
+    show($('modal-folio'), true);
+}
+
+function closeFolioModal() {
+    show($('modal-folio'), false);
+}
+
+function copiarTextoSeguro(texto, mensajeExito) {
+    if (!texto) return;
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(texto)
+            .then(() => mostrarNotificacionKronox(mensajeExito))
+            .catch(() => copiarPorSeleccion(texto, mensajeExito));
+    } else {
+        copiarPorSeleccion(texto, mensajeExito);
+    }
+}
+
+function copiarPorSeleccion(texto, mensajeExito) {
+    try {
+        const area = document.createElement('textarea');
+        area.value = texto;
+        area.setAttribute('readonly', '');
+        area.style.position = 'fixed';
+        area.style.opacity = '0';
+        document.body.appendChild(area);
+        area.select();
+        document.execCommand('copy');
+        document.body.removeChild(area);
+        mostrarNotificacionKronox(mensajeExito);
+    } catch (e) {
+        mostrarNotificacionKronox('Mantén presionado el folio para copiarlo.');
+    }
+}
+
+function copiarFolio() {
+    const folio = ultimoFolioRegistrado?.folio || $('folio-codigo-texto')?.innerText || '';
+    copiarTextoSeguro(folio, `Folio ${folio} copiado al portapapeles.`);
+}
+
+function guardarComprobanteFolio() {
+    if (!ultimoFolioRegistrado) return;
+    const { folio, nombre, telefono, plan, monto, metodoPago, usuarioCuenta } = ultimoFolioRegistrado;
+    const fechaActual = new Date().toLocaleString('es-MX', { timeZone: 'America/Mexico_City' });
+    const contenido = [
+        'KRONOX GYM - COMPROBANTE DE SOLICITUD',
+        '--------------------------------------',
+        `Folio de verificación: ${folio}`,
+        `Cliente: ${nombre}`,
+        `Teléfono: ${telefono}`,
+        cuentaCuenta ? `Cuenta: ${usuarioCuenta}` : null,
+        `Plan: ${plan}`,
+        `Monto: $${monto}`,
+        `Método de pago: ${metodoPago}`,
+        `Estatus inicial: Pendiente de validación`,
+        `Fecha: ${fechaActual}`,
+        '--------------------------------------',
+        'Presenta este folio en recepción o al enviar tu comprobante por WhatsApp.'
+    ].filter(Boolean).join('\n');
+
+    try {
+        const blob = new Blob([contenido], { type: 'text/plain;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        const enlace = document.createElement('a');
+        enlace.href = url;
+        enlace.download = `folio-${folio}.txt`;
+        document.body.appendChild(enlace);
+        enlace.click();
+        document.body.removeChild(enlace);
+        setTimeout(() => URL.revokeObjectURL(url), 1000);
+        mostrarNotificacionKronox(`Comprobante folio-${folio}.txt guardado.`);
+    } catch (e) {
+        copiarFolio();
+    }
+}
+
 function mostrarCamposPago() {
     const metodo = $('cliente-metodo-pago').value;
     const transf = metodo === 'Transferencia Bancaria';
@@ -564,19 +688,22 @@ function mostrarCamposPago() {
 }
 
 function copiarClabe() {
-    try { navigator.clipboard.writeText('012345678901234567'); mostrarNotificacionKronox('CLABE copiada'); } catch (e) {}
+    copiarTextoSeguro('012345678901234567', 'CLABE copiada');
 }
 
 async function submitPlanForm(e) {
     e.preventDefault();
-    const nombre = $('cliente-nombre').value, telefono = $('cliente-telefono').value, metodoPago = $('cliente-metodo-pago').value;
+    const nombre = $('cliente-nombre').value.trim();
+    const telefono = $('cliente-telefono').value.trim();
+    const metodoPago = $('cliente-metodo-pago').value;
     const partesPlan = $('plan-seleccionado').value.split(' - ');
+    const planNombre = partesPlan[0];
     const montoPlan = partesPlan[1]?.replace('$', '').replace(',', '') || '0';
 
     const nuevaInscripcion = {
         nombre,
         telefono,
-        plan: partesPlan[0],
+        plan: planNombre,
         monto: parseFloat(montoPlan),
         metodo_pago: metodoPago
     };
@@ -594,11 +721,22 @@ async function submitPlanForm(e) {
             return;
         }
         if (response.ok) {
-            const textoFolio = data.folio ? ` Tu folio de verificación en recepción es: ${data.folio}.` : '';
-            mostrarNotificacionKronox(`¡Solicitud registrada, ${nombre}!${textoFolio}`);
             closePlanModal();
             e.target.reset();
             mostrarCamposPago();
+            if (data.folio) {
+                openFolioModal({
+                    folio: data.folio,
+                    nombre,
+                    telefono,
+                    plan: planNombre,
+                    monto: montoPlan,
+                    metodoPago,
+                    usuarioCuenta: data.usuario || ''
+                });
+            } else {
+                mostrarNotificacionKronox(`¡Solicitud registrada, ${nombre}!`);
+            }
         } else {
             alert(data.error || "Hubo un error al registrar tu solicitud en el servidor.");
         }
@@ -738,7 +876,7 @@ if ('speechSynthesis' in window) {
 
 function elementoExcluido(node) {
     const el = node && (node.nodeType === 1 ? node : node.parentElement);
-    return !!(el && el.closest('header, #accessibility-panel, #speech-subtitle-box, #btn-escuchar, #login-modal, #modal-plan'));
+    return !!(el && el.closest('header, #accessibility-panel, #speech-subtitle-box, #btn-escuchar, #login-modal, #modal-plan, #modal-folio'));
 }
 
 function obtenerVozEspanol() {
